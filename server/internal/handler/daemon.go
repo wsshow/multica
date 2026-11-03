@@ -320,11 +320,12 @@ type DaemonRegisterRequest struct {
 	// may have registered under before switching to a persistent UUID. The
 	// handler merges any matching runtime rows into the new row so agents
 	// and tasks keep working without manual intervention.
-	LegacyDaemonIDs []string `json:"legacy_daemon_ids"`
-	DeviceName      string   `json:"device_name"`
-	CLIVersion      string   `json:"cli_version"` // multica CLI version
-	LaunchedBy      string   `json:"launched_by"` // "desktop" when spawned by the Electron app
-	Runtimes        []struct {
+	LegacyDaemonIDs         []string `json:"legacy_daemon_ids"`
+	DeviceName              string   `json:"device_name"`
+	CLIVersion              string   `json:"cli_version"` // multica CLI version
+	CLICompatibilityVersion string   `json:"cli_compatibility_version"`
+	LaunchedBy              string   `json:"launched_by"` // "desktop" when spawned by the Electron app
+	Runtimes                []struct {
 		Name        string `json:"name"`
 		RuntimeMode string `json:"runtime_mode,omitempty"`
 		Type        string `json:"type"`
@@ -775,10 +776,11 @@ func (h *Handler) DaemonRegister(w http.ResponseWriter, r *http.Request) {
 		// same signal the claim path uses, instead of re-deriving it from a
 		// version string (MUL-5707).
 		metadata, _ := json.Marshal(map[string]any{
-			"version":      runtime.Version,
-			"cli_version":  req.CLIVersion,
-			"launched_by":  req.LaunchedBy,
-			"capabilities": requestClientCapabilities(r),
+			"version":                   runtime.Version,
+			"cli_version":               req.CLIVersion,
+			"cli_compatibility_version": req.CLICompatibilityVersion,
+			"launched_by":               req.LaunchedBy,
+			"capabilities":              requestClientCapabilities(r),
 		})
 
 		var registered db.AgentRuntime
@@ -1020,6 +1022,7 @@ func (h *Handler) DaemonRegister(w http.ResponseWriter, r *http.Request) {
 				metadata, _ := json.Marshal(map[string]any{
 					"version":                            "",
 					"cli_version":                        req.CLIVersion,
+					"cli_compatibility_version":          req.CLICompatibilityVersion,
 					"launched_by":                        req.LaunchedBy,
 					"capabilities":                       requestClientCapabilities(r),
 					"runtime_profile_registration_error": true,

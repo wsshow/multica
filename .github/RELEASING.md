@@ -20,6 +20,11 @@ Use a patch increment for fixes, a minor increment for features, and a major
 increment for breaking changes; synchronization alone does not copy the
 upstream release number.
 
+Runtime feature gates use the daemon's `cli_compatibility_version`, declared
+by `server/pkg/agent/cli_compatibility.go`. Release labels and update comparisons
+continue using `cli_version`. Review the compatibility value when importing
+upstream features; do not derive it from this edition's release number.
+
 Release from a reviewed commit on `main` by creating and pushing a new semantic
 version tag such as `v0.1.0`. The Release workflow intentionally has no manual
 trigger: a tag push is the only event that can publish binaries

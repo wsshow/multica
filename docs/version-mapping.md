@@ -8,8 +8,9 @@
 | --- | --- | --- | --- | --- |
 | `v0.1.0` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.0)，首次定制快照为 `fcd80467b2cf795a02310a37c921f8f2646ed24e` | [`v0.7.2`](https://github.com/multica-ai/multica/releases/tag/v0.7.2)，对应 commit 为 `f05a525ac8e82f5e9169ad078e44f166fad6d5c8` | [`87ec077e5f56ff66342caef1df1638780acfdf2e`](https://github.com/multica-ai/multica/commit/87ec077e5f56ff66342caef1df1638780acfdf2e)，2026-11-03 | 已完成文件比对；该 commit 为候选参考基线，原始 checkout commit 未恢复 |
 | `v0.1.1` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.1)，修复 `v0.1.0` 的桌面打包与上传配置 | `v0.7.2`，未新增上游同步 | `87ec077e5f56ff66342caef1df1638780acfdf2e`，沿用同一比对参考 | 同上；本次仅修改定制发行配置 |
+| `v0.1.2` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.2)，拆分发行版本与 CLI 功能兼容版本 | `v0.7.2`，未新增上游同步 | `87ec077e5f56ff66342caef1df1638780acfdf2e`，沿用同一比对参考 | 同上；CLI 兼容版本声明为 `0.7.2` |
 
-`v0.1.0` 已发布 CLI 和 Docker 镜像，桌面发行不完整；完整桌面产物使用 `v0.1.1`。保留已发布 tag，避免同一版本号对应不同源码。
+`v0.1.0` 的桌面发行不完整；`v0.1.1` 修复桌面打包，但独立编号仍会触发原有 CLI 功能版本门槛。完整发行使用 `v0.1.2`。保留已发布 tag，避免同一版本号对应不同源码。
 
 源码包含官方 `v0.7.2` 之后的主线变更，因此不能将定制 `v0.1.0` 视为官方 `v0.7.2` 的完整对应副本。参考 commit 相对该官方 tag 前进了 68 个提交，统计命令为 `git rev-list --count v0.7.2..87ec077e5f56ff66342caef1df1638780acfdf2e`。
 
@@ -30,7 +31,13 @@
 
 文件比对能确认相同内容和剩余差异，不能证明已丢失的 Git 祖先关系。不要把这个候选 commit 直接当作经过确认的 merge base。首次同步前仍需审查差异清单，确认定制边界，并按 [同步策略](customization.md#synchronizing-upstream-features) 建立可追溯的上游快照分支。
 
-初始源码中的 Web 和 Desktop `package.json` 都声明 `0.7.2`，这是版本元数据证据，不能单独证明源码等于官方 tag。当前定制版的根目录、Web、Desktop 包版本统一为 `0.1.1`；Go 的 `go.mod` 版本字段描述 Go 工具链要求，不是产品版本。
+初始源码中的 Web 和 Desktop `package.json` 都声明 `0.7.2`，这是版本元数据证据，不能单独证明源码等于官方 tag。当前定制版的根目录、Web、Desktop 包版本统一为 `0.1.2`；Go 的 `go.mod` 版本字段描述 Go 工具链要求，不是产品版本。
+
+## 发行版本与功能兼容版本
+
+`cli_version` 保留定制发行版本，用于界面显示、更新比较和桌面端判断内置 CLI 是否需要重启。`cli_compatibility_version` 声明已实现的上游 CLI 功能契约，供快速创建、显式任务字段和聊天项目上下文等功能判断使用。当前声明值 `0.7.2` 位于 [CLI 兼容策略](../server/pkg/agent/cli_compatibility.go)。它不代表恢复了原始 Git 祖先关系，也不决定本项目的发行号。
+
+新守护进程注册时同时发送这两个字段，后端保存到运行时元数据；没有兼容字段的旧守护进程继续使用原有 `cli_version` 规则，未知或错误的版本不会直接放行。Web 和 Electron 与本版后端、CLI 配套升级，才能使用这一拆分。后续同步必须按实际导入的功能审查兼容值，不能随定制版本号自动递增。
 
 ## 定制提交索引
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from "vitest";
 import {
   chatProjectContextSupported,
@@ -5,7 +6,31 @@ import {
   checkQuickCreateFieldsCliVersion,
   MIN_CHAT_PROJECT_CONTEXT_CLI_VERSION,
   runtimeAdvertisesLocalWorktree,
+  readRuntimeCliCompatibilityVersion,
+  readRuntimeCliVersion,
 } from "./cli-version";
+
+describe("independent CLI release versions", () => {
+  it("keeps the release version while using the advertised feature contract", () => {
+    const metadata = { cli_version: "0.1.2", cli_compatibility_version: "0.7.2" };
+    const compatibility = readRuntimeCliCompatibilityVersion(metadata);
+    expect(readRuntimeCliVersion(metadata)).toBe("0.1.2");
+    expect(checkQuickCreateCliVersion(compatibility).state).toBe("ok");
+    expect(checkQuickCreateFieldsCliVersion(compatibility).state).toBe("ok");
+    expect(chatProjectContextSupported(compatibility)).toBe(true);
+  });
+
+  it.each([
+    [{ cli_version: "0.4.3" }, "0.4.3"],
+    [{ cli_version: "0.4.3", cli_compatibility_version: " " }, "0.4.3"],
+    [{ cli_version: "0.7.2", cli_compatibility_version: 42 }, ""],
+    [{ cli_version: "0.7.2", cli_compatibility_version: "invalid" }, "invalid"],
+    [{}, ""],
+    [undefined, ""],
+  ])("handles metadata %j without weakening old daemon gates", (metadata, expected) => {
+    expect(readRuntimeCliCompatibilityVersion(metadata)).toBe(expected);
+  });
+});
 
 describe("checkQuickCreateCliVersion", () => {
   it("returns ok for a tagged release at or above the minimum", () => {

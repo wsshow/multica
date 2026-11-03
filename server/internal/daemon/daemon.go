@@ -2948,14 +2948,15 @@ func (d *Daemon) registerRuntimesForWorkspaceBatchLocked(ctx context.Context, wo
 	}
 
 	req := map[string]any{
-		"workspace_id":      workspaceID,
-		"daemon_id":         d.cfg.DaemonID,
-		"legacy_daemon_ids": d.cfg.LegacyDaemonIDs,
-		"device_name":       d.cfg.DeviceName,
-		"cli_version":       d.cfg.CLIVersion,
-		"launched_by":       d.cfg.LaunchedBy,
-		"runtimes":          runtimes,
-		"failed_profiles":   failedProfiles,
+		"workspace_id":              workspaceID,
+		"daemon_id":                 d.cfg.DaemonID,
+		"legacy_daemon_ids":         d.cfg.LegacyDaemonIDs,
+		"device_name":               d.cfg.DeviceName,
+		"cli_version":               d.cfg.CLIVersion,
+		"cli_compatibility_version": agent.CLICompatibilityVersion,
+		"launched_by":               d.cfg.LaunchedBy,
+		"runtimes":                  runtimes,
+		"failed_profiles":           failedProfiles,
 	}
 
 	resp, err := d.client.Register(ctx, req)
@@ -2993,13 +2994,14 @@ func (d *Daemon) registerBuiltinRuntimesForWorkspaceLocked(ctx context.Context, 
 		return nil, ErrNoRuntimesToRegister
 	}
 	req := map[string]any{
-		"workspace_id":      workspaceID,
-		"daemon_id":         d.cfg.DaemonID,
-		"legacy_daemon_ids": d.cfg.LegacyDaemonIDs,
-		"device_name":       d.cfg.DeviceName,
-		"cli_version":       d.cfg.CLIVersion,
-		"launched_by":       d.cfg.LaunchedBy,
-		"runtimes":          runtimes,
+		"workspace_id":              workspaceID,
+		"daemon_id":                 d.cfg.DaemonID,
+		"legacy_daemon_ids":         d.cfg.LegacyDaemonIDs,
+		"device_name":               d.cfg.DeviceName,
+		"cli_version":               d.cfg.CLIVersion,
+		"cli_compatibility_version": agent.CLICompatibilityVersion,
+		"launched_by":               d.cfg.LaunchedBy,
+		"runtimes":                  runtimes,
 		// Deliberately empty: this call carries no profiles, so it must not
 		// report profile failures either.
 		"failed_profiles": []map[string]string{},

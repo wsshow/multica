@@ -88,6 +88,18 @@ export function readRuntimeCliVersion(metadata: Record<string, unknown> | undefi
   return typeof v === "string" ? v : "";
 }
 
+/** Feature gates use the advertised contract version; displays and updates use cli_version. */
+export function readRuntimeCliCompatibilityVersion(
+  metadata: Record<string, unknown> | undefined,
+): string {
+  const value = metadata?.cli_compatibility_version;
+  if (value != null) {
+    if (typeof value !== "string") return "";
+    if (value.trim()) return value.trim();
+  }
+  return readRuntimeCliVersion(metadata);
+}
+
 /**
  * First release whose daemon renders the chat session's project context
  * (description + resources) into the run brief (PR #5765, ships in v0.4.10).

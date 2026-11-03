@@ -37,6 +37,15 @@ describe("useChatProjectContextSupport", () => {
     vi.mocked(api.listRuntimes).mockReset().mockResolvedValue([]);
   });
 
+  it("accepts the contract version of an independently numbered release", async () => {
+    vi.mocked(api.listRuntimes).mockResolvedValue([{
+      ...runtimeRow("0.1.2"),
+      metadata: { cli_version: "0.1.2", cli_compatibility_version: "0.7.2" },
+    }] as never);
+    const { result } = renderSupport({ runtime_id: "runtime-1" });
+    await waitFor(() => expect(result.current).toBe(true));
+  });
+
   it("returns false when the bound runtime reports a stale release version", async () => {
     vi.mocked(api.listRuntimes).mockResolvedValue([runtimeRow("v0.4.9")] as never);
 

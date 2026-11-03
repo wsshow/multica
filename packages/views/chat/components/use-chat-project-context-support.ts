@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   runtimeListOptions,
-  readRuntimeCliVersion,
+  readRuntimeCliCompatibilityVersion,
   chatProjectContextSupported,
 } from "@multica/core/runtimes";
 
@@ -25,5 +25,5 @@ export function useChatProjectContextSupport(
   if (!agent?.runtime_id) return null;
   const runtime = runtimes.find((r) => r.id === agent.runtime_id);
   if (!runtime) return null;
-  return chatProjectContextSupported(readRuntimeCliVersion(runtime.metadata));
+  return chatProjectContextSupported(readRuntimeCliCompatibilityVersion(runtime.metadata));
 }

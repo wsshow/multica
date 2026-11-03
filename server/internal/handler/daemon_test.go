@@ -766,9 +766,11 @@ func TestDaemonRegister_WithDaemonToken(t *testing.T) {
 	}
 
 	req := newDaemonTokenRequest("POST", "/api/daemon/register", map[string]any{
-		"workspace_id": testWorkspaceID,
-		"daemon_id":    "test-daemon-mdt",
-		"device_name":  "test-device",
+		"workspace_id":              testWorkspaceID,
+		"daemon_id":                 "test-daemon-mdt",
+		"cli_version":               "0.1.2",
+		"cli_compatibility_version": "0.7.2",
+		"device_name":               "test-device",
 		"runtimes": []map[string]any{
 			{"name": "test-runtime", "type": "claude", "version": "1.0.0", "status": "online"},
 		},
@@ -788,6 +790,18 @@ func TestDaemonRegister_WithDaemonToken(t *testing.T) {
 	// Clean up: deregister the runtime.
 	rt := runtimes[0].(map[string]any)
 	runtimeID := rt["id"].(string)
+	var metadata []byte
+	dbfx.QueryRow(t, `SELECT metadata FROM agent_runtime WHERE id = $1`, runtimeID).Scan(&metadata)
+	var meta map[string]any
+	if err := json.Unmarshal(metadata, &meta); err != nil {
+		t.Fatal(err)
+	}
+	if meta["cli_version"] != "0.1.2" || meta["cli_compatibility_version"] != "0.7.2" {
+		t.Fatalf("release and compatibility versions were not preserved: %s", metadata)
+	}
+	if status, payload := testHandler.checkQuickCreateDaemonVersionAtLeast(context.Background(), "issue", parseUUID(runtimeID), "0.4.3"); status != 0 {
+		t.Fatalf("customized release was rejected: status=%d payload=%v", status, payload)
+	}
 	testPool.Exec(context.Background(), `DELETE FROM agent_runtime WHERE id = $1`, runtimeID)
 }
 

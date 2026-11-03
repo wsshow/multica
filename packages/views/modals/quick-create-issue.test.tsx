@@ -1236,6 +1236,23 @@ describe("AgentCreatePanel", () => {
       await user.click(create);
       expect(mockQuickCreateIssue).not.toHaveBeenCalled();
     });
+
+    it("permits an independently numbered release with a supported CLI contract", async () => {
+      const user = userEvent.setup();
+      mockRuntimesData.list = [{
+        id: "runtime-1",
+        metadata: { cli_version: "0.1.2", cli_compatibility_version: "0.7.2" },
+      }];
+      renderPanel({ onClose: vi.fn(), isExpanded: false, setIsExpanded: vi.fn() });
+      await user.click(screen.getByRole("button", { name: /Bohan/ }));
+      await user.type(screen.getByPlaceholderText(
+        'Tell the agent what to do, e.g. "let Bohan fix the inbox loading slowness in the Web project"',
+      ), "Ship it");
+      const create = screen.getByRole("button", { name: /^Create$/i });
+      expect(create).not.toHaveAttribute("aria-disabled", "true");
+      await user.click(create);
+      await waitFor(() => expect(mockQuickCreateIssue).toHaveBeenCalledTimes(1));
+    });
   });
 
 

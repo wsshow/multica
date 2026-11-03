@@ -2966,7 +2966,8 @@ func (h *Handler) isRuntimeOnline(ctx context.Context, runtimeID pgtype.UUID) bo
 
 // checkQuickCreateDaemonVersion enforces MinQuickCreateCLIVersion against the
 // CLI version the daemon reported at registration time (stored on the runtime
-// row's metadata.cli_version). Returns (0, nil) when the version is
+// row's advertised compatibility version, or its legacy cli_version).
+// Returns (0, nil) when the version is
 // acceptable, otherwise (status, payload) ready to hand to writeJSON.
 //
 // Failure shape is stable so the modal can branch on the `code` field and
@@ -3019,7 +3020,7 @@ func (h *Handler) checkQuickCreateDaemonVersionAtLeast(ctx context.Context, sour
 	if rt.Provider == qoderruntime.Provider {
 		return 0, nil
 	}
-	current := readRuntimeCLIVersion(rt.Metadata)
+	current := agentpkg.RuntimeCLICompatibilityVersion(rt.Metadata)
 	switch err := agentpkg.CheckMinCLIVersionFor(current, minimum); {
 	case err == nil:
 		return 0, nil

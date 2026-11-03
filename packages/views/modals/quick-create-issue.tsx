@@ -48,7 +48,7 @@ import {
   runtimeListOptions,
   checkQuickCreateCliVersion,
   checkQuickCreateFieldsCliVersion,
-  readRuntimeCliVersion,
+  readRuntimeCliCompatibilityVersion,
 } from "@multica/core/runtimes";
 import { useShortcut } from "@multica/core/shortcuts";
 import { ShortcutKeycaps } from "../common/shortcut-keycaps";
@@ -371,7 +371,7 @@ export function AgentCreatePanel({
     selectedAgent?.runtime_id != null &&
     selectedRuntime != null &&
     selectedRuntime.provider !== "qoder_cloud";
-  const runtimeCliVersion = readRuntimeCliVersion(selectedRuntime?.metadata);
+  const runtimeCliVersion = readRuntimeCliCompatibilityVersion(selectedRuntime?.metadata);
   const baseVersionCheck = useMemo(
     () => checkQuickCreateCliVersion(runtimeCliVersion),
     [runtimeCliVersion],
