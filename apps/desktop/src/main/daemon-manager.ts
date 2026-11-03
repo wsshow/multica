@@ -22,7 +22,6 @@ import type {
   LocalRuntimeProbe,
 } from "../shared/daemon-types";
 import { daemonStatusAlive } from "../shared/daemon-types";
-import { ensureManagedCli, managedCliPath } from "./cli-bootstrap";
 import { decideVersionAction } from "./version-decision";
 import { createDaemonQuitHandler } from "./daemon-quit";
 import { quitConfirmationOptions, quitFailureOptions } from "./daemon-quit-dialogs";
@@ -445,23 +444,6 @@ async function fetchHealth(): Promise<DaemonStatus> {
   };
 }
 
-function findCliOnPath(): string | null {
-  const candidates = process.platform === "win32" ? ["multica.exe"] : ["multica"];
-  const paths = (process.env["PATH"] ?? "").split(
-    process.platform === "win32" ? ";" : ":",
-  );
-  if (process.platform === "darwin") {
-    paths.push("/opt/homebrew/bin", "/usr/local/bin");
-  }
-  for (const name of candidates) {
-    for (const dir of paths) {
-      const full = join(dir, name);
-      if (existsSync(full)) return full;
-    }
-  }
-  return null;
-}
-
 /**
  * Returns the path to the CLI binary bundled inside the Desktop app.
  *
@@ -482,7 +464,7 @@ function bundledCliPath(): string {
 
 async function probeCliBinary(
   bin: string,
-  source: "bundled" | "managed" | "path",
+  source: "bundled",
 ): Promise<string | null> {
   try {
     const stdout = await new Promise<string>((resolve, reject) => {
@@ -511,20 +493,9 @@ async function probeCliBinary(
 }
 
 /**
- * Returns a usable `multica` binary path. Priority:
- *   1. Cached result from a previous successful resolve.
- *   2. Bundled binary shipped with the Desktop app (`bundle-cli.mjs`).
- *   3. Managed binary already installed in userData (`managedCliPath`).
- *   4. Download + install latest release into userData.
- *   5. `multica` on PATH (dev convenience / user-installed via brew).
- * Returns `null` only when all of the above fail.
- *
- * Bundled is preferred so Desktop iterates in lockstep with Go changes in
- * the same repo — avoids the 404 / stale-API problem when the Desktop's
- * TS side is ahead of the last published CLI release.
- *
- * This function is idempotent and safe to call concurrently — in-flight
- * installs are de-duplicated via `cliResolvePromise`.
+ * Resolve only the CLI compiled with this app. Managed downloads and PATH
+ * binaries can belong to a different build and bypass the customization policy.
+ * Concurrent callers share one probe.
  */
 async function resolveCliBinary(): Promise<string | null> {
   if (quitting) return cachedCliBinary ?? null;
@@ -543,43 +514,6 @@ async function resolveCliBinary(): Promise<string | null> {
       }
     }
 
-    const managed = managedCliPath();
-    if (existsSync(managed)) {
-      const version = await probeCliBinary(managed, "managed");
-      if (version) {
-        cachedCliBinary = managed;
-        cachedCliBinaryVersion = version;
-        return managed;
-      }
-    }
-
-    try {
-      const installed = await ensureManagedCli({
-        forceInstall: existsSync(managed),
-      });
-      const version = await probeCliBinary(installed, "managed");
-      if (version) {
-        cachedCliBinary = installed;
-        cachedCliBinaryVersion = version;
-        return installed;
-      }
-      console.warn(
-        `[daemon] managed CLI at ${installed} failed validation after install`,
-      );
-    } catch (err) {
-      console.warn("[daemon] CLI auto-install failed, falling back to PATH:", err);
-    }
-
-    const onPath = findCliOnPath();
-    if (onPath) {
-      const version = await probeCliBinary(onPath, "path");
-      if (version) {
-        cachedCliBinary = onPath;
-        cachedCliBinaryVersion = version;
-        return onPath;
-      }
-    }
-
     cachedCliBinary = null;
     cachedCliBinaryVersion = null;
     return null;
@@ -595,8 +529,7 @@ async function resolveCliBinary(): Promise<string | null> {
 /**
  * Reads the version of the currently resolved CLI binary. Cached for the
  * process lifetime — the bundled binary doesn't change after bundle time.
- * Returns null on any failure (unknown `go` at bundle time, broken binary,
- * wrong-arch bundled binary, etc.) so callers can fail open.
+ * Returns null when the bundled binary is missing or unusable.
  */
 async function getCliBinaryVersion(): Promise<string | null> {
   if (cachedCliBinaryVersion !== undefined) return cachedCliBinaryVersion;
@@ -605,7 +538,7 @@ async function getCliBinaryVersion(): Promise<string | null> {
     cachedCliBinaryVersion = null;
     return null;
   }
-  cachedCliBinaryVersion = await probeCliBinary(bin, "path");
+  cachedCliBinaryVersion = await probeCliBinary(bin, "bundled");
   return cachedCliBinaryVersion;
 }
 

@@ -76,3 +76,32 @@ else if (args[0] === "build") {
     });
   }
 }
+
+for (const staleBinary of [false, true]) {
+  test(`missing Go blocks customized CLI packaging (stale=${staleBinary})`, () => {
+    const root = mkdtempSync(join(tmpdir(), "multica-bundle-no-go-"));
+    try {
+      const scripts = join(root, "apps", "desktop", "scripts");
+      const bin = join(root, "fake-bin");
+      const bundled = join(root, "apps", "desktop", "resources", "bin");
+      mkdirSync(scripts, { recursive: true });
+      mkdirSync(bin);
+      mkdirSync(join(root, "server", "bin", "linux-amd64"), { recursive: true });
+      mkdirSync(bundled, { recursive: true });
+      for (const name of ["bundle-cli.mjs", "package.mjs"]) {
+        copyFileSync(join(scriptDir, name), join(scripts, name));
+      }
+      writeFileSync(join(bundled, "multica"), "old bundled binary");
+      if (staleBinary) {
+        writeFileSync(join(root, "server", "bin", "linux-amd64", "multica"), "old upstream binary");
+      }
+      assert.throws(() => execFileSync(process.execPath, [join(scripts, "bundle-cli.mjs"), "--target-platform", "linux", "--target-arch", "x64"], {
+        cwd: root,
+        env: { PATH: bin, HOME: root },
+        stdio: "pipe",
+      }));
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+}

@@ -98,6 +98,16 @@ describe("desktop quit uses the CLI lifecycle", () => {
   });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
+  it("never falls back to managed or PATH binaries when its bundled CLI is missing", async () => {
+    context.exists.mockImplementation((path: string) => !path.includes("resources"));
+    const { setupDaemonManager } = await import("./daemon-manager");
+    setupDaemonManager(() => null);
+    await context.handlers.get("daemon:set-target-api-url")!({}, "https://example.test");
+    expect(await context.handlers.get("daemon:is-cli-installed")!({})).toBe(false);
+    expect(context.exec).not.toHaveBeenCalled();
+    expect(context.install).not.toHaveBeenCalled();
+  });
+
   it("leaves an already prevented quit to the Windows updater", async () => {
     await setup();
     const event = { defaultPrevented: true, preventDefault: vi.fn() };

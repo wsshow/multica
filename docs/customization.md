@@ -35,6 +35,8 @@ After each synchronization:
 
 ## Distribution sources
 
+Desktop development, builds, and packaging require Go to compile the CLI from this checkout. Desktop executes only that bundled CLI. A missing or unusable bundled CLI blocks local execution instead of downloading an upstream release or selecting a managed/PATH binary. The retained `ensureManagedCli` API always rejects replacement installation.
+
 The desktop package no longer declares the original GitHub repository or publish target. Container defaults select locally built `multica-backend:dev` and `multica-web:dev` images. Homebrew publication to the original organization has been removed; generic CI and release workflows remain reusable for the new repository.
 
 The CLI updater and shell/PowerShell installers require `MULTICA_RELEASE_REPOSITORY=owner/repository`. They have no default release repository. `MULTICA_HOMEBREW_PACKAGE` optionally selects a separately configured Homebrew package. Configure your own desktop publishing destination before distributing auto-updating desktop builds.

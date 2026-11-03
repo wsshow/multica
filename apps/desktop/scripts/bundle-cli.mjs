@@ -9,9 +9,8 @@
 // ldflags mirror `make build` so `multica --version` reports a meaningful
 // version / commit / date.
 //
-// Graceful: if `go` is not installed (e.g. frontend-only contributor), we
-// skip the build and fall through to auto-install at runtime. A genuine
-// Go compile error is fatal — you want that to block dev, not hide.
+// A missing Go compiler or CLI artifact is fatal: a customized Desktop build
+// must not ship an older binary or download a replacement at runtime.
 
 import { access, chmod, copyFile, mkdir, rm } from "node:fs/promises";
 import { constants } from "node:fs";
@@ -102,56 +101,48 @@ async function exists(p) {
   }
 }
 
-if (hasGo()) {
-  const version = deriveVersion() || "dev";
-  const commit = git("rev-parse", "--short", "HEAD") || "unknown";
-  const buildCommit = git("rev-parse", "HEAD") || "unknown";
-  const date = new Date().toISOString().replace(/\.\d+Z$/, "Z");
-  const ldflags = `-X main.version=${version} -X main.commit=${commit} -X main.buildCommit=${buildCommit} -X main.date=${date}`;
-
-  console.log(
-    `[bundle-cli] go build → ${srcBinary} (${goos}/${goarch}, version=${version} commit=${commit})`,
-  );
-  await mkdir(join(serverDir, "bin", `${goos}-${goarch}`), { recursive: true });
-  execFileSync(
-    "go",
-    [
-      "build",
-      "-ldflags",
-      ldflags,
-      "-o",
-      srcBinary,
-      "./cmd/multica",
-    ],
-    {
-      cwd: serverDir,
-      stdio: "inherit",
-      env: {
-        ...process.env,
-        CGO_ENABLED: "0",
-        GOOS: goos,
-        GOARCH: goarch,
-      },
-    },
-  );
-} else {
-  console.warn(
-    "[bundle-cli] `go` not found in PATH — skipping CLI build. " +
-      "Desktop will use whatever is already in resources/bin/, or fall back " +
-      "to auto-installing the latest release at runtime.",
-  );
+// Discard any previously bundled binary before validating this build.
+await rm(destDir, { recursive: true, force: true });
+if (!hasGo()) {
+  throw new Error("[bundle-cli] Go is required to compile the customized CLI; refusing to package an older or downloaded binary.");
 }
+
+const version = deriveVersion() || "dev";
+const commit = git("rev-parse", "--short", "HEAD") || "unknown";
+const buildCommit = git("rev-parse", "HEAD") || "unknown";
+const date = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+const ldflags = `-X main.version=${version} -X main.commit=${commit} -X main.buildCommit=${buildCommit} -X main.date=${date}`;
+
+console.log(
+  `[bundle-cli] go build → ${srcBinary} (${goos}/${goarch}, version=${version} commit=${commit})`,
+);
+await mkdir(join(serverDir, "bin", `${goos}-${goarch}`), { recursive: true });
+execFileSync(
+  "go",
+  [
+    "build",
+    "-ldflags",
+    ldflags,
+    "-o",
+    srcBinary,
+    "./cmd/multica",
+  ],
+  {
+    cwd: serverDir,
+    stdio: "inherit",
+    env: {
+      ...process.env,
+      CGO_ENABLED: "0",
+      GOOS: goos,
+      GOARCH: goarch,
+    },
+  },
+);
 
 if (!(await exists(srcBinary))) {
-  console.warn(
-    `[bundle-cli] ${srcBinary} not present — Desktop will fall back to ` +
-      `auto-installing the latest release at runtime.`,
-  );
-  await rm(destDir, { recursive: true, force: true });
-  process.exit(0);
+  throw new Error(`[bundle-cli] required CLI artifact missing: ${srcBinary}`);
 }
 
-await rm(destDir, { recursive: true, force: true });
 await mkdir(destDir, { recursive: true });
 await copyFile(srcBinary, destBinary);
 await chmod(destBinary, 0o755);

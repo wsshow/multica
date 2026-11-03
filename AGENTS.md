@@ -131,5 +131,6 @@ Workspace-scoped queries filter by `workspace_id`; membership gates access and `
 
 - Read [docs/customization.md](docs/customization.md) before syncing upstream code or changing analytics, diagnostics, client usage, operational metrics, or release sources.
 - Telemetry entry points are intentionally no-op APIs. Preserve their call signatures for upstream feature merges; do not restore SDKs, collectors, reporting, installation identifiers, crash persistence, or metrics listeners. Environment variables must not re-enable them.
+- Desktop must compile and execute its bundled CLI from this checkout. Missing Go or a missing CLI must fail the build; do not fall back to downloaded, managed, or PATH binaries.
 - Keep user-visible task usage, cost, execution history, runtime liveness, and product Git integrations functional.
 - Run `pnpm check:telemetry` and the affected facade regression tests after upstream updates.
