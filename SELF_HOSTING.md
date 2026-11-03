@@ -2,6 +2,8 @@
 
 Deploy the API, web app, and database from this customized checkout. For Chinese instructions, see [部署指南](docs/deployment.zh.md). The [customization policy](docs/customization.md) covers disabled telemetry, distribution sources, and upstream synchronization.
 
+The [integrated application image](docs/integrated-image.md), with external infrastructure, is currently a design. This guide continues to describe the available split-image deployment.
+
 ## Architecture
 
 | Component | Runs where | Source |
