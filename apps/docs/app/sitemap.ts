@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { source } from "@/lib/source";
 import { i18n } from "@/lib/i18n";
-import { absoluteDocsUrl } from "@/lib/site";
+import { absoluteDocsUrl, SITE_ORIGIN } from "@/lib/site";
 
 /**
  * Dynamic sitemap — pulls the full page list from Fumadocs' source at build
@@ -13,6 +13,7 @@ import { absoluteDocsUrl } from "@/lib/site";
  * `apps/web/app/robots.ts` references this URL so crawlers discover it.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (!SITE_ORIGIN) return [];
   // Group pages by canonical slug so multiple locales collapse to one entry.
   const bySlug = new Map<string, Map<string, string>>();
 

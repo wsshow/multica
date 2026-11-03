@@ -1,3 +1,4 @@
+import { documentationLinks } from "@/lib/deployment";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { ArrowUpRight } from "@multica/ui/icons";
 import { MulticaIcon } from "@multica/ui/components/common/multica-icon";
@@ -30,6 +31,8 @@ const externalLinkText = (label: string) => (
   </span>
 );
 
+const deployment = documentationLinks();
+
 export const baseOptions: BaseLayoutProps = {
   nav: {
     title: (
@@ -40,17 +43,17 @@ export const baseOptions: BaseLayoutProps = {
     ),
   },
   links: [
-    {
+    ...(deployment.repositoryUrl ? [{
       icon: <GitHubMark />,
-      text: externalLinkText("GitHub"),
-      url: "https://github.com/multica-ai/multica",
+      text: externalLinkText("Repository"),
+      url: deployment.repositoryUrl,
       external: true,
-    },
-    {
+    }] : []),
+    ...(deployment.appUrl ? [{
       icon: <MulticaIcon />,
       text: externalLinkText("Multica"),
-      url: "https://multica.ai",
+      url: deployment.appUrl,
       external: true,
-    },
+    }] : []),
   ],
 };

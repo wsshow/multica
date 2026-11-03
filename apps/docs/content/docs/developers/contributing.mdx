@@ -5,36 +5,12 @@ description: Set up a local Multica development environment, run tests, and subm
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Multica is a Go backend and pnpm monorepo. The simplest way to start locally is `make dev`; it prepares the environment, database, and migrations for the current checkout, then starts Web and API.
-
-## Requirements
-
-- Node.js 22
-- pnpm 10.28.2
-- Go 1.26.6
-- Docker Engine or Docker Desktop
-- Git and Make
-
-Treat the root `package.json`, `server/go.mod`, and CI workflows as the source of truth for versions.
-
-## First start
+Use the current customized checkout. Required tool versions are defined in the repository manifests; follow the root `CONTRIBUTING.md`. Manage the checkout with `make up`, `make status`, and `make down`. Ports, database names, and profiles are allocated by the environment registry. Use `make status` to discover the actual addresses; do not assume fixed ports or copy another checkout’s `.env`.
 
 ```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
-make dev
+make up
+make status
 ```
-
-The primary checkout uses `.env`. If the file does not exist, `make dev` creates it from `.env.example`, then starts the shared PostgreSQL instance, installs dependencies, runs migrations, and starts API and Web.
-
-Default addresses:
-
-```text
-Web: http://localhost:3000
-API: http://localhost:8080
-```
-
-The fixed local verification code comes from the development configuration. Do not use a local `.env` for an internet-facing deployment.
 
 ## Developing in a worktree
 

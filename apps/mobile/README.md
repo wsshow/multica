@@ -2,15 +2,17 @@
 
 Expo + React Native iOS client for Multica. Independent from web/desktop — shares types and pure utilities from `@multica/core/`. See [`AGENTS.md`](./AGENTS.md) for mobile architecture and development rules; `package.json` records the current dependency versions.
 
-## Just want to use it on your phone? (no development)
+## Install the customized client on your phone
 
-Multica isn't on the App Store yet — until that changes, anyone who wants it on their iPhone builds from source. One command:
+Use this customized checkout or your maintainer's source archive. Before building, copy `apps/mobile/.env.production.example` to the gitignored `apps/mobile/.env.production.local` and set **both** `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_WEB_URL` to your own deployment. Desktop's `desktop.json` does not configure mobile. The mobile source retains independent environment modes, so do not assume its inherited production/staging values select this customized service.
+
+After configuring your own reachable addresses, run from the repository root:
 
 ```bash
 pnpm ios:mobile:device:prod:release
 ```
 
-This connects to the same backend as `multica.ai`, so your existing account just works. To use a private backend or your own bundle ID, copy `apps/mobile/.env.production.example` to `apps/mobile/.env.production.local` and edit the copy — it overrides the committed `.env.production` key by key and is gitignored, so personal values stay local.
+An iPhone cannot reach a server through the phone's own `localhost`. Use a reachable LAN address or your deployment's HTTPS domain. Personal overrides are ignored by Git; do not commit credentials or private endpoint values.
 
 **Prerequisites**: Mac with Xcode, a free Apple ID added under Xcode → Settings → Accounts, iPhone connected via USB with [Developer Mode enabled](https://docs.expo.dev/guides/ios-developer-mode/). Walk through Expo's [Set up your environment](https://docs.expo.dev/get-started/set-up-your-environment/) (pick **Development build → iOS Device**) if any of that is missing.
 

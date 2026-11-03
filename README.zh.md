@@ -1,3 +1,5 @@
+> **定制版本：**从当前定制源码部署，桌面端必须配置自己的服务地址。详见[部署指南](docs/deployment.zh.md)。
+
 <div align="center">
 
 <picture>
@@ -12,27 +14,8 @@
 Multica 是一个源码公开的团队工作区。你像给同事派活一样，把任务交给 AI 编码智能体——它自己接手、边做边
 汇报、卡住了主动说，做完交回来给你审。可自托管，支持你已经在用的智能体 CLI，不绑定任何厂商。
 
-[![CI](https://github.com/multica-ai/multica/actions/workflows/ci.yml/badge.svg)](https://github.com/multica-ai/multica/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/multica-ai/multica?style=flat)](https://github.com/multica-ai/multica/releases)
-[![GitHub stars](https://img.shields.io/github/stars/multica-ai/multica?style=flat)](https://github.com/multica-ai/multica/stargazers)
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/W8gYBn226t)
+[部署指南](docs/deployment.zh.md) · [桌面端配置](docs/customization.md#desktop-service-configuration) · [CLI 安装](CLI_INSTALL.md) · [愿景](VISION.zh.md)
 
-<p align="center">
-  <a href="https://www.star-history.com/multica-ai/multica">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=multica-ai/multica&amp;type=rank&amp;theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=multica-ai/multica&amp;type=rank" />
-      <img alt="Star History Rank" src="https://api.star-history.com/badge?repo=multica-ai/multica&amp;type=rank" />
-    </picture>
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=multica-ai/multica&amp;type=trending&amp;theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=multica-ai/multica&amp;type=trending" />
-      <img alt="GitHub Trending Repository of the Day" src="https://api.star-history.com/badge?repo=multica-ai/multica&amp;type=trending" />
-    </picture>
-  </a>
-</p>
-
-[官网](https://multica.ai) · [文档](https://multica.ai/docs/zh) · [快速开始](https://multica.ai/docs/zh/cloud-quickstart) · [下载](https://multica.ai/download) · [愿景](VISION.zh.md) · [自托管](https://multica.ai/docs/zh/self-host-quickstart) · [Discord](https://discord.gg/W8gYBn226t) · [X](https://x.com/MulticaAI)
 
 **[English](README.md) | 简体中文**
 
@@ -68,10 +51,10 @@ diff，全都挂在同一个任务下——没人需要重新捋一遍上下文�
 </p>
 
 - **[你已经在用的智能体 CLI](#运行时) →** Claude Code、Codex、Cursor、Copilot、Kimi、OpenCode 等等。
-- **[智能体也是队友](https://multica.ai/docs/zh/agents) →** 起个名字、选个提供方、配台运行时，它就上了看板，跟其他同事没两样。
-- **[小队](https://multica.ai/docs/zh/squads) →** 人和智能体混编成队，leader 决定谁来接活。
-- **[Skills](https://multica.ai/docs/zh/skills) →** 解决过一次的问题沉淀下来，全团队的智能体都能复用。
-- **[你自己的运行时](https://multica.ai/docs/zh/daemon-runtimes) →** 它们的"工位"就是你的机器——守护进程跑在你的笔记本或云主机上，代码不出门。
+- **[智能体也是队友](apps/docs/content/docs/agents.zh.mdx) →** 起个名字、选个提供方、配台运行时，它就上了看板，跟其他同事没两样。
+- **[小队](apps/docs/content/docs/squads.zh.mdx) →** 人和智能体混编成队，leader 决定谁来接活。
+- **[Skills](apps/docs/content/docs/skills.zh.mdx) →** 解决过一次的问题沉淀下来，全团队的智能体都能复用。
+- **[你自己的运行时](apps/docs/content/docs/daemon-runtimes.zh.mdx) →** 它们的"工位"就是你的机器——守护进程跑在你的笔记本或云主机上，代码不出门。
 
 ## 把活交出去
 
@@ -81,10 +64,10 @@ diff，全都挂在同一个任务下——没人需要重新捋一遍上下文�
   <img src="docs/assets/readme/issue.webp" alt="交给智能体的任务：Frontend 开了 PR，请 Reviewer 智能体来审，并把任务挪到了审核中" width="100%">
 </p>
 
-- **[分配任务](https://multica.ai/docs/zh/assigning-issues) →** 像挑同事一样挑个智能体当负责人，剩下的它自己来。
-- **[自动化](https://multica.ai/docs/zh/autopilots) →** 日报、巡检、周报按 cron 自己跑，不用有人催。
-- **[聊天](https://multica.ai/docs/zh/chat) →** 直接问工作区，或者不建任务就把活派出去。
-- **[项目](https://multica.ai/docs/zh/projects) →** 把工作归类，顺手挂上智能体要用的仓库和文档。
+- **[分配任务](apps/docs/content/docs/assigning-issues.zh.mdx) →** 像挑同事一样挑个智能体当负责人，剩下的它自己来。
+- **[自动化](apps/docs/content/docs/autopilots.zh.mdx) →** 日报、巡检、周报按 cron 自己跑，不用有人催。
+- **[聊天](apps/docs/content/docs/chat.zh.mdx) →** 直接问工作区，或者不建任务就把活派出去。
+- **[项目](apps/docs/content/docs/projects.zh.mdx) →** 把工作归类，顺手挂上智能体要用的仓库和文档。
 
 ## 看得见，也管得住
 
@@ -94,58 +77,46 @@ diff，全都挂在同一个任务下——没人需要重新捋一遍上下文�
   <img src="docs/assets/readme/run.webp" alt="一次运行的实时记录：每次工具调用和命令都带时间戳，右侧展开的是一次失败测试的输出" width="100%">
 </p>
 
-- **[执行日志](https://multica.ai/docs/zh/tasks) →** 每次工具调用、命令和报错都带时间戳，可以完整回放。
+- **[执行日志](apps/docs/content/docs/tasks.zh.mdx) →** 每次工具调用、命令和报错都带时间戳，可以完整回放。
 - **运行中插话 →** 智能体干活时直接回复，消息会进到当前这次运行，不用等下一次。目前支持 Claude Code、Codex、Grok 和 Kiro。
 - **用量统计 →** 每次运行花了多少，按智能体、按任务都看得到。
-- **[人来验收](https://multica.ai/docs/zh/issues) →** 活先进入审核中，不直接进 main。上不上线你说了算。
-- **[收件箱](https://multica.ai/docs/zh/inbox) →** 只在智能体需要你拍板时提醒你，而不是每一步都来烦你。
-- **[重试与超时](https://multica.ai/docs/zh/tasks#失败与自动重试) →** 失败的运行会自己重试，或者停下来告诉你为什么。
+- **[人来验收](apps/docs/content/docs/issues.zh.mdx) →** 活先进入审核中，不直接进 main。上不上线你说了算。
+- **[收件箱](apps/docs/content/docs/inbox.zh.mdx) →** 只在智能体需要你拍板时提醒你，而不是每一步都来烦你。
+- **[重试与超时](apps/docs/content/docs/tasks.zh.mdx#失败与自动重试) →** 失败的运行会自己重试，或者停下来告诉你为什么。
 
 ## 整套都归你
 
 *你的机器、你的 Git 服务、你的规矩——还有一份把智能体也算进去的审计记录。*
 
 - **[整套自托管](SELF_HOSTING.md) →** Docker Compose 或 Helm，装在你自己的基础设施上。
-- **[你的 Git 服务](https://multica.ai/docs/zh/vcs-integration) →** GitHub、GitLab、Gitea、Forgejo，自建实例也行。
-- **[工作区](https://multica.ai/docs/zh/workspaces) →** 按团队隔离智能体、任务和设置。
-- **[角色](https://multica.ai/docs/zh/members-roles)与[使用权限](https://multica.ai/docs/zh/agents#权限与-access) →** `owner`、`admin`、`member`，再精确到谁能跑哪些智能体。
-- **[安全模型](https://multica.ai/docs/zh/security-model) →** 智能体碰得到什么，碰不到什么。
-- **[Slack、飞书/Lark、钉钉、企业微信、Telegram](https://multica.ai/docs/zh/channels) →** 在团队本来就在聊天的地方，触发和跟进智能体的工作。飞书/Lark 目前只开放中国大陆飞书的新连接；钉钉、企业微信和 Telegram 由[社区维护](https://multica.ai/docs/zh/community-maintained)。
-- **Web、[桌面端](https://multica.ai/docs/zh/desktop-app)、[移动端](https://multica.ai/docs/zh/mobile-app) →** macOS、Windows、Linux、iPhone、iPad，打开都是同一个工作区——iOS App 现在要自己从源码编译安装，还没上 App Store。
-- **[CLI 与 API](https://multica.ai/docs/zh/cli) →** 界面上能点的，CLI 和 API 里都能调。智能体操作 Multica，用的就是你那套 CLI。
+- **[你的 Git 服务](apps/docs/content/docs/vcs-integration.zh.mdx) →** GitHub、GitLab、Gitea、Forgejo，自建实例也行。
+- **[工作区](apps/docs/content/docs/workspaces.zh.mdx) →** 按团队隔离智能体、任务和设置。
+- **[角色](apps/docs/content/docs/members-roles.zh.mdx)与[使用权限](apps/docs/content/docs/agents.zh.mdx#权限与-access) →** `owner`、`admin`、`member`，再精确到谁能跑哪些智能体。
+- **[安全模型](apps/docs/content/docs/security-model.zh.mdx) →** 智能体碰得到什么，碰不到什么。
+- **[Slack、飞书/Lark、钉钉、企业微信、Telegram](apps/docs/content/docs/channels.zh.mdx) →** 在团队本来就在聊天的地方，触发和跟进智能体的工作。飞书/Lark 目前只开放中国大陆飞书的新连接；钉钉、企业微信和 Telegram 由[社区维护](apps/docs/content/docs/community-maintained.zh.mdx)。
+- **Web、[桌面端](apps/docs/content/docs/desktop-app.zh.mdx)、[移动端](apps/docs/content/docs/mobile-app.zh.mdx) →** macOS、Windows、Linux、iPhone、iPad，打开都是同一个工作区——iOS App 现在要自己从源码编译安装，还没上 App Store。
+- **[CLI 与 API](apps/docs/content/docs/cli.zh.mdx) →** 界面上能点的，CLI 和 API 里都能调。智能体操作 Multica，用的就是你那套 CLI。
 
 ---
 
 ## 开始使用
 
-- **云端**——直接在 **[multica.ai](https://multica.ai)** 注册，不用打开终端。
-- **桌面端**——下载 **[Multica 桌面端](https://multica.ai/download)**（macOS / Windows / Linux）。打开它，
-  这台电脑就自动成了一个运行时。
-- **自托管**——整套跑在你自己的基础设施上，见下方。
+使用当前定制源码，或维护者提供的定制源码包。本版本尚未配置公开发布仓库；上游安装包、镜像和 Homebrew 包不包含咱们的修改。
 
-唯一的前提：跑智能体的那台机器上，得装好、登录好至少一个[受支持的智能体 CLI](#运行时)——
-Claude Code、Codex、Cursor 都行。Multica 负责驱动它们，但不替你安装。
+1. 从当前源码部署 API、Web 和 PostgreSQL：
 
-<details>
-<summary><b>整套自托管</b></summary>
+   ```bash
+   make selfhost-build
+   ```
 
-<br/>
+   首次运行会创建 `.env` 并生成初始密钥，再构建 `multica-backend:dev`、`multica-web:dev` 并启动容器。默认主机端口下，Web 为 `http://localhost:3000`，API 就绪检查为 `http://localhost:8080/readyz`。
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.sh | bash -s -- --with-server
-multica setup self-host
-```
+2. 桌面端使用本地编译或维护者发布的定制 Electron 安装包。将[配置模板](apps/desktop/desktop.example.json)复制到 `~/.multica/desktop.json`，填写自己的 API 和 Web 地址，重启应用。详见[桌面端配置](docs/customization.md#desktop-service-configuration)。
+3. 其他执行电脑从当前源码构建 CLI，再显式配置自建服务地址。详见 [CLI 安装](CLI_INSTALL.md)。
 
-Windows 上先设 `$env:MULTICA_MODE="with-server"`，再跑 PowerShell 安装脚本：
-`irm https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.ps1 | iex`。
+执行电脑仍需安装并登录至少一款受支持的 AI 编程工具；工具账号、订阅和模型额度由用户自行准备。
 
-这会拉取 GHCR 上的官方镜像，需要 Docker。详见[自托管快速上手](https://multica.ai/docs/zh/self-host-quickstart)。
-如果你选的 GHCR 标签还没发布，可以在代码目录里跑 `make selfhost-build` 兜底。
-
-自托管的服务端每天会发送一份匿名的部署级快照：只有版本号和分桶计数，不含名称、内容或任何标识符。
-在 API 服务端设置 `DO_NOT_TRACK=1` 即可关闭——[具体收集哪些数据](https://multica.ai/docs/zh/environment-variables#观测与统计)。
-
-</details>
+生产环境的网络、登录、备份和升级步骤见[部署指南](docs/deployment.zh.md)。`make selfhost` 用于拉取已配置的镜像，仅在维护者发布了自己的镜像后使用，不会构建当前源码。
 
 ### 五分钟跑通第一个智能体
 
@@ -159,7 +130,7 @@ Windows 上先设 `$env:MULTICA_MODE="with-server"`，再跑 PowerShell 安装�
 **3. 派给它一件事。** 建一个任务，负责人选成这个智能体。它会自己接手、在你的机器上跑、边做边评论，
 干完把任务挪到审核中。
 
-完整流程：[快速开始](https://multica.ai/docs/zh/cloud-quickstart) · [上手教程](https://multica.ai/docs/zh/tutorial)
+完整流程：[快速开始](apps/docs/content/docs/cloud-quickstart.zh.mdx) · [上手教程](apps/docs/content/docs/tutorial.zh.mdx)
 
 ---
 
@@ -184,8 +155,8 @@ Multica 不自带模型。它驱动的是你本来就装好、登录好的那些
 | MiniMax Code | `mcode` | Dim | `dim` |
 | 华为云 CodeArts | `codearts` | ZeroClaw | `zeroclaw` |
 
-怎么装、怎么登录：[安装智能体运行时](https://multica.ai/docs/zh/install-agent-runtime) ·
-[AI 编程工具对照](https://multica.ai/docs/zh/providers)
+怎么装、怎么登录：[安装智能体运行时](apps/docs/content/docs/install-agent-runtime.zh.mdx) ·
+[AI 编程工具对照](apps/docs/content/docs/providers.zh.mdx)
 
 ---
 
@@ -193,19 +164,18 @@ Multica 不自带模型。它驱动的是你本来就装好、登录好的那些
 
 | 我想…… | 从这里看 |
 | --- | --- |
-| 今天就让智能体干点活 | [快速开始](https://multica.ai/docs/zh/cloud-quickstart) · [上手教程](https://multica.ai/docs/zh/tutorial) |
-| 搞清楚这套系统怎么运转 | [核心概念](https://multica.ai/docs/zh/concepts) · [Multica 如何工作](https://multica.ai/docs/zh/how-multica-works) |
-| 创建和配置智能体 | [智能体](https://multica.ai/docs/zh/agents) · [创建智能体](https://multica.ai/docs/zh/agents-create) · [Skills](https://multica.ai/docs/zh/skills) |
-| 把活交到智能体手上 | [触发智能体](https://multica.ai/docs/zh/triggering-agents) · [分配任务](https://multica.ai/docs/zh/assigning-issues) · [提及](https://multica.ai/docs/zh/mentioning-agents) |
-| 把我的机器接进来 | [守护进程与运行时](https://multica.ai/docs/zh/daemon-runtimes) · [安装智能体运行时](https://multica.ai/docs/zh/install-agent-runtime) |
-| 接上 Git 和聊天工具 | [GitHub](https://multica.ai/docs/zh/github-integration) · [自建 Git](https://multica.ai/docs/zh/vcs-integration) · [消息渠道](https://multica.ai/docs/zh/channels) |
-| 部署在自己的基础设施上 | [自托管快速上手](https://multica.ai/docs/zh/self-host-quickstart) · [安全模型](https://multica.ai/docs/zh/security-model) · [环境变量](https://multica.ai/docs/zh/environment-variables) · [完整自托管指南（英文）](SELF_HOSTING.md) |
-| 用脚本驱动它 | [CLI 参考](https://multica.ai/docs/zh/cli) · [CLI 与守护进程指南](CLI_AND_DAEMON.md) · [认证令牌](https://multica.ai/docs/zh/auth-tokens) |
-| 在 Codex、Claude Code 或 Cursor 里驱动 Multica | [Multica CLI skill](https://github.com/multica-ai/multica-cli) |
-| 查智能体为什么卡住了 | [运行](https://multica.ai/docs/zh/tasks) · [问题排查](https://multica.ai/docs/zh/troubleshooting) |
+| 今天就让智能体干点活 | [快速开始](apps/docs/content/docs/cloud-quickstart.zh.mdx) · [上手教程](apps/docs/content/docs/tutorial.zh.mdx) |
+| 搞清楚这套系统怎么运转 | [核心概念](apps/docs/content/docs/concepts.zh.mdx) · [Multica 如何工作](apps/docs/content/docs/how-multica-works.zh.mdx) |
+| 创建和配置智能体 | [智能体](apps/docs/content/docs/agents.zh.mdx) · [创建智能体](apps/docs/content/docs/agents-create.zh.mdx) · [Skills](apps/docs/content/docs/skills.zh.mdx) |
+| 把活交到智能体手上 | [触发智能体](apps/docs/content/docs/triggering-agents.zh.mdx) · [分配任务](apps/docs/content/docs/assigning-issues.zh.mdx) · [提及](apps/docs/content/docs/mentioning-agents.zh.mdx) |
+| 把我的机器接进来 | [守护进程与运行时](apps/docs/content/docs/daemon-runtimes.zh.mdx) · [安装智能体运行时](apps/docs/content/docs/install-agent-runtime.zh.mdx) |
+| 接上 Git 和聊天工具 | [GitHub](apps/docs/content/docs/github-integration.zh.mdx) · [自建 Git](apps/docs/content/docs/vcs-integration.zh.mdx) · [消息渠道](apps/docs/content/docs/channels.zh.mdx) |
+| 部署在自己的基础设施上 | [自托管快速上手](apps/docs/content/docs/self-host-quickstart.zh.mdx) · [安全模型](apps/docs/content/docs/security-model.zh.mdx) · [环境变量](apps/docs/content/docs/environment-variables.zh.mdx) · [完整自托管指南（英文）](SELF_HOSTING.md) |
+| 用脚本驱动它 | [CLI 参考](apps/docs/content/docs/cli.zh.mdx) · [CLI 与守护进程指南](CLI_AND_DAEMON.md) · [认证令牌](apps/docs/content/docs/auth-tokens.zh.mdx) |
+| 查智能体为什么卡住了 | [运行](apps/docs/content/docs/tasks.zh.mdx) · [问题排查](apps/docs/content/docs/troubleshooting.zh.mdx) |
 
-文档另有 [English](https://multica.ai/docs)、[日本語](https://multica.ai/docs/ja)、[한국어](https://multica.ai/docs/ko)
-和 [Français](https://multica.ai/docs/fr) 版本。
+文档另有 [English](apps/docs/content/docs/index.mdx)、[日本語](apps/docs/content/docs/index.ja.mdx)、[한국어](apps/docs/content/docs/index.ko.mdx)
+和 [Français](apps/docs/content/docs/index.fr.mdx) 版本。
 
 ---
 
@@ -252,17 +222,16 @@ Multica 不自带模型。它驱动的是你本来就装好、登录好的那些
 **环境要求：**[Node.js](https://nodejs.org/) 22、[pnpm](https://pnpm.io/) 10.28.2、[Go](https://go.dev/) 1.26.9、[Docker](https://www.docker.com/)
 
 ```bash
-make dev
+make up
 ```
 
-`make dev` 会自己认出你在主 checkout 还是 worktree 里，然后创建 env 文件、装依赖、初始化数据库、
-跑迁移，最后把所有服务拉起来。
+`make up` 管理当前 checkout 的独立开发环境。用 `make status` 查看状态，用 `make down` 停止服务并保留数据。
 
 完整的开发流程、worktree 支持、测试和问题排查见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 iOS 客户端在 [`apps/mobile/`](apps/mobile/)，怎么编译装到自己的设备上见它的
 [README](apps/mobile/README.md)。
 
-我们几乎每个工作日都发版，`main` 走得很快——记得常拉最新代码。
+后续更新只同步经过审查的定制提交；合入上游功能前，先按[定制策略](docs/customization.md#synchronizing-upstream-features)核对差异。
 
 ---
 

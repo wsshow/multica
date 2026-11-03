@@ -71,7 +71,7 @@ multica config show
 
 The CLI reachability probe GETs `<server-url>/health` and needs a 200. The backend serves this path. Current web releases forward `/health` to the backend, but older ones do not — a reverse proxy that forwards everything to such an older frontend returns 404, and the CLI concludes the server is down while the stack is healthy.
 
-Routing `/health` to the backend (port 8080) explicitly in your proxy works across all releases — both Caddy examples in the [self-host quickstart](/self-host-quickstart#remote-access) do this. Confirm with:
+Routing `/health` to the backend (port 8080) explicitly in your proxy works across all releases — both Caddy examples in the [self-host quickstart](/self-host-quickstart) do this. Confirm with:
 
 ```bash
 curl -fsS <server-url>/health
@@ -80,7 +80,7 @@ curl -fsS <server-url>/health
 </Accordion>
 <Accordion title={<><code>multica login</code> fails with a TLS handshake timeout</>} id="multica-login-fails-with-a-tls-handshake-timeout" value="multica-login-fails-with-a-tls-handshake-timeout">
 
-`multica login` opens the browser and the web sign-in completes, but the CLI still fails with "Sign-in did not complete" or "TLS handshake timed out". `multica --debug login` shows `net/http: TLS handshake timeout` on `POST /api/tokens`, while `curl.exe -I https://api.multica.ai` or a browser on the same machine connects fine.
+`multica login` opens the browser and the web sign-in completes, but the CLI still fails with "Sign-in did not complete" or "TLS handshake timed out". `multica --debug login` shows `net/http: TLS handshake timeout` on `POST /api/tokens`, while `curl.exe -I https://api.example.com` or a browser on the same machine connects fine.
 
 The TCP connection opens, but the TLS handshake never completes. Go clients, including the Multica CLI and daemon, send a post-quantum key share in the TLS ClientHello by default, which makes it about 1.5 KB and splits it across two packets. Some security software, VPNs, routers, and firewalls drop such handshakes; curl sends a much smaller ClientHello and gets through.
 
@@ -174,7 +174,7 @@ To restore access:
 2. For a Mac that runs unattended, grant Full Disk Access to the new binary. Print its path with `realpath "$(command -v multica)"`, then under **System Settings → Privacy & Security → Full Disk Access** remove the stale `multica` entry and add that path (press ⌘⇧G in the file picker to paste it).
 3. Restart the daemon the same way you started it: `multica daemon restart`, or `launchctl kickstart -k gui/$(id -u)/<label>` for a LaunchAgent.
 
-Repeat this after every CLI upgrade. Auto-update is on by default only for daemons connected to Multica Cloud; start the daemon with `--no-auto-update` so upgrades happen only when you run them. The CLI bundled with [Multica Desktop](/desktop-app) is signed with a Developer ID, so its grants survive upgrades.
+After each CLI replacement, macOS may require permissions to be confirmed again. Keep unattended updates disabled until your own release and signing process is configured. A customized Desktop package must use your maintainer’s signing identity; do not assume an unsigned local package has the permission continuity of a signed release.
 
 </Accordion>
 <Accordion title="Hermes runs reinstall dependencies after you use the Hermes CLI" id="hermes-runs-reinstall-dependencies-after-you-use-the-hermes-cli" value="hermes-runs-reinstall-dependencies-after-you-use-the-hermes-cli">
@@ -214,7 +214,7 @@ Containers read `.env` only at creation time; recreate them after changes:
 docker compose -f docker-compose.selfhost.yml up -d
 ```
 
-For a complete reverse-proxy example, see the [self-host quickstart](/self-host-quickstart#remote-access).
+For a complete reverse-proxy example, see the [self-host quickstart](/self-host-quickstart).
 
 </Accordion>
 <Accordion title="Verification code and invitation emails not delivered" id="verification-code-and-invitation-emails-not-delivered" value="verification-code-and-invitation-emails-not-delivered">
@@ -334,7 +334,7 @@ multica daemon stop
 multica daemon start --foreground
 ```
 
-If you still cannot pin it down, search existing issues or file a new one on [GitHub Issues](https://github.com/multica-ai/multica/issues).
+If you still cannot pin it down, search existing issues or file a new one on your deployment maintainer or configured issue tracker.
 
 ## Next steps
 

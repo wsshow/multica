@@ -1,3 +1,5 @@
+import { documentationLinks } from "@/lib/deployment";
+
 type CommunityLinksProps = {
   discordDescription: string;
   githubDescription: string;
@@ -9,26 +11,28 @@ export function CommunityLinks({
   githubDescription,
   xDescription,
 }: CommunityLinksProps) {
+  const deployment = documentationLinks();
   const links = [
     {
       label: "Discord",
-      href: "https://discord.gg/W8gYBn226t",
+      href: deployment.discordUrl,
       description: discordDescription,
       Icon: DiscordMark,
     },
     {
       label: "GitHub",
-      href: "https://github.com/multica-ai/multica",
+      href: deployment.repositoryUrl,
       description: githubDescription,
       Icon: GitHubMark,
     },
     {
       label: "X（Twitter）",
-      href: "https://x.com/MulticaAI",
+      href: deployment.socialUrl,
       description: xDescription,
       Icon: XMark,
     },
-  ];
+  ].filter((link) => link.href);
+  if (!links.length) return null;
 
   return (
     <ul>

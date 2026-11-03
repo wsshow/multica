@@ -68,7 +68,7 @@ primary とレプリカの接続上限は独立しています。全 API プロ�
 `MULTICA_DAEMON_SERVER_URL` は認証なしの `/api/config` エンドポイントから返され、クライアントが読み取れます。公開設定として扱い、認証情報・トークンなどのシークレットを含めないでください。
 </Callout>
 
-フロントエンドと API が異なる host を使い、ブラウザが API ドメインへ直接アクセスする構成では、`COOKIE_DOMAIN` の設定が必須です。設定しないとブラウザが CSRF cookie を読めず、すべての書き込みリクエストが `403 CSRF validation failed` を返す一方、読み取りは正常に動きます。値には、両方の host を同時にカバーできる最も狭い親ドメインを使ってください（`.example.com` より `.agent.example.com`）。この設定はログインセッション cookie をそのドメイン配下のすべての host に広げるため、それらの host がすべて同一の信頼できる運用主体のものである場合にのみ使えます。変更後は両方の host で古い cookie を削除し、再ログインしてください。[セルフホストクイックスタート](/self-host-quickstart#remote-access)の同一オリジン構成（ブラウザは app ドメインのみアクセス）に従う場合は、空のままで構いません。IP アドレスは指定しないでください。ブラウザは Domain が IP の cookie を無視します。
+フロントエンドと API が異なる host を使い、ブラウザが API ドメインへ直接アクセスする構成では、`COOKIE_DOMAIN` の設定が必須です。設定しないとブラウザが CSRF cookie を読めず、すべての書き込みリクエストが `403 CSRF validation failed` を返す一方、読み取りは正常に動きます。値には、両方の host を同時にカバーできる最も狭い親ドメインを使ってください（`.example.com` より `.agent.example.com`）。この設定はログインセッション cookie をそのドメイン配下のすべての host に広げるため、それらの host がすべて同一の信頼できる運用主体のものである場合にのみ使えます。変更後は両方の host で古い cookie を削除し、再ログインしてください。[セルフホストクイックスタート](/self-host-quickstart)の同一オリジン構成（ブラウザは app ドメインのみアクセス）に従う場合は、空のままで構いません。IP アドレスは指定しないでください。ブラウザは Domain が IP の cookie を無視します。
 
 <Callout type="warning">
 セルフホストのデプロイでは `FRONTEND_ORIGIN` の設定が必須です。設定しないと、招待リンク、cookie のセキュリティ属性、WebSocket の origin 検証が実際のドメインと食い違うおそれがあります。
@@ -81,7 +81,7 @@ primary とレプリカの接続上限は独立しています。全 API プロ�
 | 変数 | デフォルト | 説明 |
 |---|---|---|
 | `RESEND_API_KEY` | 空 | 設定すると Resend が有効になります |
-| `RESEND_FROM_EMAIL` | `noreply@multica.ai` | 送信元アドレス。検証済みドメインに属している必要があります |
+| `RESEND_FROM_EMAIL` | `検証済み送信者を設定` | 送信元アドレス。検証済みドメインに属している必要があります |
 
 ### SMTP
 

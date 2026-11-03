@@ -8,76 +8,29 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 Multica CLI 既负责连接本机运行时，也可以在终端中管理工作区、任务、智能体和自动化。这里介绍常用路径；当前版本支持的参数始终以命令自身的 `--help` 为准。
 
-## 安装
+## 构建或取得定制安装包
 
-<Tabs groupId="os" persist items={["macOS / Linux", "Windows"]}>
-<Tab value="macOS / Linux">
+本文适用于定制版本。使用当前定制源码或部署维护者提供的产物；上游应用安装包不包含这些修改。
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.sh | bash
-```
-
-安装了 Homebrew 时也可以运行：
+从同一份定制源码构建 CLI，将该二进制加入 PATH，再显式连接。桌面端已经内置 CLI，其托管运行时不需要另行安装。执行电脑仍需安装并登录一款受支持的智能体工具。
 
 ```bash
-brew install multica-ai/tap/multica
+go -C server build -o bin/multica ./cmd/multica
 ```
 
-</Tab>
-<Tab value="Windows">
-
-在 PowerShell 中运行：
-
-```powershell
-irm https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.ps1 | iex
-```
-
-</Tab>
-</Tabs>
-
-确认安装成功：
-
-```bash
-multica version
-```
+Windows: `go build -o bin/multica.exe ./cmd/multica`
 
 ## 第一次连接
 
-按连接的服务选择：
-
-<Tabs items={["Multica Cloud", "自托管实例"]}>
-<Tab value="Multica Cloud">
+认证前明确配置实际 API 和 Web 地址。不要直接用不带参数的 `multica setup` 初始化定制部署。无浏览器的电脑先用 `multica config set` 保存两个地址，再通过 `multica login --token` 交互输入 PAT。使用命名 profile 时，后续每条命令也应带 `--profile <name>`。
 
 ```bash
-multica setup
-```
-
-</Tab>
-<Tab value="自托管实例">
-
-```bash
-multica setup self-host \
-  --server-url https://api.example.com \
-  --app-url https://app.example.com
-```
-
-</Tab>
-</Tabs>
-
-`setup` 会保存服务地址、打开浏览器完成登录，并启动守护进程。完成后检查：
-
-```bash
+multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000
 multica auth status
 multica daemon status
 ```
 
-如果只需要重新登录，不想覆盖其他配置，运行 `multica login`。没有浏览器的环境可以先在 Web 设置中创建个人访问令牌，再输入：
-
-```bash
-multica login --token
-```
-
-命令会在终端中提示粘贴令牌，避免把完整值留在 shell history 中。
+更新需要维护者配置自己的 `MULTICA_RELEASE_REPOSITORY`。尚未发布定制版本时，从经过审查的定制提交重新构建。桌面端托管的 CLI 通过定制桌面安装包更换，不单独运行更新器。
 
 ## 选择工作区
 
@@ -436,13 +389,13 @@ CLI 配置文件包含可代表你访问 Multica 的令牌。不要提交到仓�
 
 ## 在其他编码智能体里操作 Multica
 
-如果你的工作大多发生在 Codex、Claude Code 或 Cursor 里，可以直接在那里操作 Multica，不必切回终端。[Multica CLI skill](https://github.com/multica-ai/multica-cli) 会教这些智能体安全地使用本页的命令：读任务和评论线程时少耗 token、通过文件写评论，以及正确处理 mention、状态变更和指派带来的副作用。
+如果你的工作大多发生在 Codex、Claude Code 或 Cursor 里，可以直接在那里操作 Multica，不必切回终端。`server/internal/service/builtin_skills/multica-platform/SKILL.md` 会教这些智能体安全地使用本页的命令：读任务和评论线程时少耗 token、通过文件写评论，以及正确处理 mention、状态变更和指派带来的副作用。
 
 它完全通过你已认证的 CLI 运行，本身不授予任何权限，权限仍然只来自你的登录、所选 profile 和工作区。要求 CLI 版本不低于 v0.4.26。该仓库的 README 说明了 Claude Code 插件市场、Codex skill 安装器、Cursor 以及其他任何加载 Markdown 指令的工具的安装方式。
 
 ## 接下来
 
-- [Multica CLI skill](https://github.com/multica-ai/multica-cli) — 在 Codex、Claude Code 或 Cursor 里操作 Multica。
+- `server/internal/service/builtin_skills/multica-platform/SKILL.md` — 在 Codex、Claude Code 或 Cursor 里操作 Multica。
 - [认证与令牌](/auth-tokens) — PAT 的创建、续期和吊销。
 - [故障排查](/troubleshooting) — 命令报错和运行不开始的排查路径。
 - [创建和配置智能体](/agents-create) — `agent create` 各字段的完整语义。

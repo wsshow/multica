@@ -5,36 +5,12 @@ description: 配置 Multica 本地开发环境，运行测试，并按仓库约�
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Multica 是 Go backend 与 pnpm monorepo。最简单的本地启动方式是 `make dev`；它会为当前 checkout 准备环境、数据库和 migration，再启动 Web 与 API。
-
-## 环境要求
-
-- Node.js 22；
-- pnpm 10.28.2；
-- Go 1.26.6；
-- Docker Engine 或 Docker Desktop；
-- Git 和 Make。
-
-版本以根目录 `package.json`、`server/go.mod` 和 CI workflow 为准。
-
-## 第一次启动
+使用当前定制 checkout。工具版本以仓库清单为准，按根目录 `CONTRIBUTING.md` 操作。通过 `make up`、`make status`、`make down` 管理环境；端口、数据库名和 profile 由环境注册表分配，用 `make status` 查看实际地址。不要假设固定端口，也不要复制其他 checkout 的 `.env`。
 
 ```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
-make dev
+make up
+make status
 ```
-
-主 checkout 会使用 `.env`。文件不存在时，`make dev` 会从 `.env.example` 创建；然后启动共享 PostgreSQL、安装依赖、执行 migration，并运行 API 与 Web。
-
-默认地址：
-
-```text
-Web: http://localhost:3000
-API: http://localhost:8080
-```
-
-本地固定验证码来自开发环境配置。不要把本地 `.env` 用到公网部署。
 
 ## 在 worktree 中开发
 

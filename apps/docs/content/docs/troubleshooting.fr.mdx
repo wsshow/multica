@@ -71,7 +71,7 @@ multica config show
 
 La sonde d'accessibilité du CLI envoie une requête GET à `<server-url>/health` et attend un 200. C'est le backend qui sert ce chemin. Les versions actuelles de l'application web transmettent `/health` au backend, mais pas les plus anciennes. Un proxy inverse qui transmet tout à un tel frontend ancien renvoie 404, et le CLI en conclut que le serveur est hors service alors que la pile fonctionne correctement.
 
-Router explicitement `/health` vers le backend (port 8080) dans votre proxy fonctionne avec toutes les versions ; les deux exemples Caddy du [démarrage rapide de l'auto-hébergement](/self-host-quickstart#remote-access) le font. Vérifiez avec :
+Router explicitement `/health` vers le backend (port 8080) dans votre proxy fonctionne avec toutes les versions ; les deux exemples Caddy du [démarrage rapide de l'auto-hébergement](/self-host-quickstart) le font. Vérifiez avec :
 
 ```bash
 curl -fsS <server-url>/health
@@ -80,7 +80,7 @@ curl -fsS <server-url>/health
 </Accordion>
 <Accordion title={<><code>multica login</code> échoue avec un dépassement de délai de la poignée de main TLS</>} id="multica-login-fails-with-a-tls-handshake-timeout" value="multica-login-fails-with-a-tls-handshake-timeout">
 
-`multica login` ouvre le navigateur et la connexion web aboutit, mais le CLI échoue quand même avec « Sign-in did not complete » ou « TLS handshake timed out ». `multica --debug login` affiche `net/http: TLS handshake timeout` sur `POST /api/tokens`, alors que `curl.exe -I https://api.multica.ai` ou un navigateur sur la même machine se connecte sans problème.
+`multica login` ouvre le navigateur et la connexion web aboutit, mais le CLI échoue quand même avec « Sign-in did not complete » ou « TLS handshake timed out ». `multica --debug login` affiche `net/http: TLS handshake timeout` sur `POST /api/tokens`, alors que `curl.exe -I https://api.example.com` ou un navigateur sur la même machine se connecte sans problème.
 
 La connexion TCP s'ouvre, mais la poignée de main TLS n'aboutit jamais. Les clients Go, dont le CLI et le daemon Multica, envoient par défaut un partage de clé post-quantique dans le ClientHello TLS, ce qui porte sa taille à environ 1,5 Ko et le répartit sur deux paquets. Certains logiciels de sécurité, VPN, routeurs et pare-feu abandonnent ces poignées de main ; curl envoie un ClientHello beaucoup plus petit et passe.
 
@@ -174,7 +174,7 @@ Pour rétablir l'accès :
 2. Pour un Mac sans surveillance, accordez l'accès complet au disque au nouveau binaire. Affichez son chemin avec `realpath "$(command -v multica)"`, puis dans **Réglages Système → Confidentialité et sécurité → Accès complet au disque**, supprimez l'ancienne entrée `multica` et ajoutez ce chemin (appuyez sur ⌘⇧G dans le sélecteur de fichiers pour le coller).
 3. Redémarrez le daemon de la même façon que vous l'avez lancé : `multica daemon restart`, ou `launchctl kickstart -k gui/$(id -u)/<label>` pour un LaunchAgent.
 
-Répétez ces étapes après chaque mise à jour du CLI. La mise à jour automatique n'est activée par défaut que pour les daemons connectés à Multica Cloud ; démarrez le daemon avec `--no-auto-update` pour que les mises à jour n'aient lieu que lorsque vous les lancez. Le CLI intégré à [Multica Desktop](/desktop-app) est signé avec un Developer ID, ses autorisations survivent donc aux mises à jour.
+Après un remplacement du CLI, macOS peut demander de confirmer les permissions. Désactivez les mises à jour sans intervention tant que votre distribution et signature ne sont pas configurées. Un paquet local non signé ne garantit pas la continuité des permissions d’une version signée.
 
 </Accordion>
 </Accordions>
@@ -203,7 +203,7 @@ Les conteneurs ne lisent `.env` qu'au moment de leur création ; recréez-les ap
 docker compose -f docker-compose.selfhost.yml up -d
 ```
 
-Pour un exemple complet de proxy inverse, consultez le [démarrage rapide de l'auto-hébergement](/self-host-quickstart#remote-access).
+Pour un exemple complet de proxy inverse, consultez le [démarrage rapide de l'auto-hébergement](/self-host-quickstart).
 
 </Accordion>
 <Accordion title="Les e-mails de code de vérification et d'invitation ne sont pas reçus" id="verification-code-and-invitation-emails-not-delivered" value="verification-code-and-invitation-emails-not-delivered">
@@ -323,7 +323,7 @@ multica daemon stop
 multica daemon start --foreground
 ```
 
-Si vous ne parvenez toujours pas à cerner le problème, recherchez parmi les issues existantes ou ouvrez-en une nouvelle sur [GitHub Issues](https://github.com/multica-ai/multica/issues).
+Si vous ne parvenez toujours pas à cerner le problème, recherchez parmi les issues existantes ou ouvrez-en une nouvelle sur votre responsable de déploiement ou votre suivi de tickets configuré.
 
 ## Étapes suivantes
 

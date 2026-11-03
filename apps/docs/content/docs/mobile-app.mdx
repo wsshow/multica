@@ -1,14 +1,16 @@
 ---
 title: Mobile app (iOS)
-description: Install Multica on your iPhone from source, and connect to Cloud or a self-hosted instance.
+description: Build the customized iOS client from source and configure your own service before installation.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-The Multica iOS client is not on the App Store yet. You can build a Release version from the public source repository on a Mac and install it on your own iPhone. There is no Android client yet.
+Before the first device or release build, copy `apps/mobile/.env.production.example` to the gitignored `apps/mobile/.env.production.local` and set both `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_WEB_URL` to your own deployment. Mobile has its own environment configuration; Desktop settings do not configure it. Do not build with the inherited public-service values. Use the customized checkout or your maintainer’s source archive.
 
-The installed app connects to Multica Cloud by default; sign in with your existing account. Workspaces, issues, comments, and run history all live on the server, so nothing needs to be synced from web or Desktop.
+The Multica iOS client is not on the App Store yet. You can build a Release version from the customized source supplied by your maintainer on a Mac and install it on your own iPhone. There is no Android client yet.
+
+The customized app connects to the API and web URLs you set before building. Accounts and workspace data belong to that deployment, not a separate public service.
 
 ## Prerequisites
 
@@ -29,8 +31,7 @@ If Xcode or the on-device development environment isn't set up yet, complete Exp
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
+# Run from the customized repository root.
 pnpm install
 ```
 </Step>
@@ -70,38 +71,22 @@ The value only needs to be available in your Apple Developer team; it does not a
 The self-installed iOS build does not auto-update. Pull the latest code, update dependencies, and rebuild:
 
 ```bash
-git pull --ff-only
 pnpm install
 pnpm ios:mobile:device:prod:release
 ```
 
 ## Connecting to a self-hosted instance
 
-Release builds bake the API address into the app. `apps/mobile/.env.production` is committed with the public multica.ai defaults, so a fresh clone builds against production as-is.
-
-To connect to a self-hosted instance:
-
-<Steps>
-<Step>
-Copy `apps/mobile/.env.production.example` to `apps/mobile/.env.production.local`, and fill in the addresses in the copy:
+Set both public URLs in the ignored `apps/mobile/.env.production.local`, using `apps/mobile/.env.production.example` as a template. These are your deployment addresses, not Desktop settings. Use a host reachable from the iPhone; the phone’s `localhost` is not your server. Select a reviewed customized commit before rebuilding or upgrading. Refer to `apps/mobile/README.md` in this checkout for signing, device builds, and development modes.
 
 ```dotenv
 EXPO_PUBLIC_API_URL=https://api.example.com
 EXPO_PUBLIC_WEB_URL=https://app.example.com
 ```
 
-The `.local` file overrides the committed defaults key by key and is gitignored, so personal endpoints never reach the repository. `EXPO_PUBLIC_API_URL` is required. `EXPO_PUBLIC_WEB_URL` powers entries like "Copy link" and "Open on web". Set both: a key you leave out falls back to the multica.ai default, so those entries would open multica.ai instead of your instance.
-</Step>
-<Step>
-Re-run the build command `pnpm ios:mobile:device:prod:release`. The iPhone must be able to reach the API address; when using a LAN address, don't write `localhost`, which on the iPhone points at the phone itself.
-</Step>
-</Steps>
-
-<Callout type="warning">
-Editing `.env.production` directly changes the production configuration of the current checkout. Keep personal values in the gitignored `.env.production.local`.
-</Callout>
-
-For mobile development, using the Simulator, or connecting to staging, see [`apps/mobile/README.md`](https://github.com/multica-ai/multica/blob/main/apps/mobile/README.md) in the repository.
+```bash
+pnpm ios:mobile:device:prod:release
+```
 
 ## Next steps
 

@@ -1,6 +1,6 @@
 # Multica installer for Windows - one command to get started.
 #
-# Install CLI (default): connects to multica.ai
+# Install CLI from an explicitly configured MULTICA_RELEASE_REPOSITORY.
 #   .\scripts\install.ps1
 #
 # Self-host: starts a local Multica server + installs CLI + configures

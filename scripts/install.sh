@@ -7,7 +7,7 @@
 # Install CLI + provision self-host server:
 #   curl -fsSL https://raw.githubusercontent.com/${RELEASE_REPOSITORY}/main/scripts/install.sh | bash -s -- --with-server
 #
-# After installation, run `multica setup` to configure your environment.
+# After installation, run `multica setup self-host` with explicit server/app URLs.
 #
 set -euo pipefail
 

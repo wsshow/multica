@@ -1,88 +1,45 @@
-# Self-Hosting Setup (for AI Agents)
+# Customized self-hosting instructions for agents
 
-This document is designed for AI agents to execute. Follow these steps exactly to deploy a local Multica instance and connect to it.
+Read the current checkout's `AGENTS.md`, `docs/customization.md`, and `SELF_HOSTING.md` before deployment. Use this customized source or artifacts explicitly supplied by its maintainer. Do not clone the original project, install its Homebrew package, fetch its remote installer, or replace customized application images with upstream releases.
 
-## Prerequisites
+These are instructions for a separately authorized deployment. Editing documentation does not authorize running these commands, starting Docker, installing tools, or accessing user-installed agent accounts.
 
-- Docker and Docker Compose installed
-- Homebrew installed (for CLI)
-- At least one AI agent CLI on PATH: `claude` or `codex`
+## Establish the inputs
 
-## Install
+Confirm the customized checkout, intended deployment host, API URL, web app URL, and whether the maintainer has published its own images. There is no configured public release repository for this edition. Preserve existing `.env` files and volumes; never overwrite secrets just to follow an example.
+
+## Source deployment
+
+From the customized repository root:
 
 ```bash
-# Install CLI + provision self-host server
-curl -fsSL https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.sh | bash -s -- --with-server
-
-# Configure CLI for localhost, authenticate, and start daemon
-multica setup self-host
+make selfhost-build
+docker compose -f docker-compose.selfhost.yml ps
+curl -fsS http://localhost:8080/readyz
 ```
 
-Wait for the server output `✓ Multica server is running and CLI is ready!` before running `multica setup self-host`.
+The first command creates `.env` and initial secrets only when the file is missing, builds this checkout's backend/web images, and starts the stack. Read the effective port configuration before using the example readiness URL. Use `make selfhost` only for explicitly configured, already published customized images.
 
-**Expected result:**
-- Frontend at http://localhost:3000
-- Backend at http://localhost:8080
-- `multica` CLI installed and configured for localhost
+## Connect the execution computer
 
-## Alternative: Manual Setup
+Desktop users configure `~/.multica/desktop.json` using `apps/desktop/desktop.example.json` and restart their customized Electron app. Both `apiUrl` and `appUrl` are required; Desktop uses only its bundled customized CLI.
 
-```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
-make selfhost
-brew install multica-ai/tap/multica
-multica setup self-host
-```
-
-The `multica setup self-host` command will:
-1. Configure CLI to connect to localhost:8080 / localhost:3000
-2. Open a browser for login — use the emailed code, or the generated code printed in backend logs when Resend is unset
-3. Discover workspaces automatically
-4. Start the daemon in the background
-
-## Verification
+For a standalone execution computer, build the CLI following `CLI_INSTALL.md`. After selecting that binary explicitly, connect it to the operator-provided addresses:
 
 ```bash
+multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000
 multica daemon status
 ```
 
-Should show `running` with detected agents.
+Replace loopback examples with reachable addresses when the execution computer and Docker host differ. Install and authenticate third-party agent tools only when authorized. Ordinary verification must not execute real user agent tools or consume their accounts.
 
-## Stopping
+## Verify and stop
+
+Check API readiness, web login, runtime registration, and the intended task flow. Diagnose using backend container logs and daemon logs. Do not claim end-to-end success from a successful image build or `/health` alone.
 
 ```bash
-# Stop the daemon
 multica daemon stop
-
-# Stop all Docker services
-cd multica
 make selfhost-stop
 ```
 
-## Custom Ports
-
-If the default ports (8080/3000) are in use:
-
-1. Edit `.env` and change `PORT` and `FRONTEND_PORT`. These are host ports; the
-   containers keep listening on 8080/3000 internally, so no rebuild is needed.
-2. Run `make selfhost`
-3. Run `multica setup self-host --port <PORT> --frontend-port <FRONTEND_PORT>`
-
-Edit the file rather than relying on environment variables: `make` `include`s
-`.env`, so a value in the file outranks the same variable from your shell
-(`PORT=9100 make selfhost` is ignored when `.env` sets `PORT`). A command-line
-assignment does take effect (`make selfhost PORT=9100`), and Docker Compose
-invoked directly is the reverse again — there the environment outranks `.env`.
-
-`BACKEND_PORT` is an optional alias that overrides `PORT` for the backend;
-`API_PORT` and `SERVER_PORT` follow in that order. Whichever route you use, the
-startup output is read back from Docker Compose, so the address it prints is the
-one the stack is actually published on.
-
-## Troubleshooting
-
-- **Backend not ready:** `docker compose -f docker-compose.selfhost.yml logs backend`
-- **Frontend not ready:** `docker compose -f docker-compose.selfhost.yml logs frontend`
-- **Daemon issues:** `multica daemon logs`
-- **Health checks:** `curl http://localhost:8080/health` for liveness, `curl http://localhost:8080/readyz` for dependency-aware readiness
+These preserve Compose data. Destructive cleanup such as deleting volumes requires separate intent. Back up the database, uploads, and secrets before upgrades. Use reviewed customized revisions and the upstream synchronization policy; never substitute upstream `latest` images as an upgrade.

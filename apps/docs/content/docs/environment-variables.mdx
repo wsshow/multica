@@ -68,7 +68,7 @@ The primary and replica connection limits are independent. Budget their sum acro
 `MULTICA_DAEMON_SERVER_URL` is returned by the unauthenticated `/api/config` endpoint and is visible to clients. Treat it as public configuration; never put credentials, tokens, or other secrets in it.
 </Callout>
 
-When the frontend and API run on different hosts and the browser talks to the API domain directly, you must set `COOKIE_DOMAIN` — otherwise the browser cannot read the CSRF cookie: every write request returns `403 CSRF validation failed` while reads work fine. Use the narrowest parent domain that covers both hosts (`.agent.example.com` over `.example.com`). It spreads the sign-in session cookie to every host under that domain, which is only acceptable when all of those hosts are operated by the same trusted party. After changing it, clear the old cookies on both hosts and sign in again. If you follow the same-origin recipe in the [self-host quickstart](/self-host-quickstart#remote-access) (the browser only visits the app domain), keep it empty. Do not use an IP address — browsers ignore cookies whose Domain is an IP.
+When the frontend and API run on different hosts and the browser talks to the API domain directly, you must set `COOKIE_DOMAIN` — otherwise the browser cannot read the CSRF cookie: every write request returns `403 CSRF validation failed` while reads work fine. Use the narrowest parent domain that covers both hosts (`.agent.example.com` over `.example.com`). It spreads the sign-in session cookie to every host under that domain, which is only acceptable when all of those hosts are operated by the same trusted party. After changing it, clear the old cookies on both hosts and sign in again. If you follow the same-origin recipe in the [self-host quickstart](/self-host-quickstart) (the browser only visits the app domain), keep it empty. Do not use an IP address — browsers ignore cookies whose Domain is an IP.
 
 <Callout type="warning">
 Self-hosted deployments must set `FRONTEND_ORIGIN`. Without it, invitation links, cookie security attributes, and WebSocket origin checks can all disagree with your actual domain.
@@ -81,7 +81,7 @@ Self-hosted deployments must set `FRONTEND_ORIGIN`. Without it, invitation links
 | Variable | Default | Description |
 |---|---|---|
 | `RESEND_API_KEY` | empty | Setting it enables Resend |
-| `RESEND_FROM_EMAIL` | `noreply@multica.ai` | Sender address; must belong to a verified domain |
+| `RESEND_FROM_EMAIL` | `configure your verified sender` | Sender address; must belong to a verified domain |
 
 ### SMTP
 

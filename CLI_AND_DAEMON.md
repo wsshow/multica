@@ -4,74 +4,36 @@ The `multica` CLI connects your local machine to Multica. It handles authenticat
 
 ## Installation
 
-### Homebrew (macOS/Linux)
+Use the CLI built from this customized checkout, or a binary published by its maintainer. See [the installation guide](CLI_INSTALL.md). Desktop already carries its own bundled customized CLI.
 
 ```bash
-brew install multica-ai/tap/multica
+go -C server build -o bin/multica ./cmd/multica
+./server/bin/multica version
 ```
 
-### Build from Source
+On Windows, build `bin/multica.exe`. Put this verified customized binary on your PATH before using the `multica` examples below.
 
-```bash
-git clone https://github.com/multica-ai/multica.git
-cd multica
-make build
-cp server/bin/multica /usr/local/bin/multica
-```
+## Updates
 
-### Update
+Rebuild from a reviewed customized commit, or use your maintainer's release repository. A Desktop-managed CLI is updated through the customized Desktop package.
 
-```bash
-brew upgrade multica-ai/tap/multica
-```
+For standalone distribution, `MULTICA_RELEASE_REPOSITORY=your-team/your-custom-repository` must name your own existing release repository before `multica update` can work. Optional metadata and artifact mirrors use `MULTICA_RELEASE_API_BASE_URL` and `MULTICA_RELEASE_DOWNLOAD_BASE_URL`. Metadata mirrors must serve `/repos/<configured-owner>/<configured-repository>/releases/latest` and `/releases/tags/<tag>` under that repository path. Artifact mirrors must preserve matching assets and checksums.
 
-For install script or manual installs, use:
-
-```bash
-multica update
-```
-
-`multica update` uses GitHub Releases by default. Self-hosted installations can
-point the CLI at a GitHub Releases-compatible metadata mirror and an artifact
-mirror without changing the command. To let a daemon poll that source, also
-enable self-update explicitly because self-hosted auto-update is disabled by
-default:
-
-```bash
-export MULTICA_RELEASE_API_BASE_URL=https://updates.example/api
-export MULTICA_RELEASE_DOWNLOAD_BASE_URL=https://updates.example/releases/download
-export MULTICA_DAEMON_AUTO_UPDATE=true
-multica update
-```
-
-The metadata mirror must serve `/repos/multica-ai/multica/releases/latest` and
-`/repos/multica-ai/multica/releases/tags/<tag>`. The artifact mirror must serve
-`/<tag>/<asset-name>` and preserve the published `checksums.txt` contents.
-When these variables are unset, the GitHub defaults remain unchanged.
+Do not enable unattended updates until your own source and artifacts are configured and tested. The customization policy documents [distribution sources](docs/customization.md#distribution-sources).
 
 ## Quick Start
 
-```bash
-# One-command setup: configure, authenticate, and start the daemon
-multica setup
-
-# For self-hosted (local) deployments:
-multica setup self-host
-```
-
-Or step by step:
+Configure the actual API and web app addresses before authentication:
 
 ```bash
-# 1. Authenticate (opens browser for login)
-multica login
-
-# 2. Start the agent daemon
-multica daemon start
-
-# 3. Done — agents in your watched workspaces can now execute tasks on your machine
+multica setup self-host \
+  --server-url http://localhost:8080 \
+  --app-url http://localhost:3000
+multica auth status
+multica daemon status
 ```
 
-`multica login` automatically discovers all workspaces you belong to and adds them to the daemon watch list.
+Replace loopback examples when the service is on another computer. This saves the selected addresses, authenticates, discovers workspaces, and starts the daemon. Do not use a bare `multica setup` to initialize this edition's self-hosted deployment. For named profiles, include `--profile <name>` on subsequent commands as well.
 
 ## Authentication
 
@@ -934,20 +896,10 @@ multica issue list --project <project-id>
 ## Setup
 
 ```bash
-# One-command setup for Multica Cloud: configure, authenticate, and start the daemon
-multica setup
-
-# For local self-hosted deployments
-multica setup self-host
-
-# Custom ports
-multica setup self-host --port 9090 --frontend-port 4000
-
-# On-premise with custom domains
 multica setup self-host --server-url https://api.example.com --app-url https://app.example.com
 ```
 
-`multica setup` configures the CLI, opens your browser for authentication, and starts the daemon — all in one step. Use `multica setup self-host` to connect to a self-hosted server instead of Multica Cloud.
+Use your own deployment's API and web addresses. `setup self-host` saves them, opens browser authentication, and starts the daemon. A headless machine can instead configure both addresses with `multica config set`, then run `multica login --token` to enter a PAT interactively.
 
 ## Configuration
 
@@ -1065,7 +1017,7 @@ also defines an `api` kind, which is not surfaced here.
 
 ```bash
 multica version              # Show CLI version and commit hash
-multica update               # Update to latest version
+multica update               # Requires your own configured release repository
 multica agent list           # List agents in the current workspace
 ```
 

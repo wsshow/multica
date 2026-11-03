@@ -37,7 +37,7 @@ Multica supports two email backends. `SMTP_HOST` takes priority when set; otherw
 | Variable | Description |
 |----------|-------------|
 | `RESEND_API_KEY` | Your Resend API key |
-| `RESEND_FROM_EMAIL` | Sender email address (default: `noreply@multica.ai`) |
+| `RESEND_FROM_EMAIL` | Sender on your own verified domain; configure explicitly instead of relying on an upstream fallback |
 
 #### Option B: SMTP relay (for self-hosted / on-premise deployments)
 
@@ -177,7 +177,7 @@ If the frontend and backend are served from different hostnames, `COOKIE_DOMAIN`
 |----------|---------|-------------|
 | `PORT` | `8080` | Backend port — the one to edit. It is the port the backend process listens on for a local/bare run, and the host port the Compose self-host stack publishes. In Compose the container always listens on `8080` internally, so changing this needs no rebuild. |
 | `BACKEND_PORT` | Value of `PORT` | Optional alias that overrides `PORT` for the backend. `API_PORT` and `SERVER_PORT` are further aliases; the **alias order** is `BACKEND_PORT` → `API_PORT` → `SERVER_PORT` → `PORT` → `8080`, and it is the same in `Makefile`, `scripts/local-env.sh` and `docker-compose.selfhost.yml`. Leave them unset unless the host port must differ from the port the process listens on. |
-| `METRICS_ADDR` | empty | Optional Prometheus metrics listener, for example `127.0.0.1:9090` |
+| `METRICS_ADDR` | unsupported | Operational metrics are removed in this customized build; this variable cannot enable a listener. |
 | `FRONTEND_PORT` | `3000` | Frontend port. Host port in Compose; the container always listens on `3000` internally. |
 | `CORS_ALLOWED_ORIGINS` | Value of `FRONTEND_ORIGIN` | Comma-separated list of allowed origins. Governs **both** the HTTP CORS allowlist **and** the WebSocket `Origin` check. A browser origin that isn't listed here (and isn't `localhost`) has its real-time WebSocket upgrade rejected with `403`, so live updates stop working until a manual refresh. |
 | `LOG_LEVEL` | `info` | Log level: `debug`, `info`, `warn`, `error` |
@@ -203,7 +203,7 @@ rewrite configuration. Its backend fallback therefore accepts
 
 The backend checks the TLS certificates of the HTTPS services it calls against
 the system trust store in its image. A service whose certificate comes from an
-internal CA — for example a [self-hosted Gitea, Forgejo, or GitLab](https://multica.ai/docs/vcs-integration)
+internal CA — for example a [self-hosted Gitea, Forgejo, or GitLab](apps/docs/content/docs/vcs-integration.mdx)
 — fails until the backend trusts that CA. Connecting such a Git provider reports
 that its certificate is signed by a certificate authority the server does not
 trust.
@@ -223,8 +223,8 @@ SSL_CERT_DIR=/etc/ssl/certs:/etc/multica/ca-certs
 
 ```bash
 kubectl -n multica create configmap multica-extra-ca --from-file=internal-ca.crt
-helm upgrade multica oci://ghcr.io/multica-ai/charts/multica \
-  --version <chart-version> -n multica --reuse-values \
+helm upgrade multica ./deploy/helm/multica \
+  -n multica --reuse-values \
   --set backend.extraCACerts.configMap=multica-extra-ca
 ```
 
@@ -608,7 +608,7 @@ FRONTEND_ORIGIN=https://app.example.com
 CORS_ALLOWED_ORIGINS=https://app.example.com
 COOKIE_DOMAIN=.example.com           # narrowest parent covering both hosts — read the scope warning below
 
-# Frontend (only if you are building the web image from source via docker-compose.selfhost.build.yml)
+# Frontend (this customized edition builds web images from source)
 REMOTE_API_URL=https://api.example.com
 NEXT_PUBLIC_API_URL=https://api.example.com
 NEXT_PUBLIC_WS_URL=wss://api.example.com/ws
@@ -723,27 +723,9 @@ dependency-aware readiness probes and external monitoring that should fail when
 the database is unavailable or migrations are not fully applied. `/healthz` is
 kept as an alias for operator familiarity.
 
-## Prometheus Metrics
+## Operational metrics are disabled
 
-The backend can expose Prometheus metrics on a separate management listener:
-
-```bash
-METRICS_ADDR=127.0.0.1:9090 ./server/bin/server
-curl http://127.0.0.1:9090/metrics
-```
-
-`METRICS_ADDR` is empty by default, so no metrics listener is started. The
-public API port does not serve `/metrics`; keep it that way for internet-facing
-deployments. HTTP request metrics start accumulating only after the metrics
-listener is enabled. Metrics can reveal internal routes, traffic volume,
-dependency state, and runtime health.
-
-For Docker or Kubernetes deployments, prefer a private scrape path: bind the
-metrics listener to an internal interface and protect it with private
-networking, allowlists, NetworkPolicy, or proxy authentication. If you bind
-`METRICS_ADDR=0.0.0.0:9090` inside a container, only publish that port to a
-trusted network, for example a host-local mapping such as
-`127.0.0.1:9090:9090`.
+This customized build has no Prometheus listener. `/metrics` and `/health/realtime` are unavailable, and `METRICS_ADDR` cannot enable them. Use `/health` for liveness and `/readyz` for readiness. User-facing task usage, cost, execution history, and runtime liveness remain available. See [the customization policy](docs/customization.md#telemetry-boundaries).
 
 ## Go Runtime Profiling
 
@@ -775,10 +757,4 @@ go tool pprof ./heap.pprof
 
 ## Upgrading
 
-```bash
-docker compose -f docker-compose.selfhost.yml pull
-docker compose -f docker-compose.selfhost.yml up -d
-```
-
-Pin `MULTICA_IMAGE_TAG` in `.env` to an exact release like `v0.2.4` if you want to stay on a specific version. Migrations run automatically on backend startup. They are idempotent — running them multiple times has no effect.
-If the selected GHCR tag has not been published yet, fall back to `docker compose -f docker-compose.selfhost.yml -f docker-compose.selfhost.build.yml up -d --build`.
+Back up PostgreSQL, uploads, configuration, and secrets. Select a reviewed customized commit and run `make selfhost-build`. If using your own published application images, select an immutable customized image tag and use `make selfhost` instead. Never replace this edition with upstream release images. Database migrations run automatically; a container rollback does not reverse schema changes. See [the main upgrade procedure](SELF_HOSTING.md#back-up-and-upgrade).

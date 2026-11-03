@@ -71,7 +71,7 @@ multica config show
 
 CLI の到達確認は `<server-url>/health` に GET を送り、200 を要求します。backend はこのパスを提供します。現在の web リリースは `/health` を backend へ転送しますが、古いリリースは転送しません。すべてのトラフィックを古い frontend へ転送するリバースプロキシでは 404 が返り、CLI は稼働中のサーバーを到達不能と判断します。
 
-プロキシで `/health` を backend（ポート 8080）へ明示的に転送すれば、すべてのリリースで動作します。[セルフホストクイックスタート](/self-host-quickstart#remote-access)の 2 つの Caddy 例に含まれています。確認方法:
+プロキシで `/health` を backend（ポート 8080）へ明示的に転送すれば、すべてのリリースで動作します。[セルフホストクイックスタート](/self-host-quickstart)の 2 つの Caddy 例に含まれています。確認方法:
 
 ```bash
 curl -fsS <server-url>/health
@@ -80,7 +80,7 @@ curl -fsS <server-url>/health
 </Accordion>
 <Accordion title={<><code>multica login</code> が TLS ハンドシェイクのタイムアウトで失敗する</>} id="multica-login-fails-with-a-tls-handshake-timeout" value="multica-login-fails-with-a-tls-handshake-timeout">
 
-`multica login` でブラウザが開き、Web 側のサインインは完了するのに、CLI は「Sign-in did not complete」または「TLS handshake timed out」で失敗します。`multica --debug login` では `POST /api/tokens` に `net/http: TLS handshake timeout` と表示され、同じマシンの `curl.exe -I https://api.multica.ai` やブラウザは問題なく接続できます。
+`multica login` でブラウザが開き、Web 側のサインインは完了するのに、CLI は「Sign-in did not complete」または「TLS handshake timed out」で失敗します。`multica --debug login` では `POST /api/tokens` に `net/http: TLS handshake timeout` と表示され、同じマシンの `curl.exe -I https://api.example.com` やブラウザは問題なく接続できます。
 
 TCP 接続は確立されますが、TLS ハンドシェイクが完了しません。Multica CLI とデーモンを含む Go クライアントは、既定で TLS ClientHello にポスト量子鍵交換を含めるため、ClientHello が約 1.5 KB になり 2 つのパケットに分割されます。一部のセキュリティソフト、VPN、ルーター、ファイアウォールはこのようなハンドシェイクを破棄します。curl の ClientHello はずっと小さいため通過します。
 
@@ -174,7 +174,7 @@ Homebrew でインストールした `multica` CLI が `brew upgrade`、`multica
 2. 無人で動かす Mac では、新しいバイナリにフルディスクアクセスを付与します。`realpath "$(command -v multica)"` でパスを表示し、**システム設定 → プライバシーとセキュリティ → フルディスクアクセス**で古い `multica` の項目を削除してそのパスを追加します（ファイル選択画面で ⌘⇧G を押すとパスを貼り付けられます）。
 3. デーモンを起動したときと同じ方法で再起動します。通常は `multica daemon restart`、LaunchAgent の場合は `launchctl kickstart -k gui/$(id -u)/<label>` です。
 
-CLI をアップグレードするたびにこの手順を繰り返してください。自動更新がデフォルトで有効なのは Multica Cloud に接続したデーモンだけです。`--no-auto-update` を付けてデーモンを起動すると、手動で実行したときだけアップグレードされます。[Multica Desktop](/desktop-app) に同梱の CLI は Developer ID で署名されているため、アップグレード後も許可が維持されます。
+CLI の置き換え後、macOS で権限の再確認が必要な場合があります。自分の配布と署名を設定するまでは無人更新を無効にします。未署名のローカルパッケージで、署名済み版と同じ権限継続を想定しないでください。
 
 </Accordion>
 </Accordions>
@@ -203,7 +203,7 @@ CLI をアップグレードするたびにこの手順を繰り返してくだ�
 docker compose -f docker-compose.selfhost.yml up -d
 ```
 
-完全なリバースプロキシの例は[セルフホストクイックスタート](/self-host-quickstart#remote-access)を参照してください。
+完全なリバースプロキシの例は[セルフホストクイックスタート](/self-host-quickstart)を参照してください。
 
 </Accordion>
 <Accordion title="認証コードや招待メールが届かない" id="verification-code-and-invitation-emails-not-delivered" value="verification-code-and-invitation-emails-not-delivered">
@@ -323,7 +323,7 @@ multica daemon stop
 multica daemon start --foreground
 ```
 
-それでも特定できない場合は、[GitHub Issues](https://github.com/multica-ai/multica/issues) で既存の問題を検索するか、新しい issue を提出してください。
+それでも特定できない場合は、自分の運用担当者または設定した課題管理システム で既存の問題を検索するか、新しい issue を提出してください。
 
 ## 次のステップ
 

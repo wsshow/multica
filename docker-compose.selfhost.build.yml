@@ -1,5 +1,4 @@
-# Development override: build the backend/web images from the current checkout
-# instead of pulling the official GHCR images.
+# Source deployment override: build customized backend/web images from this checkout.
 
 services:
   backend:

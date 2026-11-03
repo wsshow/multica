@@ -68,7 +68,7 @@ Les limites de connexions du primaire et du réplica sont indépendantes. Dimens
 `MULTICA_DAEMON_SERVER_URL` est renvoyée par le point de terminaison `/api/config`, qui ne requiert aucune authentification, et elle est visible par les clients. Considérez-la comme une configuration publique ; n'y placez jamais d'identifiants, de jetons ni d'autres secrets.
 </Callout>
 
-Lorsque le frontend et l'API s'exécutent sur des hôtes différents et que le navigateur communique directement avec le domaine de l'API, vous devez définir `COOKIE_DOMAIN` — sinon le navigateur ne peut pas lire le cookie CSRF : toutes les requêtes d'écriture renvoient `403 CSRF validation failed`, alors que les lectures fonctionnent normalement. Utilisez le domaine parent le plus restreint qui couvre les deux hôtes (`.agent.example.com` plutôt que `.example.com`). Il étend le cookie de session de connexion à tous les hôtes de ce domaine, ce qui n'est acceptable que si tous ces hôtes sont exploités par la même entité de confiance. Après l'avoir modifié, effacez les anciens cookies sur les deux hôtes et reconnectez-vous. Si vous suivez la configuration en origine unique du [démarrage rapide de l'auto-hébergement](/self-host-quickstart#remote-access) (le navigateur ne visite que le domaine de l'application), laissez-le vide. N'utilisez pas d'adresse IP — les navigateurs ignorent les cookies dont le Domain est une adresse IP.
+Lorsque le frontend et l'API s'exécutent sur des hôtes différents et que le navigateur communique directement avec le domaine de l'API, vous devez définir `COOKIE_DOMAIN` — sinon le navigateur ne peut pas lire le cookie CSRF : toutes les requêtes d'écriture renvoient `403 CSRF validation failed`, alors que les lectures fonctionnent normalement. Utilisez le domaine parent le plus restreint qui couvre les deux hôtes (`.agent.example.com` plutôt que `.example.com`). Il étend le cookie de session de connexion à tous les hôtes de ce domaine, ce qui n'est acceptable que si tous ces hôtes sont exploités par la même entité de confiance. Après l'avoir modifié, effacez les anciens cookies sur les deux hôtes et reconnectez-vous. Si vous suivez la configuration en origine unique du [démarrage rapide de l'auto-hébergement](/self-host-quickstart) (le navigateur ne visite que le domaine de l'application), laissez-le vide. N'utilisez pas d'adresse IP — les navigateurs ignorent les cookies dont le Domain est une adresse IP.
 
 <Callout type="warning">
 Les déploiements auto-hébergés doivent définir `FRONTEND_ORIGIN`. Sans cette variable, les liens d'invitation, les attributs de sécurité des cookies et les vérifications d'origine WebSocket peuvent tous diverger de votre domaine réel.
@@ -81,7 +81,7 @@ Les déploiements auto-hébergés doivent définir `FRONTEND_ORIGIN`. Sans cette
 | Variable | Valeur par défaut | Description |
 |---|---|---|
 | `RESEND_API_KEY` | vide | Sa définition active Resend |
-| `RESEND_FROM_EMAIL` | `noreply@multica.ai` | Adresse de l'expéditeur ; doit appartenir à un domaine vérifié |
+| `RESEND_FROM_EMAIL` | `configurer votre expéditeur vérifié` | Adresse de l'expéditeur ; doit appartenir à un domaine vérifié |
 
 ### SMTP
 

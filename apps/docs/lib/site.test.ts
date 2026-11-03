@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const existingDocs = vi.hoisted(() => new Set<string>());
 
@@ -31,6 +31,8 @@ vi.mock("@/lib/source", () => ({
 }));
 
 beforeEach(() => {
+  vi.resetModules();
+  vi.stubEnv("DOCS_SITE_URL", "https://docs.example.test");
   existingDocs.clear();
   existingDocs.add("index.mdx");
   existingDocs.add("index.zh.mdx");
@@ -38,16 +40,24 @@ beforeEach(() => {
   existingDocs.add("agents.zh.mdx");
 });
 
+afterEach(() => vi.unstubAllEnvs());
+
 describe("docsAlternates", () => {
+  it("does not publish canonical or hreflang URLs without a configured origin", async () => {
+    vi.stubEnv("DOCS_SITE_URL", "");
+    const { docsAlternates } = await import("./site");
+    expect(docsAlternates(["agents"])).toEqual({});
+  });
+
   it("omits Korean hreflang when no Korean MDX file exists for the page", async () => {
     const { docsAlternates } = await import("./site");
 
     expect(docsAlternates(["agents"])).toEqual({
-      canonical: "https://www.multica.ai/docs/agents",
+      canonical: "https://docs.example.test/docs/agents",
       languages: {
-        en: "https://www.multica.ai/docs/agents",
-        zh: "https://www.multica.ai/docs/zh/agents",
-        "x-default": "https://www.multica.ai/docs/agents",
+        en: "https://docs.example.test/docs/agents",
+        zh: "https://docs.example.test/docs/zh/agents",
+        "x-default": "https://docs.example.test/docs/agents",
       },
     });
   });
@@ -63,12 +73,12 @@ describe("docsAlternates", () => {
     const { docsAlternates } = await import("./site");
 
     expect(docsAlternates(["agents"])).toEqual({
-      canonical: "https://www.multica.ai/docs/agents",
+      canonical: "https://docs.example.test/docs/agents",
       languages: {
-        en: "https://www.multica.ai/docs/agents",
-        zh: "https://www.multica.ai/docs/zh/agents",
-        ko: "https://www.multica.ai/docs/ko/agents",
-        "x-default": "https://www.multica.ai/docs/agents",
+        en: "https://docs.example.test/docs/agents",
+        zh: "https://docs.example.test/docs/zh/agents",
+        ko: "https://docs.example.test/docs/ko/agents",
+        "x-default": "https://docs.example.test/docs/agents",
       },
     });
   });
@@ -78,12 +88,12 @@ describe("docsAlternates", () => {
     const { docsAlternates } = await import("./site");
 
     expect(docsAlternates(["agents"])).toEqual({
-      canonical: "https://www.multica.ai/docs/agents",
+      canonical: "https://docs.example.test/docs/agents",
       languages: {
-        en: "https://www.multica.ai/docs/agents",
-        zh: "https://www.multica.ai/docs/zh/agents",
-        ja: "https://www.multica.ai/docs/ja/agents",
-        "x-default": "https://www.multica.ai/docs/agents",
+        en: "https://docs.example.test/docs/agents",
+        zh: "https://docs.example.test/docs/zh/agents",
+        ja: "https://docs.example.test/docs/ja/agents",
+        "x-default": "https://docs.example.test/docs/agents",
       },
     });
   });
@@ -93,12 +103,12 @@ describe("docsAlternates", () => {
     const { docsAlternates } = await import("./site");
 
     expect(docsAlternates(["agents"])).toEqual({
-      canonical: "https://www.multica.ai/docs/agents",
+      canonical: "https://docs.example.test/docs/agents",
       languages: {
-        en: "https://www.multica.ai/docs/agents",
-        zh: "https://www.multica.ai/docs/zh/agents",
-        fr: "https://www.multica.ai/docs/fr/agents",
-        "x-default": "https://www.multica.ai/docs/agents",
+        en: "https://docs.example.test/docs/agents",
+        zh: "https://docs.example.test/docs/zh/agents",
+        fr: "https://docs.example.test/docs/fr/agents",
+        "x-default": "https://docs.example.test/docs/agents",
       },
     });
   });
@@ -107,11 +117,11 @@ describe("docsAlternates", () => {
     const { docsAlternates } = await import("./site");
 
     expect(docsAlternates([])).toEqual({
-      canonical: "https://www.multica.ai/docs",
+      canonical: "https://docs.example.test/docs",
       languages: {
-        en: "https://www.multica.ai/docs",
-        zh: "https://www.multica.ai/docs/zh",
-        "x-default": "https://www.multica.ai/docs",
+        en: "https://docs.example.test/docs",
+        zh: "https://docs.example.test/docs/zh",
+        "x-default": "https://docs.example.test/docs",
       },
     });
   });

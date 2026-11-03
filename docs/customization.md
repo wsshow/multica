@@ -41,7 +41,7 @@ The desktop package no longer declares the original GitHub repository or publish
 
 The CLI updater and shell/PowerShell installers require `MULTICA_RELEASE_REPOSITORY=owner/repository`. They have no default release repository. `MULTICA_HOMEBREW_PACKAGE` optionally selects a separately configured Homebrew package. Configure your own desktop publishing destination before distributing auto-updating desktop builds.
 
-Original installation examples and historical changelog links may still identify upstream. They are provenance or upstream documentation, not a configured remote of this repository. For this customized checkout, build locally (`make build`, `make selfhost-build`) until its own distribution repository is ready. Never install upstream binaries over this customized version.
+Historical changelogs, licenses, attribution, and source references may still identify upstream. Active deployment and installation guides use this customized checkout or operator-owned artifacts; upstream application installers and images are not a distribution source for this edition. For this customized checkout, build locally (`make build`, `make selfhost-build`) until its own distribution repository is ready. Never install upstream binaries over this customized version.
 
 The Go vulnerability-scanning tool retains `golang.org/x/telemetry` as an indirect tooling dependency. It is not imported by the application. Required framework dependencies may likewise contain their own development tooling; this policy removes the application's telemetry implementations rather than rewriting installed third-party tools or user-installed agents.
 
@@ -64,3 +64,14 @@ Optional configuration fields:
 Omit optional URLs to disable their links or requests. API authentication, daemon registration, tasks, and WebSockets use the explicitly configured deployment. Desktop writes both service and web URLs into its own CLI profile and pins its child environment to them; it never borrows another profile or a shell's server URL. The standalone CLI remains a separate entry point; Desktop always launches its bundled CLI with its own profile.
 
 Shared help components also have no upstream link defaults. Other shells can install their own links with `configureDeploymentLinks` before rendering. Product integrations with Git providers and third-party agent services remain available.
+
+## Documentation website
+
+The documentation sources and deployment instructions describe this customized edition. The docs website has no upstream repository, app, community, or canonical-site defaults. Copy `apps/docs/.env.example` to its ignored `.env.local` and supply only the destinations you operate:
+
+- `DOCS_SITE_URL`: public origin used for canonical, hreflang, and sitemap URLs. Omit it to omit that absolute metadata and sitemap entries.
+- `DOCS_APP_URL`: your deployed web app.
+- `DOCS_REPOSITORY_URL`: your customized source and issue repository.
+- `DOCS_DISCORD_URL`, `DOCS_SOCIAL_URL`: optional community destinations.
+
+The app serves beneath `/docs`; the public origin excludes that path. Rebuild/restart the docs site when changing environment settings, according to its deployment mode. These variables configure the docs website independently of Desktop's `links` settings. No original distribution is selected when they are missing.

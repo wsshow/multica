@@ -1,5 +1,11 @@
 # Release runbook
 
+## Customized distribution prerequisites
+
+This checkout has no configured public release repository. Publish only from its reviewed customized commits and under your own repository/registry. Confirm workflow owner restrictions, token/package permissions, artifact naming, signing, and checksums before creating a release tag; the retained Helm publication job includes an upstream-owner condition that must be reviewed for a new distribution. No workflow change or publication is implied by these instructions.
+
+Consumers must explicitly configure their own release repository and Desktop update feed. Docker deployments select their own backend/web image repositories and immutable tags. Use the source Helm chart until your own chart distribution is configured. Original upstream releases do not contain this edition's telemetry and connection changes.
+
 ## Normal release
 
 Release from a reviewed commit on `main` by creating and pushing a new semantic

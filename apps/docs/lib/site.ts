@@ -1,12 +1,14 @@
+import { configuredHttpUrl } from "./deployment";
 import { source } from "@/lib/source";
 import { i18n } from "@/lib/i18n";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-// Canonical production origin and basePath for the docs app. Used by the
+// Operator-configured public origin and basePath for the docs app. Used by the
 // sitemap and per-page hreflang metadata — anywhere we need to construct
 // absolute URLs for search engines.
-export const SITE_ORIGIN = "https://www.multica.ai";
+const configuredSite = configuredHttpUrl(process.env.DOCS_SITE_URL);
+export const SITE_ORIGIN = configuredSite ? new URL(configuredSite).origin : undefined;
 export const DOCS_BASE_PATH = "/docs";
 
 /**
@@ -19,7 +21,7 @@ export const DOCS_BASE_PATH = "/docs";
  */
 export function absoluteDocsUrl(relative: string): string {
   const path = relative === "/" ? "" : relative;
-  return `${SITE_ORIGIN}${DOCS_BASE_PATH}${path}`;
+  return `${SITE_ORIGIN ?? ""}${DOCS_BASE_PATH}${path}`;
 }
 
 function docsContentRoots(): string[] {
@@ -56,9 +58,10 @@ function hasLocalizedMdx(slugs: string[], lang: string): boolean {
  * Google will only serve what's declared.
  */
 export function docsAlternates(slugs: string[]): {
-  canonical: string;
-  languages: Record<string, string>;
+  canonical?: string;
+  languages?: Record<string, string>;
 } {
+  if (!SITE_ORIGIN) return {};
   const languages: Record<string, string> = {};
   for (const lang of i18n.languages) {
     if (!hasLocalizedMdx(slugs, lang)) continue;

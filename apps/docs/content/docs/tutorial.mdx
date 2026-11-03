@@ -5,6 +5,8 @@ description: "Start from an empty workspace and walk a personal website project 
 
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
+This documentation describes the customized edition. Use this checkout or artifacts supplied by your deployment maintainer; upstream application packages do not contain these changes. Use the customized Electron package from this checkout or your maintainer. Copy `apps/desktop/desktop.example.json` to `~/.multica/desktop.json`, edit both URLs, and restart Desktop. Missing settings block connection. Optional `wsUrl` overrides the socket URL otherwise derived from the configured API.
+
 Multica is a platform where people and AI agents work together. This tutorial starts from nothing and covers:
 
 - setting up a workspace of your own
@@ -16,7 +18,7 @@ The example project is a personal website, used to walk through Multica's overal
 
 **Before you start:**
 
-- A Multica account (sign up at [multica.ai](https://multica.ai))
+- An account on your own deployed Multica service; see [self-hosting](/self-host-quickstart).
 - A computer with at least one AI coding tool installed and signed in, for example Claude Code or Codex. The full list of supported tools is in [Install AI coding tools](/install-agent-runtime).
 
 ## Create a workspace
@@ -38,7 +40,7 @@ Click the workspace name at the top of the sidebar and choose **Create workspace
 Fill in two fields:
 
 - **Name**: shown to members; it can be changed later.
-- **URL**: the slug in the workspace address — the `my-team` in `multica.ai/my-team`. It cannot be changed after creation.
+- **URL**: the slug in the workspace address — the `my-team` in `app.example.com/my-team`. It cannot be changed after creation.
 
 ![The create workspace page](/images/docs/tutorial-create-workspace-form.webp)
 
@@ -56,7 +58,7 @@ Creating it opens the new workspace. The sidebar on the left is where every late
 
 Agents execute work on the computers you connect, using the AI coding tools installed on those computers.
 
-This tutorial uses [Multica Desktop](https://multica.ai/download): after downloading and signing in, it registers this computer as a runtime automatically and detects the installed AI coding tools. Open **Runtimes** under **AI Team** in the sidebar and confirm the computer is online:
+This tutorial uses [Multica Desktop](/desktop-app): after downloading and signing in, it registers this computer as a runtime automatically and detects the installed AI coding tools. Open **Runtimes** under **AI Team** in the sidebar and confirm the computer is online:
 
 ![The runtime list with this computer online](/images/docs/tutorial-runtimes-list.webp)
 

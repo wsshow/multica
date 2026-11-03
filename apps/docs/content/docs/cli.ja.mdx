@@ -8,76 +8,29 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 Multica CLI は、ローカルのランタイムを接続する役割と、ターミナルからワークスペース、タスク、エージェント、オートパイロットを管理する役割の両方を担います。このページではよく使う操作の流れを紹介します。現在のバージョンがサポートするフラグは、常に各コマンド自身の `--help` が正です。
 
-## インストール
+## カスタムパッケージの用意
 
-<Tabs groupId="os" persist items={["macOS / Linux", "Windows"]}>
-<Tab value="macOS / Linux">
+この文書はカスタム版向けです。現在のソース、または運用担当者が提供した成果物を使用してください。上流のアプリ配布物にはこの変更は含まれません。
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.sh | bash
-```
-
-Homebrew がインストールされていれば、次のコマンドでもインストールできます:
+同じカスタムソースから CLI を構築し、そのバイナリを PATH に置いて明示的に接続します。Desktop は CLI を同梱するため、管理対象ランタイム用の別インストールは不要です。実行端末にはログイン済みの対応エージェントツールが必要です。
 
 ```bash
-brew install multica-ai/tap/multica
+go -C server build -o bin/multica ./cmd/multica
 ```
 
-</Tab>
-<Tab value="Windows">
+Windows: `go build -o bin/multica.exe ./cmd/multica`
 
-PowerShell で実行します:
+## 最初の接続
 
-```powershell
-irm https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.ps1 | iex
-```
-
-</Tab>
-</Tabs>
-
-インストールを確認します:
+認証前に自分の API と Web URL を指定します。引数なしの `multica setup` は使わないでください。ブラウザがない端末は両 URL を `multica config set` で保存し、`multica login --token` で PAT を入力します。名前付き profile は各コマンドに `--profile <name>` を付けます。
 
 ```bash
-multica version
-```
-
-## 初回接続
-
-接続先のサービスを選びます:
-
-<Tabs items={["Multica Cloud", "セルフホストインスタンス"]}>
-<Tab value="Multica Cloud">
-
-```bash
-multica setup
-```
-
-</Tab>
-<Tab value="セルフホストインスタンス">
-
-```bash
-multica setup self-host \
-  --server-url https://api.example.com \
-  --app-url https://app.example.com
-```
-
-</Tab>
-</Tabs>
-
-`setup` はサーバーアドレスを保存し、ブラウザを開いてサインインを完了し、デーモンを起動します。完了したら確認します:
-
-```bash
+multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000
 multica auth status
 multica daemon status
 ```
 
-他の設定を上書きせずにサインインだけやり直したい場合は、`multica login` を実行します。ブラウザのない環境では、先に Web の設定で個人アクセストークンを作成しておき、次のコマンドで入力します:
-
-```bash
-multica login --token
-```
-
-このコマンドはターミナル上でトークンの貼り付けを促すため、完全な値が shell history に残りません。
+更新には管理者自身の `MULTICA_RELEASE_REPOSITORY` が必要です。カスタム版の配布元がなければレビュー済みコミットから再構築します。Desktop 管理の CLI は Desktop パッケージごと更新し、別の updater は使いません。
 
 ## ワークスペースを選ぶ
 
@@ -426,13 +379,13 @@ CLI の設定ファイルには、あなたとして Multica にアクセスで�
 
 ## 別のコーディングエージェントから Multica を操作する
 
-作業の多くを Codex、Claude Code、Cursor の中で進めているなら、ターミナルに切り替えずそこから Multica を操作できます。[Multica CLI skill](https://github.com/multica-ai/multica-cli) は、このページのコマンドを安全に扱う方法をそれらのエージェントに教えます。タスクとコメントスレッドをトークンを浪費せずに読み、コメントはファイル経由で書き、メンション・ステータス変更・アサインが伴う副作用を正しく扱います。
+作業の多くを Codex、Claude Code、Cursor の中で進めているなら、ターミナルに切り替えずそこから Multica を操作できます。`server/internal/service/builtin_skills/multica-platform/SKILL.md` は、このページのコマンドを安全に扱う方法をそれらのエージェントに教えます。タスクとコメントスレッドをトークンを浪費せずに読み、コメントはファイル経由で書き、メンション・ステータス変更・アサインが伴う副作用を正しく扱います。
 
 認証済みの CLI を通してのみ動作し、それ自体は何の権限も与えません。権限は引き続きログイン、選択中のプロファイル、ワークスペースに由来します。CLI は v0.4.26 以降が必要です。Claude Code のプラグインマーケットプレイス、Codex の skill インストーラー、Cursor、その他 Markdown の指示を読み込むツールへのインストール方法は、リポジトリの README を参照してください。
 
 ## 次のステップ
 
-- [Multica CLI skill](https://github.com/multica-ai/multica-cli) — Codex、Claude Code、Cursor から Multica を操作する。
+- `server/internal/service/builtin_skills/multica-platform/SKILL.md` — Codex、Claude Code、Cursor から Multica を操作する。
 - [認証とトークン](/auth-tokens) — PAT の作成、更新、失効。
 - [トラブルシューティング](/troubleshooting) — コマンドのエラーと、いつまでも開始しない実行の診断。
 - [エージェントの作成と設定](/agents-create) — `agent create` 各フィールドの完全な意味。
