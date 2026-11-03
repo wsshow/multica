@@ -83,6 +83,23 @@ Preserve the public host and scheme through the gateway. Accept client-IP forwar
 
 Default attachment delivery to the existing `proxy` mode so object storage can stay on a private network. Do not make buckets public or rewrite stored historical object URLs. Existing direct/CDN delivery can be configured explicitly. Plugin surfaces still require a separate cookie-free origin; route that origin through the same gateway with its existing host boundary intact rather than collapsing it into the application origin.
 
+## Make targets
+
+Add a separate `integrated` command family when the image and Compose files are implemented. The following names are planned; they are not executable targets yet:
+
+| Command | Responsibility |
+| --- | --- |
+| `make integrated-init` | Create `.env.integrated` and initial secrets if missing; preserve existing values; do not start or build anything |
+| `make integrated` | Require the operator's configuration and explicit image reference, pull the image, start the one application service, and wait for combined readiness |
+| `make integrated-status` | Show application container and health status |
+| `make integrated-logs` | Show application logs |
+| `make integrated-stop` | Stop the application deployment without deleting configuration or touching external services |
+| `make integrated-build` | Explicit maintainer-only build of the integrated image from this checkout; do not implicitly start it |
+
+The normal deployment command never compiles locally. Keep `selfhost`, `selfhost-build`, and `selfhost-stop` unchanged. Add the new targets to `make help` only when they work; do not add placeholder recipes that report success without deploying anything.
+
+Isolate these recipes from the Makefile's existing development `.env` include and exported localhost/port defaults. Pass `.env.integrated` directly to Compose as raw data, without including it as Make syntax or copying values from the development file. Missing configuration or image selection fails with the relevant preparation instruction; an unavailable image never triggers a source build automatically. Readiness failure exits nonzero while leaving logs available for diagnosis.
+
 ## Startup, failure, and shutdown
 
 Use Tini as PID 1 and a small Bash launcher to supervise the three application processes. Tini handles signal forwarding and orphan reaping; the launcher owns ordering, child exit detection, and bounded shutdown of each component's process group. Do not introduce a second service manager or independently restart a failed component. [Docker multi-process guidance](https://docs.docker.com/engine/containers/multi-service_container/), [Tini responsibilities](https://github.com/krallin/tini#tini---a-tiny-but-valid-init-for-containers)
@@ -111,7 +128,7 @@ Database contents, object storage, and operator-held environment/secrets are the
 
 ## Delivery and acceptance
 
-Implementation should add an assembly Dockerfile and Bake target, `docker/integrated/` launcher/gateway/healthcheck files, the small web readiness route and Go listener option, a one-service Compose example, and minimal/advanced environment examples. Storage initialization must enforce the strict behavior above. Existing split-image entrypoints remain unchanged. Tests live beside the behavior they verify.
+Implementation should add an assembly Dockerfile and Bake target, `docker/integrated/` launcher/gateway/healthcheck files, the small web readiness route and Go listener option, a one-service Compose example, minimal/advanced environment examples, and the Make targets above. Storage initialization must enforce the strict behavior above. Existing split-image entrypoints remain unchanged. Tests live beside the behavior they verify.
 
 Build and smoke-test the image in GitHub Actions for `linux/amd64` and `linux/arm64`, using one reviewed commit for both frontend and backend. Preserve current Go vulnerability checks, telemetry checks, immutable release tags, source/version labels, and the repository's release process. Publish the integrated manifest/tag only after both architectures pass; keep the last validated `latest` on failure. Do not publish mixed frontend/backend versions or combine images selected by floating tags. No local application build or packaging is part of this design task.
 

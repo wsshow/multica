@@ -83,6 +83,23 @@ TLS/CA、Redis 集群、代理信任、附件投递、注册控制和集成参�
 
 附件默认使用现有 `proxy` 投递模式，让对象存储可以位于私网。不开启公开桶，不改写已有对象 URL；需要时显式配置直连/CDN 模式。插件页面仍要求独立、无 Cookie 的 origin，可经同一网关转发，并保留已有域名边界，不能强行合并到应用 origin。
 
+## Make 命令
+
+镜像和 Compose 文件实现时，新增独立的 `integrated` 命令组。以下为拟定名称，目前还不是可执行的 target：
+
+| 命令 | 职责 |
+| --- | --- |
+| `make integrated-init` | 缺少配置时创建 `.env.integrated` 和初始密钥，保留已有值；不启动、不构建 |
+| `make integrated` | 要求用户配置和明确的镜像引用，拉取镜像，启动唯一应用服务，等待整体就绪 |
+| `make integrated-status` | 查看应用容器及健康状态 |
+| `make integrated-logs` | 查看应用日志 |
+| `make integrated-stop` | 停止应用部署，不删除配置、不操作外部服务 |
+| `make integrated-build` | 维护者显式从当前源码构建一体化镜像，不隐式启动 |
+
+日常部署命令不进行本地编译。现有 `selfhost`、`selfhost-build`、`selfhost-stop` 保持原样。新命令真正可用后才加入 `make help`，不增加没有部署任何内容却返回成功的占位命令。
+
+这些命令需要与 Makefile 现有的开发 `.env` 加载及导出的 localhost/端口默认值隔离。`.env.integrated` 作为原始数据直接传给 Compose，不作为 Make 语法 include，也不复制开发配置的值。缺少配置或镜像选择时，报错并说明对应准备步骤；拉取镜像失败不会自动改为源码构建。就绪检查失败返回非零状态，保留日志供排查。
+
 ## 启动、故障和停止
 
 使用 Tini 作为 PID 1，以小型 Bash 启动器管理三个应用进程。Tini 负责信号转发和孤儿进程回收；启动器负责顺序、子进程退出检测和对各组件进程组有时限的停止。不增加第二套服务管理器，也不单独重启某个失败组件。[Docker 多进程说明](https://docs.docker.com/engine/containers/multi-service_container/)、[Tini 职责](https://github.com/krallin/tini#tini---a-tiny-but-valid-init-for-containers)
@@ -111,7 +128,7 @@ Go 需要增加一个明确的监听 host 参数：目前监听地址是 `":" + 
 
 ## 交付与验收
 
-实现时新增组装 Dockerfile 与 Bake 目标、`docker/integrated/` 下的启动器/网关/健康检查文件、小型 Web 就绪路由及 Go 监听参数、仅一个应用服务的 Compose 示例、精简和高级环境示例。存储初始化落实前述严格行为；现有拆分镜像入口保持原样。测试与对应实现放在一起。
+实现时新增组装 Dockerfile 与 Bake 目标、`docker/integrated/` 下的启动器/网关/健康检查文件、小型 Web 就绪路由及 Go 监听参数、仅一个应用服务的 Compose 示例、精简和高级环境示例，以及上述 Make 命令。存储初始化落实前述严格行为；现有拆分镜像入口保持原样。测试与对应实现放在一起。
 
 在 GitHub Actions 构建并验证 `linux/amd64`、`linux/arm64`，前后端来自同一经过审查的 commit。保留 Go 漏洞检查、遥测检查、不可变发行 tag、源码/版本标签和当前发布流程。两个架构都通过才发布一体化 manifest/tag，失败时不覆盖上次已验证的 `latest`。不能混装不同版本前后端，也不能使用浮动 tag 拼装。本设计任务不做本地应用构建或打包。
 
