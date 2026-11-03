@@ -24,19 +24,47 @@ vi.mock("../../i18n", () => ({
   }),
 }));
 
-const WINDOWS_CMD =
-  "irm https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.ps1 | iex";
+const CONFIGURATION = {
+  serverUrl: "https://api.example.test",
+  appUrl: "https://app.example.test",
+  cliInstallUrl: "https://downloads.example.test/install.sh",
+  cliInstallWindowsUrl: "https://downloads.example.test/install.ps1",
+};
+
+const SETUP_CMD =
+  "multica setup self-host --server-url https://api.example.test --app-url https://app.example.test";
 
 describe("CliSection", () => {
-  // The switch itself is covered in @multica/views; this checks the landing
-  // dictionary is wired into it and the daemon block stays shared.
-  it("wires the platform switch into the install block", async () => {
+  it("hides CLI instructions without configured public endpoints", () => {
+    const { container } = render(<CliSection />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("wires configured installers and self-hosted setup into the command blocks", async () => {
     const user = userEvent.setup();
-    render(<CliSection />);
+    render(<CliSection configuration={CONFIGURATION} />);
 
     await user.click(screen.getByRole("tab", { name: "Windows" }));
 
-    expect(screen.getByText(WINDOWS_CMD)).toBeInTheDocument();
-    expect(screen.getByText("multica setup")).toBeInTheDocument();
+    expect(
+      screen.getByText("irm 'https://downloads.example.test/install.ps1' | iex"),
+    ).toBeInTheDocument();
+    expect(screen.getByText(SETUP_CMD)).toBeInTheDocument();
+  });
+
+  it("omits the installation block when no installer is published", () => {
+    render(
+      <CliSection
+        configuration={{
+          serverUrl: CONFIGURATION.serverUrl,
+          appUrl: CONFIGURATION.appUrl,
+        }}
+      />,
+    );
+
+    expect(screen.queryByText("Install")).not.toBeInTheDocument();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+    expect(screen.getByText(SETUP_CMD)).toBeInTheDocument();
   });
 });

@@ -4,12 +4,84 @@ import { describe, expect, it } from "vitest";
 import {
   resolveBrowserApiBaseUrl,
   resolveBrowserWsUrl,
+  resolveCliDownloadConfig,
   resolveDevDocsUrl,
   resolveDevRemoteApiUrl,
   resolveDocsUrl,
   resolveRemoteApiUrl,
   runtimeRewriteDestination,
 } from "./runtime-urls";
+
+describe("resolveCliDownloadConfig", () => {
+  it("requires public API and app URLs without borrowing the internal proxy target", () => {
+    expect(resolveCliDownloadConfig({})).toBeNull();
+    expect(
+      resolveCliDownloadConfig({
+        REMOTE_API_URL: "http://backend:8080",
+        MULTICA_APP_URL: "https://app.example.test",
+      }),
+    ).toBeNull();
+    expect(
+      resolveCliDownloadConfig({
+        MULTICA_PUBLIC_URL: "https://api.example.test",
+      }),
+    ).toBeNull();
+  });
+
+  it("normalizes operator-configured public URLs and installer sources", () => {
+    expect(
+      resolveCliDownloadConfig({
+        MULTICA_DAEMON_SERVER_URL: " https://daemon.example.test/multica/api/ ",
+        MULTICA_PUBLIC_URL: "https://other.example.test",
+        MULTICA_APP_URL: " https://app.example.test/ ",
+        MULTICA_CLI_INSTALL_URL: " https://downloads.example.test/install.sh ",
+        MULTICA_CLI_INSTALL_WINDOWS_URL: "https://downloads.example.test/install.ps1",
+      }),
+    ).toEqual({
+      serverUrl: "https://daemon.example.test/multica",
+      appUrl: "https://app.example.test",
+      cliInstallUrl: "https://downloads.example.test/install.sh",
+      cliInstallWindowsUrl: "https://downloads.example.test/install.ps1",
+    });
+  });
+
+  it("accepts explicit public frontend settings without default installers", () => {
+    expect(
+      resolveCliDownloadConfig({
+        NEXT_PUBLIC_API_URL: "https://api.example.test/api",
+        FRONTEND_ORIGIN: "https://app.example.test/",
+      }),
+    ).toEqual({
+      serverUrl: "https://api.example.test",
+      appUrl: "https://app.example.test",
+      cliInstallUrl: undefined,
+      cliInstallWindowsUrl: undefined,
+    });
+  });
+
+  it("rejects non-HTTP endpoints and omits invalid installer sources", () => {
+    expect(
+      resolveCliDownloadConfig({
+        MULTICA_PUBLIC_URL: "/api",
+        MULTICA_APP_URL: "https://app.example.test",
+      }),
+    ).toBeNull();
+    expect(
+      resolveCliDownloadConfig({
+        MULTICA_PUBLIC_URL: "https://api.example.test",
+        MULTICA_APP_URL: "file:///app",
+      }),
+    ).toBeNull();
+    expect(
+      resolveCliDownloadConfig({
+        MULTICA_PUBLIC_URL: "https://api.example.test",
+        MULTICA_APP_URL: "https://app.example.test",
+        MULTICA_CLI_INSTALL_URL: "javascript:alert(1)",
+        MULTICA_CLI_INSTALL_WINDOWS_URL: "/install.ps1",
+      }),
+    ).toMatchObject({ cliInstallUrl: undefined, cliInstallWindowsUrl: undefined });
+  });
+});
 
 describe("resolveRemoteApiUrl", () => {
   it("prefers REMOTE_API_URL when explicitly configured", () => {

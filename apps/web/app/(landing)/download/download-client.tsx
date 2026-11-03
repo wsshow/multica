@@ -14,11 +14,18 @@ import {
   type DetectResult,
 } from "@/features/landing/utils/os-detect";
 import type { LatestRelease } from "@/features/landing/utils/github-release";
+import type { CliDownloadConfig } from "@/config/runtime-urls";
 
 const ALL_RELEASES_URL =
   "https://github.com/multica-ai/multica/releases";
 
-export function DownloadClient({ release }: { release: LatestRelease }) {
+export function DownloadClient({
+  release,
+  cliConfiguration,
+}: {
+  release: LatestRelease;
+  cliConfiguration?: CliDownloadConfig | null;
+}) {
   const [detected, setDetected] = useState<DetectResult | null>(null);
   const versionUnavailable = release.version === null;
 
@@ -56,7 +63,7 @@ export function DownloadClient({ release }: { release: LatestRelease }) {
         assets={release.assets}
         fallbackHref={ALL_RELEASES_URL}
       />
-      <CliSection />
+      <CliSection configuration={cliConfiguration} />
       <CloudSection />
       <VersionInfoFooter
         version={release.version}

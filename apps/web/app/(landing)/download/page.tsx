@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { fetchLatestRelease } from "@/features/landing/utils/github-release";
+import { resolveCliDownloadConfig } from "@/config/runtime-urls";
 import { DownloadClient } from "./download-client";
 
 // Vercel ISR: the server fetch inside fetchLatestRelease carries
@@ -25,5 +26,10 @@ export const metadata: Metadata = {
 
 export default async function DownloadPage() {
   const release = await fetchLatestRelease();
-  return <DownloadClient release={release} />;
+  return (
+    <DownloadClient
+      release={release}
+      cliConfiguration={resolveCliDownloadConfig(process.env)}
+    />
+  );
 }

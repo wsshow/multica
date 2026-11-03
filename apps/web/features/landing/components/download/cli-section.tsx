@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { daemonCommands } from "@multica/core/runtimes/commands";
 import { Check, Copy, Terminal } from "@multica/ui/icons";
 import { CliInstallCommand } from "@multica/views/common/cli-install-command";
 import { copyText } from "@multica/ui/lib/clipboard";
 import { useLocale } from "../../i18n";
-
-const SETUP_CMD = "multica setup";
+import type { CliDownloadConfig } from "@/config/runtime-urls";
 
 /**
  * The landing palette bypasses the product tokens, so the shared platform
@@ -24,9 +24,24 @@ const PLATFORM_TABS = {
  * lightweight Desktop. Two copy-and-paste command blocks; the install one
  * carries the platform switch, since install.sh and install.ps1 differ.
  */
-export function CliSection() {
+export function CliSection({
+  configuration,
+}: {
+  configuration?: CliDownloadConfig | null;
+}) {
   const { t } = useLocale();
   const d = t.download.cli;
+  if (!configuration) return null;
+  const commands = daemonCommands({
+    status: "ready",
+    target: "self_host",
+    serverUrl: configuration.serverUrl,
+    appUrl: configuration.appUrl,
+  });
+  if (commands.status !== "ready") return null;
+  const hasInstaller = Boolean(
+    configuration.cliInstallUrl || configuration.cliInstallWindowsUrl,
+  );
 
   return (
     <section id="cli" className="bg-[#f7f7f5] py-20 text-[#0a0d12] sm:py-24">
@@ -39,29 +54,32 @@ export function CliSection() {
         </p>
 
         <div className="mt-10 flex flex-col gap-5">
-          <div>
-            <CommandLabel>{d.installLabel}</CommandLabel>
-            <CliInstallCommand
-              labels={{
-                group: d.platformGroup,
-                macosLinux: d.platformMacosLinux,
-                windows: d.platformWindows,
-              }}
-              classNames={PLATFORM_TABS}
-            >
-              {(cmd) => (
-                <CommandRow
-                  cmd={cmd}
-                  copyLabel={d.copyLabel}
-                  copiedLabel={d.copiedLabel}
-                />
-              )}
-            </CliInstallCommand>
-          </div>
+          {hasInstaller && (
+            <div>
+              <CommandLabel>{d.installLabel}</CommandLabel>
+              <CliInstallCommand
+                sources={configuration}
+                labels={{
+                  group: d.platformGroup,
+                  macosLinux: d.platformMacosLinux,
+                  windows: d.platformWindows,
+                }}
+                classNames={PLATFORM_TABS}
+              >
+                {(cmd) => (
+                  <CommandRow
+                    cmd={cmd}
+                    copyLabel={d.copyLabel}
+                    copiedLabel={d.copiedLabel}
+                  />
+                )}
+              </CliInstallCommand>
+            </div>
+          )}
           <div>
             <CommandLabel>{d.startLabel}</CommandLabel>
             <CommandRow
-              cmd={SETUP_CMD}
+              cmd={commands.setupCmd}
               copyLabel={d.copyLabel}
               copiedLabel={d.copiedLabel}
             />

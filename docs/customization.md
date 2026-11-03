@@ -65,6 +65,12 @@ Omit optional URLs to disable their links or requests. API authentication, daemo
 
 Shared help components also have no upstream link defaults. Other shells can install their own links with `configureDeploymentLinks` before rendering. Product integrations with Git providers and third-party agent services remain available.
 
+## Web download CLI instructions
+
+The web download page only shows CLI instructions when public API and app URLs are configured. The API address comes from `MULTICA_DAEMON_SERVER_URL`, then `MULTICA_PUBLIC_URL`, then `NEXT_PUBLIC_API_URL`; the app address comes from `MULTICA_APP_URL`, then `FRONTEND_ORIGIN`. The internal Docker proxy address `REMOTE_API_URL` is never offered to CLI users. The setup command explicitly selects `self-host` and includes both addresses.
+
+Set `MULTICA_CLI_INSTALL_URL` and/or `MULTICA_CLI_INSTALL_WINDOWS_URL` to operator-hosted customized installers to display the corresponding installation tabs. Without installers, only the self-host setup command is shown. Without public endpoints, the whole CLI section is hidden. The self-host Compose frontend forwards these settings; recreate it after changing them. For other web deployment modes, rebuild/restart according to the page cache and deployment configuration.
+
 ## Documentation website
 
 The documentation sources and deployment instructions describe this customized edition. The docs website has no upstream repository, app, community, or canonical-site defaults. Copy `apps/docs/.env.example` to its ignored `.env.local` and supply only the destinations you operate:

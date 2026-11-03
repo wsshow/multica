@@ -1,7 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { getDeploymentLinks } from "@multica/core/platform/deployment-links";
+import {
+  getDeploymentLinks,
+  type DeploymentLinks,
+} from "@multica/core/platform/deployment-links";
 import {
   Tabs,
   TabsContent,
@@ -11,11 +14,22 @@ import {
 
 export type CliInstallPlatform = "macosLinux" | "windows";
 
-export function getCliInstallCommands(): Partial<Record<CliInstallPlatform, string>> {
-  const { cliInstallUrl, cliInstallWindowsUrl } = getDeploymentLinks();
+type CliInstallSources = Pick<
+  DeploymentLinks,
+  "cliInstallUrl" | "cliInstallWindowsUrl"
+>;
+
+export function getCliInstallCommands(
+  sources: CliInstallSources = getDeploymentLinks(),
+): Partial<Record<CliInstallPlatform, string>> {
+  const { cliInstallUrl, cliInstallWindowsUrl } = sources;
   return {
-    ...(cliInstallUrl ? { macosLinux: `curl -fsSL '${cliInstallUrl.replace(/'/g, "'\\''")}' | bash` } : {}),
-    ...(cliInstallWindowsUrl ? { windows: `irm '${cliInstallWindowsUrl.replace(/'/g, "''")}' | iex` } : {}),
+    ...(cliInstallUrl
+      ? { macosLinux: `curl -fsSL '${cliInstallUrl.replace(/'/g, "'\\''")}' | bash` }
+      : {}),
+    ...(cliInstallWindowsUrl
+      ? { windows: `irm '${cliInstallWindowsUrl.replace(/'/g, "''")}' | iex` }
+      : {}),
   };
 }
 
@@ -37,15 +51,17 @@ export interface CliInstallCommandLabels {
  */
 export function CliInstallCommand({
   labels,
+  sources,
   classNames,
   children,
 }: {
   labels: CliInstallCommandLabels;
+  sources?: CliInstallSources;
   /** Palette overrides for surfaces that do not use the product tokens. */
   classNames?: { list?: string; trigger?: string };
   children: (command: string) => ReactNode;
 }) {
-  const commands = getCliInstallCommands();
+  const commands = getCliInstallCommands(sources);
   const platforms = Object.keys(commands) as CliInstallPlatform[];
   if (!platforms.length) return null;
   return (

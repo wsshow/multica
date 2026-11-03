@@ -29,6 +29,36 @@ describe("CliInstallCommand", () => {
     expect(getCliInstallCommands()).toEqual({});
   });
 
+  it("uses per-render sources without changing the platform configuration", () => {
+    const platformCommands = getCliInstallCommands();
+    render(
+      <CliInstallCommand
+        labels={LABELS}
+        sources={{ cliInstallWindowsUrl: "https://another.example.test/install.ps1" }}
+      >
+        {(command) => <code>{command}</code>}
+      </CliInstallCommand>,
+    );
+
+    expect(
+      screen.queryByRole("tab", { name: "macOS / Linux" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText("irm 'https://another.example.test/install.ps1' | iex"),
+    ).toBeInTheDocument();
+    expect(getCliInstallCommands()).toEqual(platformCommands);
+  });
+
+  it("does not borrow platform sources when an empty source object is supplied", () => {
+    const { container } = render(
+      <CliInstallCommand labels={LABELS} sources={{}}>
+        {(command) => <code>{command}</code>}
+      </CliInstallCommand>,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it("defaults to the macOS / Linux installer", () => {
     renderSwitch();
 

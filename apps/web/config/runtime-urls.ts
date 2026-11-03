@@ -67,6 +67,33 @@ export function resolveDocsUrl(env: RuntimeEnv): string | undefined {
   return cleanHttpUrl(env.DOCS_URL);
 }
 
+export interface CliDownloadConfig {
+  serverUrl: string;
+  appUrl: string;
+  cliInstallUrl?: string;
+  cliInstallWindowsUrl?: string;
+}
+
+export function resolveCliDownloadConfig(
+  env: RuntimeEnv,
+): CliDownloadConfig | null {
+  const serverUrl =
+    cleanApiBaseUrl(env.MULTICA_DAEMON_SERVER_URL) ??
+    cleanApiBaseUrl(env.MULTICA_PUBLIC_URL) ??
+    cleanApiBaseUrl(env.NEXT_PUBLIC_API_URL);
+  const appUrl =
+    cleanHttpUrl(env.MULTICA_APP_URL) ?? cleanHttpUrl(env.FRONTEND_ORIGIN);
+  // REMOTE_API_URL may name a Docker-only host that CLI users cannot reach.
+  if (!serverUrl || !appUrl) return null;
+
+  return {
+    serverUrl,
+    appUrl,
+    cliInstallUrl: cleanHttpUrl(env.MULTICA_CLI_INSTALL_URL),
+    cliInstallWindowsUrl: cleanHttpUrl(env.MULTICA_CLI_INSTALL_WINDOWS_URL),
+  };
+}
+
 // Dev-only fallbacks: `next dev` runs on a developer machine, where the
 // conventional localhost backend/docs ports are safe to assume when nothing
 // is configured. Builds and the runtime proxy keep the strict resolvers so a
