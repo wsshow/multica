@@ -10,8 +10,18 @@ Consumers must explicitly configure their own release repository and Desktop upd
 
 ## Normal release
 
+This edition maintains its own version sequence, beginning with `v0.1.0`.
+Upstream version numbers describe source provenance, not this edition's release
+number. Record the relationship in [the version mapping](../docs/version-mapping.md)
+and update [the changelog](../CHANGELOG.md) for each release. Keep the root,
+web, and desktop package versions aligned with the new tag without its `v`
+prefix. The tag supplies the shipped CLI, Desktop, and container versions.
+Use a patch increment for fixes, a minor increment for features, and a major
+increment for breaking changes; synchronization alone does not copy the
+upstream release number.
+
 Release from a reviewed commit on `main` by creating and pushing a new semantic
-version tag such as `v0.18.4`. The Release workflow intentionally has no manual
+version tag such as `v0.1.0`. The Release workflow intentionally has no manual
 trigger: a tag push is the only event that can publish binaries
 and container images.
 
@@ -37,7 +47,7 @@ unresolved reachable vulnerability.
    request, and confirm no other release is in progress.
 2. In **Settings → Secrets and variables → Actions → Variables**, set the
    repository variable `ALLOW_VULN_BYPASS_FOR_TAG` to the exact release tag,
-   for example `v0.18.4`.
+   for example `v0.1.1`.
 3. Re-run the failed Release workflow for that tag. A different tag, an empty
    value, or any typo keeps the scan enabled.
 4. Confirm the verification log contains the explicit bypass warning and retain

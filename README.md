@@ -238,6 +238,8 @@ troubleshooting. The iOS client lives in [`apps/mobile/`](apps/mobile/) — its
 
 Synchronize only reviewed customized commits. Import upstream changes using the procedure in [the customization policy](docs/customization.md#synchronizing-upstream-features).
 
+This edition maintains its own release versions. See the [source version mapping](docs/version-mapping.md) for upstream provenance and the [changelog](CHANGELOG.md) for customized releases.
+
 ---
 
 ## Why "Multica"?

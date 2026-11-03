@@ -26,6 +26,8 @@ Keep customization concentrated in the boundaries above. Merge upstream business
 
 Because the previous history was removed, there is no verified upstream merge base. For the first synchronization, identify the original source version and compare a separate upstream checkout against this repository. Establish a dedicated upstream snapshot branch from that verified version before importing subsequent snapshots. Do not blindly merge unrelated histories or use blanket conflict resolution. No upstream remote has been configured automatically.
 
+Maintain this edition's independent release sequence and source provenance in [the version mapping](version-mapping.md). The recorded file-comparison candidate is a reference for review, not a recovered Git ancestor or a verified merge base.
+
 After each synchronization:
 
 1. Run `pnpm check:telemetry` to reject telemetry SDK dependencies and imports.
