@@ -2,7 +2,9 @@
 
 ## Customized distribution prerequisites
 
-This checkout has no configured public release repository. Publish only from its reviewed customized commits and under your own repository/registry. Confirm workflow owner restrictions, token/package permissions, artifact naming, signing, and checksums before creating a release tag; the retained Helm publication job includes an upstream-owner condition that must be reviewed for a new distribution. No workflow change or publication is implied by these instructions.
+The Release workflow publishes reviewed customized commits to the repository where it runs. Desktop receives `MULTICA_RELEASE_REPOSITORY` from `github.repository`, which supplies its GitHub provider, owner, and repository. Local packaging does not inject a publisher or architecture-specific channel unless this variable is explicitly set to `owner/repository`.
+
+Confirm token/package permissions, artifact naming, signing, and checksums before creating a release tag. Container images are published beneath the current repository owner's GHCR namespace. The retained Helm publication job is restricted to the upstream owner and is skipped for this customized repository; use the source chart. CLI archives cover macOS, Linux, and Windows on AMD64 and ARM64. Desktop installers cover Linux and Windows on x64 and ARM64, without code signing; macOS Desktop signing and notarization are not configured in CI.
 
 Consumers must explicitly configure their own release repository and Desktop update feed. Docker deployments select their own backend/web image repositories and immutable tags. Use the source Helm chart until your own chart distribution is configured. Original upstream releases do not contain this edition's telemetry and connection changes.
 

@@ -441,6 +441,7 @@ jobs:
       - name: Package Desktop installers (${{ matrix.target }})
         working-directory: apps/desktop
         env:
+          MULTICA_RELEASE_REPOSITORY: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # electron-builder's GitHub publisher reads this:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

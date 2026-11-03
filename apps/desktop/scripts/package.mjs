@@ -306,6 +306,18 @@ function formatTarget(target) {
   return `${PLATFORM_CONFIG[target.platform].label} ${target.arch}`;
 }
 
+export function parsePublishRepository(raw) {
+  const value = raw?.trim();
+  if (!value) return null;
+  if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(value)) {
+    throw new Error(
+      "[package] MULTICA_RELEASE_REPOSITORY must use owner/repository format",
+    );
+  }
+  const [owner, repo] = value.split("/");
+  return { owner, repo };
+}
+
 export function builderArgsForTarget(
   target,
   parsed,
@@ -314,6 +326,7 @@ export function builderArgsForTarget(
     disableMacNotarize = false,
     hostPlatform = process.platform,
     useScopedOutputDir = false,
+    publishRepository = null,
   } = {},
 ) {
   const builderArgs = [];
@@ -340,6 +353,12 @@ export function builderArgsForTarget(
       `-c.directories.output=dist/${target.platform}-${target.arch}`,
     );
   }
+  if (!publishRepository) return builderArgs;
+  builderArgs.push(
+    "-c.publish.provider=github",
+    `-c.publish.owner=${publishRepository.owner}`,
+    `-c.publish.repo=${publishRepository.repo}`,
+  );
   // electron-builder only adds an architecture suffix to Linux update
   // metadata. Windows x64/arm64 would both publish `latest.yml`, while macOS
   // arm64/x64 would both publish `latest-mac.yml`. Keep the established x64
@@ -359,6 +378,9 @@ function main() {
   const passthrough = stripLeadingSeparator(process.argv.slice(2));
   const parsed = parsePackageArgs(passthrough);
   const buildMatrix = resolveBuildMatrix(parsed);
+  const publishRepository = parsePublishRepository(
+    process.env.MULTICA_RELEASE_REPOSITORY,
+  );
   console.log(
     `[package] build matrix → ${buildMatrix.map(formatTarget).join(", ")}`,
   );
@@ -448,6 +470,7 @@ function main() {
       disableMacNotarize,
       hostPlatform: process.platform,
       useScopedOutputDir,
+      publishRepository,
     });
 
     // Step 4: invoke electron-builder for the current target only.

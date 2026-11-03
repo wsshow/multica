@@ -10,9 +10,29 @@ import {
   envWithLocalBins,
   normalizeGitVersion,
   parsePackageArgs,
+  parsePublishRepository,
   resolveBuildMatrix,
   stripLeadingSeparator,
 } from "./package.mjs";
+
+describe("parsePublishRepository", () => {
+  it("leaves publishing unconfigured without an explicit repository", () => {
+    expect(parsePublishRepository(undefined)).toBeNull();
+    expect(parsePublishRepository(" ")).toBeNull();
+  });
+
+  it("reads the configured owner and repository", () => {
+    expect(parsePublishRepository(" wsshow/multica ")).toEqual({
+      owner: "wsshow",
+      repo: "multica",
+    });
+  });
+
+  it.each(["multica", "https://github.com/wsshow/multica", "owner/repo/extra"])(
+    "rejects malformed repository %s",
+    (value) => expect(() => parsePublishRepository(value)).toThrow(/owner\/repository/),
+  );
+});
 
 describe("normalizeGitVersion", () => {
   it("returns null for empty / nullish input", () => {
@@ -264,6 +284,29 @@ describe("resolveBuildMatrix", () => {
 });
 
 describe("builderArgsForTarget", () => {
+  it.each([
+    ["win", "x64", undefined],
+    ["win", "arm64", "latest-arm64"],
+    ["linux", "x64", undefined],
+    ["linux", "arm64", undefined],
+  ])("publishes %s %s to the configured repository", (platform, arch, channel) => {
+    const parsed = parsePackageArgs([`--${platform}`, `--${arch}`, "--publish", "always"]);
+    const args = builderArgsForTarget(
+      { platform, arch },
+      parsed,
+      "0.1.0",
+      { publishRepository: { owner: "wsshow", repo: "multica" } },
+    );
+
+    expect(args).toEqual(expect.arrayContaining([
+      "-c.publish.provider=github",
+      "-c.publish.owner=wsshow",
+      "-c.publish.repo=multica",
+    ]));
+    const channels = args.filter((arg) => arg.startsWith("-c.publish.channel="));
+    expect(channels).toEqual(channel ? [`-c.publish.channel=${channel}`] : []);
+  });
+
   it("adds scoped output directories for multi-target builds", () => {
     expect(
       builderArgsForTarget(
@@ -291,7 +334,6 @@ describe("builderArgsForTarget", () => {
       "--publish",
       "never",
       "-c.directories.output=dist/win-arm64",
-      "-c.publish.channel=latest-arm64",
     ]);
   });
 
@@ -332,7 +374,11 @@ describe("builderArgsForTarget", () => {
           requestedArchs: ["x64"],
         },
         "1.2.3",
-        { hostPlatform: "darwin", useScopedOutputDir: true },
+        {
+          hostPlatform: "darwin",
+          useScopedOutputDir: true,
+          publishRepository: { owner: "wsshow", repo: "multica" },
+        },
       ),
     ).toEqual([
       "-c.extraMetadata.version=1.2.3",
@@ -343,6 +389,9 @@ describe("builderArgsForTarget", () => {
       "--publish",
       "always",
       "-c.directories.output=dist/mac-x64",
+      "-c.publish.provider=github",
+      "-c.publish.owner=wsshow",
+      "-c.publish.repo=multica",
       "-c.publish.channel=latest-x64",
     ]);
   });
