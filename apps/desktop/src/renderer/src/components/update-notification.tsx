@@ -8,11 +8,7 @@ type UpdateState =
   | { status: "idle" }
   | { status: "ready"; version: string };
 
-function changelogUrl(version: string): string {
-  return `https://multica.ai/changelog#release-${version.replace(/\./g, "-")}`;
-}
-
-export function UpdateNotification() {
+export function UpdateNotification({ changelogUrl }: { changelogUrl?: string } = {}) {
   const [state, setState] = useState<UpdateState>({ status: "idle" });
   const [dismissed, setDismissed] = useState(false);
 
@@ -47,15 +43,15 @@ export function UpdateNotification() {
             v{state.version} will be applied on next launch.
           </p>
           <div className="mt-2 flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() =>
-                window.desktopAPI.openExternal(changelogUrl(state.version))
-              }
-              className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1.5 text-caption font-medium text-foreground hover:bg-accent transition-colors"
-            >
-              See changelog
-            </button>
+            {changelogUrl && (
+              <button
+                type="button"
+                onClick={() => window.desktopAPI.openExternal(changelogUrl)}
+                className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1.5 text-caption font-medium text-foreground hover:bg-accent transition-colors"
+              >
+                See changelog
+              </button>
+            )}
             <button
               type="button"
               onClick={() => window.updater.installUpdate()}

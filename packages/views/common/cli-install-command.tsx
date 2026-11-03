@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { getDeploymentLinks } from "@multica/core/platform/deployment-links";
 import {
   Tabs,
   TabsContent,
@@ -8,29 +9,15 @@ import {
   TabsTrigger,
 } from "@multica/ui/components/ui/tabs";
 
-/**
- * The Multica CLI install commands, one per platform family.
- *
- * Three surfaces render install instructions — the runtimes "add computer"
- * dialog, onboarding's CLI card, and the landing download page. They read the
- * commands from here instead of each hardcoding a string, which is how Windows
- * silently went missing from all of them while scripts/install.ps1 sat in the
- * repo. The scripts' own headers are the source of truth.
- */
-export const CLI_INSTALL_COMMANDS = {
-  macosLinux:
-    "curl -fsSL https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.sh | bash",
-  windows:
-    "irm https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.ps1 | iex",
-} as const;
+export type CliInstallPlatform = "macosLinux" | "windows";
 
-export type CliInstallPlatform = keyof typeof CLI_INSTALL_COMMANDS;
-
-/** Tab order. macOS / Linux stays first so the default matches the old single command. */
-const PLATFORMS = [
-  "macosLinux",
-  "windows",
-] as const satisfies readonly CliInstallPlatform[];
+export function getCliInstallCommands(): Partial<Record<CliInstallPlatform, string>> {
+  const { cliInstallUrl, cliInstallWindowsUrl } = getDeploymentLinks();
+  return {
+    ...(cliInstallUrl ? { macosLinux: `curl -fsSL '${cliInstallUrl.replace(/'/g, "'\\''")}' | bash` } : {}),
+    ...(cliInstallWindowsUrl ? { windows: `irm '${cliInstallWindowsUrl.replace(/'/g, "''")}' | iex` } : {}),
+  };
+}
 
 export interface CliInstallCommandLabels {
   /** Accessible name for the platform switch. */
@@ -58,14 +45,17 @@ export function CliInstallCommand({
   classNames?: { list?: string; trigger?: string };
   children: (command: string) => ReactNode;
 }) {
+  const commands = getCliInstallCommands();
+  const platforms = Object.keys(commands) as CliInstallPlatform[];
+  if (!platforms.length) return null;
   return (
-    <Tabs defaultValue={PLATFORMS[0]}>
+    <Tabs defaultValue={platforms[0]}>
       <TabsList
         aria-label={labels.group}
         activateOnFocus
         className={classNames?.list}
       >
-        {PLATFORMS.map((platform) => (
+        {platforms.map((platform) => (
           <TabsTrigger
             key={platform}
             value={platform}
@@ -75,9 +65,9 @@ export function CliInstallCommand({
           </TabsTrigger>
         ))}
       </TabsList>
-      {PLATFORMS.map((platform) => (
+      {platforms.map((platform) => (
         <TabsContent key={platform} value={platform}>
-          {children(CLI_INSTALL_COMMANDS[platform])}
+          {children(commands[platform]!)}
         </TabsContent>
       ))}
     </Tabs>

@@ -96,7 +96,32 @@ describe("desktop quit uses the CLI lifecycle", () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
   });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllEnvs(); });
+
+  it("pins its child process and profile to the desktop's configured server", async () => {
+    vi.stubEnv("MULTICA_SERVER_URL", "https://other.example.test");
+    vi.stubEnv("MULTICA_APP_URL", "https://other-app.example.test");
+    context.health.mockResolvedValue(null);
+    const { setupDaemonManager } = await import("./daemon-manager");
+    setupDaemonManager(() => null, () => [], {
+      schemaVersion: 1,
+      apiUrl: "https://api.example.test",
+      wsUrl: "wss://api.example.test/ws",
+      appUrl: "https://app.example.test",
+    });
+    await context.handlers.get("daemon:start")!({});
+    expect(context.exec).toHaveBeenCalledWith(expect.any(String),
+      ["daemon", "start", "--profile", "desktop-api.example.test"],
+      expect.objectContaining({ env: expect.objectContaining({
+        MULTICA_SERVER_URL: "https://api.example.test",
+        MULTICA_APP_URL: "https://app.example.test",
+        FRONTEND_ORIGIN: "https://app.example.test",
+        MULTICA_DAEMON_AUTO_UPDATE: "false",
+      }) }), expect.any(Function));
+    const { writeFile } = await import("fs/promises");
+    expect(writeFile).toHaveBeenCalledWith(expect.any(String),
+      expect.stringContaining('"app_url": "https://app.example.test"'), expect.any(String));
+  });
 
   it("never falls back to managed or PATH binaries when its bundled CLI is missing", async () => {
     context.exists.mockImplementation((path: string) => !path.includes("resources"));

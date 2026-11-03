@@ -355,9 +355,9 @@ function BlockingRuntimeConfigError({ message }: { message: string }) {
   return (
     <div className="flex h-screen items-center justify-center bg-background p-8 text-foreground">
       <div className="max-w-xl rounded-lg border bg-card p-6 shadow-sm">
-        <h1 className="text-title font-semibold">Desktop configuration error</h1>
+        <h1 className="text-title font-semibold">Server configuration required</h1>
         <p className="mt-3 text-body text-muted-foreground">
-          Multica Desktop could not load <code>~/.multica/desktop.json</code>. Fix or remove the file and restart the app.
+          Multica Desktop could not load <code>~/.multica/desktop.json</code>. Create or fix the file with your API and web app URLs, then restart the app.
         </p>
         <pre className="mt-4 whitespace-pre-wrap rounded-md bg-muted p-3 text-caption text-muted-foreground">
           {message}
@@ -498,7 +498,7 @@ export default function App() {
         <BlockingRuntimeConfigError message={runtimeConfigResult.error.message} />
       )}
       <Toaster />
-      {windowContext.kind === "main" && <UpdateNotification />}
+      {windowContext.kind === "main" && <UpdateNotification changelogUrl={runtimeConfigResult.ok ? runtimeConfigResult.config.links?.changelogUrl : undefined} />}
     </ThemeProvider>
   );
 }

@@ -1,142 +1,58 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import {
-  deriveWsUrl,
-  parseRuntimeConfig,
-  runtimeConfigFromDevEnv,
-} from "./runtime-config";
+import { deriveWsUrl, parseRuntimeConfig, runtimeConfigFromDevEnv } from "./runtime-config";
 
-describe("runtime config", () => {
-  it("derives https/wss compatible URLs from apiUrl", () => {
-    expect(
-      parseRuntimeConfig(
-        JSON.stringify({
-          schemaVersion: 1,
-          apiUrl: "https://congvc-x99.taila6fa8a.ts.net:18443",
-        }),
-      ),
-    ).toEqual({
-      schemaVersion: 1,
-      apiUrl: "https://congvc-x99.taila6fa8a.ts.net:18443",
-      wsUrl: "wss://congvc-x99.taila6fa8a.ts.net:18443/ws",
-      appUrl: "https://congvc-x99.taila6fa8a.ts.net:18443",
+const configured = {
+  schemaVersion: 1,
+  apiUrl: "http://localhost:8080",
+  appUrl: "http://localhost:3000",
+};
+const parse = (overrides: Record<string, unknown> = {}) =>
+  parseRuntimeConfig(JSON.stringify({ ...configured, ...overrides }));
+
+describe("explicit desktop server configuration", () => {
+  it.each(["apiUrl", "appUrl"])("requires %s instead of choosing a server", (field) => {
+    expect(() => parse({ [field]: undefined })).toThrow(field);
+    expect(() => parse({ [field]: " " })).toThrow(field);
+  });
+  it("derives only the WebSocket address from the configured API", () => {
+    expect(parse()).toEqual({ ...configured, wsUrl: "ws://localhost:8080/ws" });
+    expect(deriveWsUrl("https://api.example.test/prefix")).toBe("wss://api.example.test/prefix/ws");
+  });
+  it("keeps the configured web app host and port", () => {
+    expect(parse({ apiUrl: "https://api.example.test", appUrl: "https://portal.example.test:8443/" })).toMatchObject({
+      appUrl: "https://portal.example.test:8443",
     });
   });
-
-  it("strips the leading api. label when deriving appUrl", () => {
-    expect(
-      parseRuntimeConfig(
-        JSON.stringify({ schemaVersion: 1, apiUrl: "https://api.multica.ai" }),
-      ),
-    ).toEqual({
-      schemaVersion: 1,
-      apiUrl: "https://api.multica.ai",
-      wsUrl: "wss://api.multica.ai/ws",
-      appUrl: "https://multica.ai",
+  it("accepts explicit sockets, update feeds and help links", () => {
+    expect(parse({
+      wsUrl: "wss://socket.example.test/events/",
+      updateUrl: "https://updates.example.test/desktop/",
+      links: { docsUrl: "https://docs.example.test/docs/", changelogUrl: "https://docs.example.test/releases#latest" },
+    })).toMatchObject({
+      wsUrl: "wss://socket.example.test/events",
+      updateUrl: "https://updates.example.test/desktop",
+      links: { docsUrl: "https://docs.example.test/docs", changelogUrl: "https://docs.example.test/releases#latest" },
     });
   });
-
-  it("derives ws for http api URLs", () => {
-    expect(deriveWsUrl("http://localhost:8080")).toBe("ws://localhost:8080/ws");
+  it.each([
+    { apiUrl: "file:///tmp/server" },
+    { appUrl: "ftp://app.example.test" },
+    { apiUrl: "https://user:password@api.example.test" },
+    { wsUrl: "https://api.example.test/ws" },
+    { updateUrl: "file:///tmp/updates" },
+    { links: { docsUrl: "javascript:alert(1)" } },
+    { links: [] },
+    { schemaVersion: 2 },
+  ])("rejects invalid configuration %j", (value) => {
+    expect(() => parse(value)).toThrow();
   });
-
-  it("accepts explicit appUrl and wsUrl", () => {
-    expect(
-      parseRuntimeConfig(
-        JSON.stringify({
-          schemaVersion: 1,
-          apiUrl: "https://api.example.com/",
-          wsUrl: "wss://ws.example.com/socket/",
-          appUrl: "https://app.example.com/",
-        }),
-      ),
-    ).toEqual({
-      schemaVersion: 1,
-      apiUrl: "https://api.example.com",
-      wsUrl: "wss://ws.example.com/socket",
-      appUrl: "https://app.example.com",
-    });
-  });
-
-  it("rejects invalid JSON", () => {
+  it("rejects malformed JSON", () => {
     expect(() => parseRuntimeConfig("{")).toThrow(/Invalid desktop runtime config JSON/);
   });
-
-  it("rejects unsupported schema versions", () => {
-    expect(() =>
-      parseRuntimeConfig(JSON.stringify({ schemaVersion: 2, apiUrl: "https://api.example.com" })),
-    ).toThrow(/schemaVersion/);
-  });
-
-  it("rejects non-http api schemes", () => {
-    expect(() =>
-      parseRuntimeConfig(JSON.stringify({ schemaVersion: 1, apiUrl: "file:///tmp/multica" })),
-    ).toThrow(/apiUrl must use http or https/);
-  });
-
-  it("rejects non-ws websocket schemes", () => {
-    expect(() =>
-      parseRuntimeConfig(
-        JSON.stringify({
-          schemaVersion: 1,
-          apiUrl: "https://api.example.com",
-          wsUrl: "https://api.example.com/ws",
-        }),
-      ),
-    ).toThrow(/wsUrl must use ws or wss/);
-  });
-
-  it("preserves electron-vite dev env precedence", () => {
-    expect(
-      runtimeConfigFromDevEnv({
-        apiUrl: "http://dev-api.example.test:8080/",
-        wsUrl: "ws://dev-api.example.test:8080/ws/",
-        appUrl: "http://dev-app.example.test:3000/",
-      }),
-    ).toEqual({
-      schemaVersion: 1,
-      apiUrl: "http://dev-api.example.test:8080",
-      wsUrl: "ws://dev-api.example.test:8080/ws",
-      appUrl: "http://dev-app.example.test:3000",
-    });
-  });
-
-  it("falls back to local web URL when dev apiUrl is localhost", () => {
-    expect(runtimeConfigFromDevEnv({ apiUrl: "http://localhost:8080" })).toEqual({
-      schemaVersion: 1,
-      apiUrl: "http://localhost:8080",
-      wsUrl: "ws://localhost:8080/ws",
-      appUrl: "http://localhost:3000",
-    });
-  });
-
-  it("derives dev appUrl by stripping the leading api. label", () => {
-    // When the dev renderer is pointed at a remote backend (e.g. a test
-    // environment), copy-link / share URLs must reflect that environment's
-    // public web host, not the api host. Multica's convention exposes the
-    // api at `api.<web-host>`, so stripping the leading label gives the
-    // right web origin without a separate VITE_APP_URL.
-    expect(
-      runtimeConfigFromDevEnv({ apiUrl: "https://api.test.multica.ai" }),
-    ).toEqual({
-      schemaVersion: 1,
-      apiUrl: "https://api.test.multica.ai",
-      wsUrl: "wss://api.test.multica.ai/ws",
-      appUrl: "https://test.multica.ai",
-    });
-  });
-
-  it("dev VITE_APP_URL still wins over apiUrl-derived value", () => {
-    expect(
-      runtimeConfigFromDevEnv({
-        apiUrl: "https://api.test.multica.ai",
-        appUrl: "https://staging.multica.ai",
-      }),
-    ).toEqual({
-      schemaVersion: 1,
-      apiUrl: "https://api.test.multica.ai",
-      wsUrl: "wss://api.test.multica.ai/ws",
-      appUrl: "https://staging.multica.ai",
-    });
+  it("requires both development endpoint variables", () => {
+    expect(() => runtimeConfigFromDevEnv({})).toThrow("VITE_API_URL");
+    expect(() => runtimeConfigFromDevEnv({ apiUrl: configured.apiUrl })).toThrow("VITE_APP_URL");
+    expect(runtimeConfigFromDevEnv(configured)).toEqual({ ...configured, wsUrl: "ws://localhost:8080/ws" });
   });
 });

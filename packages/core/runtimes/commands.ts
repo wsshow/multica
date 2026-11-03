@@ -1,6 +1,3 @@
-export const CLOUD_SERVER_URL = "https://api.multica.ai";
-export const CLOUD_APP_URL = "https://multica.ai";
-
 export function normalizeCommandURL(url: string | undefined): string {
   return url?.trim().replace(/\/+$/, "") ?? "";
 }
@@ -22,27 +19,15 @@ export type DaemonCommands =
 export function daemonCommands(config: DaemonSetupConfig): DaemonCommands {
   if (config.status !== "ready") return { status: config.status };
 
-  if (config.target === "self_host") {
-    const normalizedServerUrl = normalizeCommandURL(config.serverUrl);
-    const normalizedAppUrl = normalizeCommandURL(config.appUrl);
-    if (!normalizedServerUrl || !normalizedAppUrl) return { status: "incomplete" };
-    return {
-      status: "ready",
-      setupCmd: `multica setup self-host --server-url ${normalizedServerUrl} --app-url ${normalizedAppUrl}`,
-      tokenCmd: `multica config set server_url ${normalizedServerUrl}
-multica config set app_url ${normalizedAppUrl}
-multica login --token <YOUR_TOKEN>
-multica daemon start`,
-    };
-  }
-
-  // Empty URLs are also returned by misconfigured self-hosted servers.
-  if (config.target !== "cloud") return { status: "unknown" };
+  if (config.target !== "cloud" && config.target !== "self_host") return { status: "unknown" };
+  const serverUrl = normalizeCommandURL(config.serverUrl);
+  const appUrl = normalizeCommandURL(config.appUrl);
+  if (!serverUrl || !appUrl) return { status: "incomplete" };
   return {
     status: "ready",
-    setupCmd: "multica setup",
-    tokenCmd: `multica config set server_url ${CLOUD_SERVER_URL}
-multica config set app_url ${CLOUD_APP_URL}
+    setupCmd: `multica setup self-host --server-url ${serverUrl} --app-url ${appUrl}`,
+    tokenCmd: `multica config set server_url ${serverUrl}
+multica config set app_url ${appUrl}
 multica login --token <YOUR_TOKEN>
 multica daemon start`,
   };

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { workspaceUrlHost } from "./workspace-url";
 
@@ -28,10 +29,10 @@ describe("workspaceUrlHost", () => {
     );
   });
 
-  it("falls back to the brand host when no app URL is configured", () => {
-    expect(workspaceUrlHost("")).toBe("multica.ai");
-    expect(workspaceUrlHost("   ")).toBe("multica.ai");
-    expect(workspaceUrlHost(null)).toBe("multica.ai");
-    expect(workspaceUrlHost(undefined)).toBe("multica.ai");
+  it("does not invent a host when no app URL is configured", () => {
+    expect(workspaceUrlHost("")).toBe("");
+    expect(workspaceUrlHost("   ")).toBe("");
+    expect(workspaceUrlHost(null)).toBe("");
+    expect(workspaceUrlHost(undefined)).toBe("");
   });
 });

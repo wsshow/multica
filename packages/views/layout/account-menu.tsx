@@ -36,13 +36,13 @@ import {
 } from "@multica/ui/components/ui/dropdown-menu";
 import { cn } from "@multica/ui/lib/utils";
 import { useLogout } from "../auth";
-import { docsLocalePrefix } from "../common/docs-locale";
+import { documentationUrl } from "../common/docs-locale";
 import { useLanguageSwitch } from "../common/use-language-switch";
 import { useT } from "../i18n";
 import { AppLink } from "../navigation";
 import { isDesktopShell } from "../platform/local-directory";
-import { DISCORD_URL, DiscordIcon } from "./discord";
-import { CHANGELOG_URL, DOCS_URL, DOWNLOAD_URL } from "./help-links";
+import { DiscordIcon } from "./discord";
+import { getDeploymentLinks } from "@multica/core/platform/deployment-links";
 import { RAIL_ICON_BUTTON_CLASS } from "./rail-styles";
 
 const THEMES = [
@@ -73,6 +73,9 @@ function ExternalItem({ href, icon, label }: { href: string; icon: React.ReactNo
 /** The signed-in user's menu at the foot of the rail. */
 export function AccountMenu() {
   const { t, i18n } = useT("layout");
+  const { changelogUrl, downloadUrl, communityUrl } = getDeploymentLinks();
+  const docsUrl = documentationUrl("", i18n.language);
+  const showHelp = docsUrl || changelogUrl || communityUrl || (!isDesktopShell() && downloadUrl);
   const user = useAuthStore((s) => s.user);
   const p = useWorkspacePaths();
   const logout = useLogout();
@@ -160,23 +163,29 @@ export function AccountMenu() {
             {t(($) => $.account.shortcuts)}
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <ExternalItem
-            href={`${DOCS_URL}${docsLocalePrefix(i18n.language)}`}
-            icon={<BookOpen />}
-            label={t(($) => $.help.docs)}
-          />
-          <ExternalItem href={CHANGELOG_URL} icon={<History />} label={t(($) => $.help.changelog)} />
-          <ExternalItem href={DISCORD_URL} icon={<DiscordIcon />} label={t(($) => $.help.discord)} />
-          {!isDesktopShell() && (
-            <ExternalItem
-              href={DOWNLOAD_URL}
-              icon={<Download />}
-              label={t(($) => $.help.download_desktop)}
-            />
-          )}
-        </DropdownMenuGroup>
+        {showHelp && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {docsUrl && (
+                <ExternalItem href={docsUrl} icon={<BookOpen />} label={t(($) => $.help.docs)} />
+              )}
+              {changelogUrl && (
+                <ExternalItem href={changelogUrl} icon={<History />} label={t(($) => $.help.changelog)} />
+              )}
+              {communityUrl && (
+                <ExternalItem href={communityUrl} icon={<DiscordIcon />} label={t(($) => $.help.discord)} />
+              )}
+              {!isDesktopShell() && downloadUrl && (
+                <ExternalItem
+                  href={downloadUrl}
+                  icon={<Download />}
+                  label={t(($) => $.help.download_desktop)}
+                />
+              )}
+            </DropdownMenuGroup>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem variant="destructive" onClick={logout}>

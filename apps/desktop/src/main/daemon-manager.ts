@@ -1,3 +1,4 @@
+import type { RuntimeConfig } from "../shared/runtime-config";
 import { app, ipcMain, BrowserWindow, shell, dialog, type MessageBoxOptions } from "electron";
 import { execFile } from "child_process";
 import {
@@ -102,6 +103,7 @@ let cachedCliBinaryVersion: string | null | undefined = undefined;
 // fires the restart once active_task_count drops to 0.
 let pendingVersionRestart = false;
 let targetApiBaseUrl: string | null = null;
+let targetAppBaseUrl: string | null = null;
 let activeProfile: ActiveProfile | null = null;
 // Recovery is intentionally process-local: it keeps a daemon alive while the
 // Desktop main process is running, but is not an OS service/watchdog.
@@ -288,9 +290,9 @@ async function writeProfileConfig(
 
 /**
  * Returns the Desktop-owned profile for the current target API URL. Creates
- * the profile's config.json on demand with `server_url` pinned to the target.
+ * the profile's config.json on demand with both service URLs pinned to the target.
  *
- * Returns `null` until the renderer reports its `apiUrl`. There is no profile
+ * Returns `null` until explicit server configuration is available. There is no profile
  * to act on in that window, and callers must do nothing rather than reach for
  * the user's default CLI profile at `~/.multica/` — neither its files nor its
  * health port.
@@ -302,8 +304,9 @@ async function resolveActiveProfile(): Promise<ActiveProfile | null> {
   const name = deriveProfileName(target);
   const cfg = await readProfileConfig(name);
 
-  if (cfg.server_url !== target) {
+  if (cfg.server_url !== target || (targetAppBaseUrl && cfg.app_url !== targetAppBaseUrl)) {
     cfg.server_url = target;
+    if (targetAppBaseUrl) cfg.app_url = targetAppBaseUrl;
     await writeProfileConfig(name, cfg);
     console.log(`[daemon] initialized profile "${name}" → ${target}`);
   }
@@ -903,7 +906,15 @@ async function probeLocalRuntimes(): Promise<LocalRuntimeProbe> {
 // applied by fix-path in main/index.ts — as a top-level const it would
 // snapshot process.env at import time, before that block runs.
 function desktopSpawnEnv(): NodeJS.ProcessEnv {
-  return { ...process.env, MULTICA_LAUNCHED_BY: "desktop" };
+  return {
+    ...process.env,
+    MULTICA_LAUNCHED_BY: "desktop",
+    MULTICA_SERVER_URL: targetApiBaseUrl ?? "",
+    MULTICA_APP_URL: targetAppBaseUrl ?? "",
+    FRONTEND_ORIGIN: targetAppBaseUrl ?? "",
+    MULTICA_DAEMON_AUTO_UPDATE: "false",
+    MULTICA_DAEMON_AUTO_RELOAD: "false",
+  };
 }
 
 function scheduleStatusRefresh(): void {
@@ -1382,9 +1393,12 @@ export function setupDaemonManager(
     const window = windowGetter();
     return window ? [window] : [];
   },
+  config?: RuntimeConfig,
 ): void {
   getMainWindow = windowGetter;
   getStatusWindows = statusWindowsGetter;
+  targetApiBaseUrl = config?.apiUrl ?? null;
+  targetAppBaseUrl = config?.appUrl ?? null;
 
   ipcMain.handle("daemon:set-target-api-url", async (_e, url: string) => {
     const normalized = url || null;

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -107,6 +108,7 @@ function renderDialog({
 
 describe("RuntimeProfilesDialog", () => {
   beforeEach(() => {
+  configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs", changelogUrl: "https://docs.example.test/releases", downloadUrl: "https://downloads.example.test", communityUrl: "https://community.example.test" });
     queryState.profiles = [];
     queryState.isLoading = false;
     vi.clearAllMocks();
@@ -276,7 +278,7 @@ describe("RuntimeProfilesDialog", () => {
       screen.getByRole("link", { name: "View setup guide" }),
     ).toHaveAttribute(
       "href",
-      "https://multica.ai/docs/daemon-runtimes#custom-runtime-profiles",
+      "https://docs.example.test/docs/daemon-runtimes#custom-runtime-profiles",
     );
     expect(screen.getByText("Step 1 of 2")).toBeInTheDocument();
     expect(

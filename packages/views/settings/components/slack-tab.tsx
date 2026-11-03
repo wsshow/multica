@@ -35,7 +35,7 @@ import { slackInstallationsOptions, slackKeys } from "@multica/core/slack";
 import { api } from "@multica/core/api";
 import type { SlackInstallation } from "@multica/core/types";
 import { ActorAvatar } from "../../common/actor-avatar";
-import { docsLocalePrefix } from "../../common/docs-locale";
+import { documentationUrl } from "../../common/docs-locale";
 import { openExternal } from "../../platform";
 import { useLocale, useT } from "../../i18n";
 import { TooltipHint } from "@multica/ui/components/common/tooltip-hint";
@@ -244,7 +244,7 @@ const SLACK_BYO_VIDEO_URL = "";
 // prefixes (English has none), matching the convention used elsewhere in the
 // app for doc links (e.g. the autopilots webhook docs link).
 function slackDocsUrl(lang: string | undefined): string {
-  return `https://multica.ai/docs${docsLocalePrefix(lang)}/slack-bot-integration`;
+  return documentationUrl("/slack-bot-integration", lang) ?? "";
 }
 
 // SlackAgentBindButton is the per-agent CTA exposed from the agent detail page.
@@ -391,15 +391,17 @@ export function SlackAgentBindButton({
             </button>
           ) : null}
 
-          <button
-            type="button"
-            onClick={() => openExternal(slackDocsUrl(i18n.language))}
-            className="inline-flex w-fit items-center gap-2 text-body font-medium text-primary underline-offset-2 hover:underline"
-            data-testid="slack-byo-docs-link"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t(($) => $.slack.byo_docs_link)}
-          </button>
+          {slackDocsUrl(i18n.language) && (
+            <button
+              type="button"
+              onClick={() => openExternal(slackDocsUrl(i18n.language))}
+              className="inline-flex w-fit items-center gap-2 text-body font-medium text-primary underline-offset-2 hover:underline"
+              data-testid="slack-byo-docs-link"
+            >
+              <ExternalLink className="h-4 w-4" />
+              {t(($) => $.slack.byo_docs_link)}
+            </button>
+          )}
 
           <div className="space-y-4">
             <div className="space-y-1.5">

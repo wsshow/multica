@@ -35,7 +35,7 @@ import { telegramInstallationsOptions, telegramKeys } from "@multica/core/telegr
 import { api } from "@multica/core/api";
 import type { TelegramInstallation } from "@multica/core/types";
 import { ActorAvatar } from "../../common/actor-avatar";
-import { docsLocalePrefix } from "../../common/docs-locale";
+import { documentationUrl } from "../../common/docs-locale";
 import { openExternal } from "../../platform";
 import { useLocale, useT } from "../../i18n";
 import { TooltipHint } from "@multica/ui/components/common/tooltip-hint";
@@ -236,7 +236,7 @@ function InstallationRow({
 // telegramDocsUrl points at the Telegram integration guide on the docs site,
 // localized like the Slack docs link.
 function telegramDocsUrl(lang: string | undefined): string {
-  return `https://multica.ai/docs${docsLocalePrefix(lang)}/telegram-bot-integration`;
+  return documentationUrl("/telegram-bot-integration", lang) ?? "";
 }
 
 // TelegramAgentBindButton is the per-agent CTA on the agent detail page.
@@ -367,15 +367,17 @@ export function TelegramAgentBindButton({
             {t(($) => $.telegram.connect_dialog_description)}
           </p>
 
-          <button
-            type="button"
-            onClick={() => openExternal(telegramDocsUrl(i18n.language))}
-            className="inline-flex w-fit items-center gap-2 text-body font-medium text-primary underline-offset-2 hover:underline"
-            data-testid="telegram-docs-link"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t(($) => $.telegram.connect_docs_link)}
-          </button>
+          {telegramDocsUrl(i18n.language) && (
+            <button
+              type="button"
+              onClick={() => openExternal(telegramDocsUrl(i18n.language))}
+              className="inline-flex w-fit items-center gap-2 text-body font-medium text-primary underline-offset-2 hover:underline"
+              data-testid="telegram-docs-link"
+            >
+              <ExternalLink className="h-4 w-4" />
+              {t(($) => $.telegram.connect_docs_link)}
+            </button>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="telegram-bot-token">

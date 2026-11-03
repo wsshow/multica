@@ -1,3 +1,4 @@
+import { documentationUrl } from "@multica/views/common/docs-locale";
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { AlertCircle, Info, LogIn } from "@multica/ui/icons";
 import { Button } from "@multica/ui/components/ui/button";
@@ -170,13 +171,13 @@ export function DaemonSettingsTab() {
                 : t(($) => $.desktop.daemon.cli_missing)
           }
         >
-          {cliInstalled === false && (
+          {cliInstalled === false && documentationUrl("/install-agent-runtime") && (
             <Button
               variant="outline"
               size="sm"
               onClick={() =>
                 window.desktopAPI.openExternal(
-                  "https://github.com/multica-ai/multica#cli-installation",
+                  documentationUrl("/install-agent-runtime")!,
                 )
               }
             >

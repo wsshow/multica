@@ -1,5 +1,7 @@
 "use client";
 
+import { documentationUrl } from "../common/docs-locale";
+
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -310,7 +312,7 @@ export function OnboardingFlow({
           const issue = await api.createIssue(
             {
               title: INSTALL_RUNTIME_ISSUE_TITLE[contentLang],
-              description: INSTALL_RUNTIME_ISSUE_BODY[contentLang],
+              description: [INSTALL_RUNTIME_ISSUE_BODY[contentLang], documentationUrl("/install-agent-runtime", i18n.language)].filter(Boolean).join("\n\n"),
               status: "in_progress",
               priority: "high",
               assignee_type: "member",

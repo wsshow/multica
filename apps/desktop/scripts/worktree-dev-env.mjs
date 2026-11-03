@@ -9,7 +9,7 @@
 // scripts/init-worktree-env.sh already uses for backend/frontend ports.
 //
 // Backend targeting is deliberately NOT touched here: which backend the desktop
-// connects to stays driven by apps/desktop/.env* (VITE_API_URL / VITE_WS_URL),
+// connects to is configured in desktop.json or explicit development variables,
 // exactly as documented. This module only adds the two knobs needed for two
 // Electron processes to coexist.
 

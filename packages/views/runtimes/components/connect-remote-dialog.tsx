@@ -33,7 +33,7 @@ import {
   UI_MOTION_DURATION,
 } from "@multica/ui/lib/motion";
 import { cn } from "@multica/ui/lib/utils";
-import { CliInstallCommand } from "../../common/cli-install-command";
+import { CliInstallCommand, getCliInstallCommands } from "../../common/cli-install-command";
 import { DaemonSetupNotice } from "../../common/daemon-setup-notice";
 import { useNavigation } from "../../navigation";
 import { useT } from "../../i18n";
@@ -289,22 +289,24 @@ function InstructionsStep({ onClose }: { onClose: () => void }) {
           {/* Step 1 owns the platform switch: the install command differs by
               OS, so the user picks instead of us guessing. Step 2's
               `multica setup` is platform-independent. */}
-          <CommandStep n={1} label={t(($) => $.connect.step1_label)}>
-            <CliInstallCommand
-              labels={{
-                group: t(($) => $.connect.platform_group),
-                macosLinux: t(($) => $.connect.platform_macos_linux),
-                windows: t(($) => $.connect.platform_windows),
-              }}
-            >
-              {(cmd) => (
-                <CommandRow
-                  cmd={cmd}
-                  copyAria={t(($) => $.connect.copy_aria)}
-                />
-              )}
+          {Object.keys(getCliInstallCommands()).length > 0 && (
+            <CommandStep n={1} label={t(($) => $.connect.step1_label)}>
+              <CliInstallCommand
+                labels={{
+                  group: t(($) => $.connect.platform_group),
+                  macosLinux: t(($) => $.connect.platform_macos_linux),
+                  windows: t(($) => $.connect.platform_windows),
+                }}
+              >
+                {(cmd) => (
+                  <CommandRow
+                    cmd={cmd}
+                    copyAria={t(($) => $.connect.copy_aria)}
+                  />
+          )}
             </CliInstallCommand>
           </CommandStep>
+          )}
 
           <div>
             <CommandStep n={2} label={t(($) => $.connect.step2_label)}>

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 
 import { type ReactNode } from "react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -143,7 +144,7 @@ describe("TelegramAgentBindButton", () => {
     await userEvent.click(screen.getByTestId("telegram-agent-connect"));
     await userEvent.click(await screen.findByTestId("telegram-docs-link"));
     expect(mockOpenExternal).toHaveBeenCalledWith(
-      "https://multica.ai/docs/telegram-bot-integration",
+      "https://docs.example.test/docs/telegram-bot-integration",
     );
   });
 
@@ -329,3 +330,5 @@ describe("TelegramTab", () => {
     expect(screen.queryByText(/Telegram integration not enabled/i)).toBeNull();
   });
 });
+
+beforeEach(() => configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs" }));

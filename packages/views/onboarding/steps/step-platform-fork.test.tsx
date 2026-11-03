@@ -114,7 +114,7 @@ describe("StepPlatformFork", () => {
   });
 
   beforeEach(() => {
-    configStore.getState().setDaemonConfig({ daemonSetupTarget: "cloud" });
+    configStore.getState().setDaemonConfig({ daemonSetupTarget: "self_host", daemonServerUrl: "https://api.example.com", daemonAppUrl: "https://app.example.com" });
     resetPicker();
     vi.restoreAllMocks();
   });

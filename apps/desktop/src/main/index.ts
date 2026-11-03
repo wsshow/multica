@@ -846,9 +846,8 @@ if (!gotTheLock) {
       ackFreezeBreadcrumb(freezeBreadcrumbPath(), ts);
     });
 
-    // Sync IPC: preload exposes the validated runtime config before renderer
-    // boot. If desktop.json exists but is invalid, renderer receives the
-    // blocking error and must not silently fall back to the cloud defaults.
+    // Preload exposes validated configuration before renderer boot. Missing
+    // or invalid configuration blocks clients from connecting.
     ipcMain.on("runtime-config:get", (event) => {
       event.returnValue = runtimeConfigResult;
     });
@@ -1036,6 +1035,7 @@ if (!gotTheLock) {
 
     // Register first so the update quit gate can block daemon autoStop.
     setupAutoUpdater(() => mainWindows.all(), {
+      feedUrl: runtimeConfigResult.ok ? runtimeConfigResult.config.updateUrl : undefined,
       // Windows only (the updater ignores it elsewhere): stop the bundled
       // daemon before the installer runs so multica.exe is replaced. #8823
       daemonGate: {
@@ -1052,6 +1052,7 @@ if (!gotTheLock) {
     setupDaemonManager(
       () => mainWindows.mostRecent(),
       () => mainWindows.all(),
+      runtimeConfigResult.ok ? runtimeConfigResult.config : undefined,
     );
     setupLocalDirectory(() => mainWindows.mostRecent());
 

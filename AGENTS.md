@@ -125,12 +125,14 @@ Workspace-scoped queries filter by `workspace_id`; membership gates access and `
 - Do not add internal compatibility shims, dual writes, fallback paths, or legacy adapters unless requested. This does not relax API response compatibility above.
 - Use names, types, and tests to express behavior. Code comments are English and kept for non-obvious rationale and constraints; remove superseded plans and incident narratives when updating code. Preserve tool directives and mixed-version contracts.
 - New global pre-workspace routes use a single word or `/{noun}/{verb}`, not hyphenated root names. Update `server/internal/handler/reserved_slugs.json`, run `pnpm generate:reserved-slugs`, and commit `packages/core/paths/reserved-slugs.ts` when changing reserved slugs.
+- After completing and verifying each feature or documentation task, create a separate conventional commit. Keep unfinished work out of that commit.
 - Use atomic conventional commits and the repository PR template. For releases, follow [.github/RELEASING.md](.github/RELEASING.md); default to a patch bump unless specified otherwise.
 
 ## Customized Build Policy
 
 - Read [docs/customization.md](docs/customization.md) before syncing upstream code or changing analytics, diagnostics, client usage, operational metrics, or release sources.
 - Telemetry entry points are intentionally no-op APIs. Preserve their call signatures for upstream feature merges; do not restore SDKs, collectors, reporting, installation identifiers, crash persistence, or metrics listeners. Environment variables must not re-enable them.
+- Desktop requires explicit API and web app URLs in `~/.multica/desktop.json` (or development overrides). Missing configuration blocks startup; do not add official service, installer, update, or help-link fallbacks.
 - Desktop must compile and execute its bundled CLI from this checkout. Missing Go or a missing CLI must fail the build; do not fall back to downloaded, managed, or PATH binaries.
 - Keep user-visible task usage, cost, execution history, runtime liveness, and product Git integrations functional.
 - Run `pnpm check:telemetry` and the affected facade regression tests after upstream updates.

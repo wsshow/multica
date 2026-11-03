@@ -44,3 +44,23 @@ The CLI updater and shell/PowerShell installers require `MULTICA_RELEASE_REPOSIT
 Original installation examples and historical changelog links may still identify upstream. They are provenance or upstream documentation, not a configured remote of this repository. For this customized checkout, build locally (`make build`, `make selfhost-build`) until its own distribution repository is ready. Never install upstream binaries over this customized version.
 
 The Go vulnerability-scanning tool retains `golang.org/x/telemetry` as an indirect tooling dependency. It is not imported by the application. Required framework dependencies may likewise contain their own development tooling; this policy removes the application's telemetry implementations rather than rewriting installed third-party tools or user-installed agents.
+
+## Desktop service configuration
+
+The Electron client requires user-supplied connection settings. It has no production, staging, or localhost connection default. Copy `apps/desktop/desktop.example.json` to `~/.multica/desktop.json`, edit the URLs for your deployment, and restart the desktop app. The example assumes the self-host Compose API is published on localhost:8080 and its web app on localhost:3000; those example values are not loaded automatically.
+
+`schemaVersion: 1`, `apiUrl`, and `appUrl` are required. `appUrl` is the actual public web app URL used for browser login and share links; it is not guessed from the API hostname. Optional `wsUrl` defaults only to the configured API URL with the WebSocket scheme and `/ws` appended. Set it explicitly when a proxy exposes another socket path. When Docker runs on another computer, use a reachable hostname and publish the service through the deployment's reverse proxy; localhost refers to the desktop computer.
+
+Development reads the same file unless endpoint variables are supplied. To override it, copy `apps/desktop/.env.example` to `.env.development.local` and set both `VITE_API_URL` and `VITE_APP_URL`; optional `VITE_WS_URL` overrides the socket URL. Partial overrides are rejected. No staging endpoints are committed.
+
+Optional configuration fields:
+
+- `updateUrl`: a self-managed generic Electron update feed. Without it, startup, periodic, manual check, download, and installation paths cannot use a packaged or inferred feed.
+- `links.docsUrl`: documentation root; localized guide paths are appended.
+- `links.changelogUrl`, `links.downloadUrl`, `links.communityUrl`, and `links.feedbackUrl`: operator-provided external help destinations.
+- `links.cliInstallUrl` and `links.cliInstallWindowsUrl`: operator-hosted shell and PowerShell installers for additional computers. Without them, no upstream install command is offered.
+- `links.runtimeReleaseUrl`: operator-hosted CLI release metadata returning `{ "tag_name": "v1.2.3" }`. Without it, runtime settings make no release lookup; Desktop-managed runtimes never make this lookup. Remote CLI updates also require their own `MULTICA_RELEASE_REPOSITORY` configuration.
+
+Omit optional URLs to disable their links or requests. API authentication, daemon registration, tasks, and WebSockets use the explicitly configured deployment. Desktop writes both service and web URLs into its own CLI profile and pins its child environment to them; it never borrows another profile or a shell's server URL. The standalone CLI remains a separate entry point; Desktop always launches its bundled CLI with its own profile.
+
+Shared help components also have no upstream link defaults. Other shells can install their own links with `configureDeploymentLinks` before rendering. Product integrations with Git providers and third-party agent services remain available.

@@ -51,7 +51,7 @@ import type {
   DingTalkInstallation,
 } from "@multica/core/types";
 import { ActorAvatar } from "../../common/actor-avatar";
-import { docsLocalePrefix } from "../../common/docs-locale";
+import { documentationUrl } from "../../common/docs-locale";
 import { openExternal } from "../../platform";
 import { useT, useTimeAgo } from "../../i18n";
 import { TooltipHint } from "@multica/ui/components/common/tooltip-hint";
@@ -800,7 +800,7 @@ function InstallationRow({
 // prefixes (English has none), matching the convention used elsewhere in the
 // app for doc links.
 function dingtalkDocsUrl(lang: string | undefined): string {
-  return `https://multica.ai/docs${docsLocalePrefix(lang)}/dingtalk-bot-integration`;
+  return documentationUrl("/dingtalk-bot-integration", lang) ?? "";
 }
 
 // DingTalkAgentBindButton is the per-agent CTA exposed from the agent detail
@@ -958,15 +958,17 @@ export function DingTalkAgentBindButton({
               {t(($) => $.dingtalk.byo_dialog_title)}
             </DialogTitle>
 
-            <button
-              type="button"
-              onClick={() => openExternal(dingtalkDocsUrl(i18n.language))}
-              className="inline-flex w-fit items-center gap-1.5 text-caption text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
-              data-testid="dingtalk-byo-docs-link"
-            >
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-              {t(($) => $.dingtalk.byo_docs_link)}
-            </button>
+            {dingtalkDocsUrl(i18n.language) && (
+              <button
+                type="button"
+                onClick={() => openExternal(dingtalkDocsUrl(i18n.language))}
+                className="inline-flex w-fit items-center gap-1.5 text-caption text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+                data-testid="dingtalk-byo-docs-link"
+              >
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                {t(($) => $.dingtalk.byo_docs_link)}
+              </button>
+            )}
           </DialogHeader>
 
           <div className="space-y-4 p-5">

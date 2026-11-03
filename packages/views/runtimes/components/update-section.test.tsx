@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
@@ -33,12 +34,23 @@ function renderSection(props: {
   );
 }
 
+beforeEach(() => configureDeploymentLinks({ runtimeReleaseUrl: "https://updates.example.test/runtime.json" }));
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
 
 describe("UpdateSection read-only status", () => {
+  it("does not look up releases when no source was configured", () => {
+    configureDeploymentLinks({});
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    renderSection({ runtimeId: "runtime-1" });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(screen.queryByText("Latest")).not.toBeInTheDocument();
+  });
+
   it("shows Latest without a redundant read-only label or update action", async () => {
     vi.stubGlobal(
       "fetch",
@@ -67,6 +79,7 @@ describe("UpdateSection read-only status", () => {
     );
 
     renderSection({ runtimeId: null, launchedBy: "desktop" });
+    expect(fetch).not.toHaveBeenCalled();
 
     expect(screen.getByText("Managed by Desktop")).toBeInTheDocument();
     expect(screen.queryByText("Read-only")).not.toBeInTheDocument();

@@ -1,3 +1,4 @@
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 import { cloneElement, type ReactElement, type ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -78,6 +79,7 @@ vi.mock("@multica/ui/components/ui/dropdown-menu", async () => {
 });
 
 beforeEach(() => {
+  configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs", changelogUrl: "https://docs.example.test/releases", downloadUrl: "https://downloads.example.test", communityUrl: "https://community.example.test" });
   vi.mocked(isDesktopShell).mockReturnValue(false);
   i18nState.language = "en";
 });
@@ -87,6 +89,12 @@ afterEach(() => {
 });
 
 describe("HelpLauncher", () => {
+  it("hides outbound help links when none were configured", () => {
+    configureDeploymentLinks({});
+    render(<HelpLauncher />);
+    expect(screen.queryAllByRole("link")).toHaveLength(0);
+  });
+
   it("does not show a version row when the server omits it", () => {
     render(<HelpLauncher />);
     expect(screen.queryByText(/Server version/)).not.toBeInTheDocument();
@@ -104,13 +112,13 @@ describe("HelpLauncher", () => {
   it("links to the download page on web", () => {
     render(<HelpLauncher />);
     const link = screen.getByRole("link", { name: /Desktop app/ });
-    expect(link).toHaveAttribute("href", "https://multica.ai/download");
+    expect(link).toHaveAttribute("href", "https://downloads.example.test");
   });
 
   it.each([
-    ["en", "https://multica.ai/docs"],
-    ["zh-Hans", "https://multica.ai/docs/zh"],
-    ["fr", "https://multica.ai/docs/fr"],
+    ["en", "https://docs.example.test/docs"],
+    ["zh-Hans", "https://docs.example.test/docs/zh"],
+    ["fr", "https://docs.example.test/docs/fr"],
   ])("links Docs to the %s docs", (language, href) => {
     i18nState.language = language;
     render(<HelpLauncher />);

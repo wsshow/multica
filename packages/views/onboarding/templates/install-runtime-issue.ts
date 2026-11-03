@@ -41,8 +41,6 @@ That gives you the project-management layer first. Once a runtime is connected, 
 
 ## Install your first agent runtime
 
-Full guide: https://multica.ai/docs/install-agent-runtime
-
 For English users, the fastest first path is Codex:
 
 1. Make sure Node.js is installed.
@@ -82,8 +80,6 @@ const zh = `欢迎来到 Multica。
 这样你先熟悉项目管理层。连上运行时后,智能体会直接在这些任务上开始工作。
 
 ## 安装第一个 Agent 运行时
-
-完整文档:https://multica.ai/docs/install-agent-runtime
 
 中文用户建议先装 Kimi Code CLI（旧版 Kimi CLI 已停止维护）。
 
@@ -127,8 +123,6 @@ runtime이 준비되기 전에는 다음을 해볼 수 있습니다:
 
 ## 첫 agent runtime 설치하기
 
-전체 가이드: https://multica.ai/docs/install-agent-runtime
-
 한국어 사용자는 Codex로 시작하는 것이 가장 빠릅니다:
 
 1. Node.js가 설치되어 있는지 확인합니다.
@@ -168,8 +162,6 @@ runtime が準備できる前に、次のことを試せます:
 これでまずプロジェクト管理のレイヤーに慣れることができます。runtime を接続すると、agent が同じタスクから作業を始められます。
 
 ## 最初の agent runtime をインストールする
-
-詳しいガイド: https://multica.ai/docs/install-agent-runtime
 
 日本語ユーザーには、Codex で始めるのが最も速い経路です:
 

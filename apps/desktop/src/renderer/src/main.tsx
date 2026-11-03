@@ -1,3 +1,4 @@
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { AppCrashBoundary } from "./components/app-crash-boundary";
@@ -42,6 +43,9 @@ if (import.meta.env.DEV && import.meta.env.VITE_REACT_GRAB) {
   grab.crossOrigin = "anonymous";
   document.head.appendChild(grab);
 }
+
+const runtimeConfig = window.desktopAPI.runtimeConfig;
+configureDeploymentLinks(runtimeConfig.ok ? runtimeConfig.config.links ?? {} : {});
 
 // A window opened for a workspace starts on it rather than on whichever
 // workspace was last active in any window.

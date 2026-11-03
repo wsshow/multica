@@ -1,6 +1,3 @@
-/** Community invite link. Shared by the help launcher and the sidebar card. */
-export const DISCORD_URL = "https://discord.gg/W8gYBn226t";
-
 // lucide-react ships no Discord brand glyph, so render the official mark
 // inline. Sized via className to match the surrounding icons.
 export function DiscordIcon({ className }: { className?: string }) {

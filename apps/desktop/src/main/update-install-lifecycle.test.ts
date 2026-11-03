@@ -50,6 +50,7 @@ vi.mock("electron-updater", () => ({
     autoInstallOnAppQuit: true,
     quitAndInstall: ctx.install,
     checkForUpdates: vi.fn(async () => null),
+    setFeedURL: vi.fn(),
     downloadUpdate: vi.fn(),
     on: (name: string, fn: Handler) => {
       ctx.updaterListeners.set(name, [...(ctx.updaterListeners.get(name) ?? []), fn]);
@@ -133,6 +134,7 @@ async function setupRealGate() {
   const manager = await import("./daemon-manager");
   const { setupAutoUpdater } = await import("./updater");
   setupAutoUpdater(() => [], {
+    feedUrl: "https://updates.example.test/desktop",
     platform: "win32",
     daemonGate: {
       prepare: manager.prepareDaemonForUpdateInstall,

@@ -2,7 +2,9 @@
 import { mkdtemp, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+vi.mock("electron", () => ({ app: { getPath: () => "/test/home" } }));
+
 import { loadRuntimeConfig } from "./runtime-config-loader";
 
 describe("loadRuntimeConfig", () => {
@@ -35,7 +37,7 @@ describe("loadRuntimeConfig", () => {
     });
   });
 
-  it("uses cloud defaults when packaged config is absent", async () => {
+  it("requires configuration when packaged config is absent", async () => {
     const dir = await mkdtemp(join(tmpdir(), "multica-desktop-config-"));
     await expect(
       loadRuntimeConfig({
@@ -44,13 +46,8 @@ describe("loadRuntimeConfig", () => {
         env: {},
       }),
     ).resolves.toEqual({
-      ok: true,
-      config: {
-        schemaVersion: 1,
-        apiUrl: "https://api.multica.ai",
-        wsUrl: "wss://api.multica.ai/ws",
-        appUrl: "https://multica.ai",
-      },
+      ok: false,
+      error: { message: expect.stringContaining("Missing ") },
     });
   });
 
@@ -59,7 +56,7 @@ describe("loadRuntimeConfig", () => {
     const configPath = join(dir, "desktop.json");
     await writeFile(
       configPath,
-      JSON.stringify({ schemaVersion: 1, apiUrl: "https://api.example.com" }),
+      JSON.stringify({ schemaVersion: 1, apiUrl: "https://api.example.com", appUrl: "https://portal.example.com" }),
     );
 
     await expect(
@@ -70,9 +67,22 @@ describe("loadRuntimeConfig", () => {
         schemaVersion: 1,
         apiUrl: "https://api.example.com",
         wsUrl: "wss://api.example.com/ws",
-        appUrl: "https://example.com",
+        appUrl: "https://portal.example.com",
       },
     });
+  });
+
+  it("uses desktop.json in development when no endpoint overrides are set", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "multica-desktop-config-"));
+    const configPath = join(dir, "desktop.json");
+    await writeFile(configPath, JSON.stringify({ schemaVersion: 1, apiUrl: "http://localhost:8080", appUrl: "http://localhost:3000" }));
+    const result = await loadRuntimeConfig({ isDev: true, configPath, env: {} });
+    expect(result).toMatchObject({ ok: true, config: { apiUrl: "http://localhost:8080" } });
+  });
+
+  it("does not recover partial dev overrides by selecting another server", async () => {
+    const result = await loadRuntimeConfig({ isDev: true, env: { apiUrl: "http://localhost:8080" } });
+    expect(result).toMatchObject({ ok: false, error: { message: expect.stringContaining("VITE_APP_URL") } });
   });
 
   it("fails closed when packaged desktop.json is invalid", async () => {

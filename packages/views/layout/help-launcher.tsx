@@ -21,15 +21,17 @@ import { TooltipHint } from "@multica/ui/components/common/tooltip-hint";
 import { useModalStore } from "@multica/core/modals";
 import { useConfigStore } from "@multica/core/config";
 import { isDesktopShell } from "../platform/local-directory";
-import { DISCORD_URL, DiscordIcon } from "./discord";
+import { DiscordIcon } from "./discord";
 import { useT } from "../i18n";
-import { docsLocalePrefix } from "../common/docs-locale";
+import { documentationUrl } from "../common/docs-locale";
 import { RAIL_ICON_BUTTON_CLASS } from "./rail-styles";
-import { CHANGELOG_URL, DOCS_URL, DOWNLOAD_URL } from "./help-links";
+import { getDeploymentLinks } from "@multica/core/platform/deployment-links";
 
 
 export function HelpLauncher() {
   const { t, i18n } = useT("layout");
+  const { changelogUrl, downloadUrl, communityUrl } = getDeploymentLinks();
+  const docsUrl = documentationUrl("", i18n.language);
   const serverVersion = useConfigStore((state) => state.serverVersion);
   // Web-only: offering "download the desktop app" inside the desktop app is
   // nonsense, and this rail is shared — apps/desktop renders the same app
@@ -57,12 +59,12 @@ export function HelpLauncher() {
         sideOffset={8}
         className="min-w-40 max-w-56"
       >
-        {!desktop && (
+        {!desktop && downloadUrl && (
           <>
             <DropdownMenuItem
               render={
                 <a
-                  href={DOWNLOAD_URL}
+                  href={downloadUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 />
@@ -75,41 +77,47 @@ export function HelpLauncher() {
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuItem
-          render={
-            <a
-              href={`${DOCS_URL}${docsLocalePrefix(i18n.language)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-        >
-          <BookOpen className="h-3.5 w-3.5" />
-          {t(($) => $.help.docs)}
-          <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          render={
-            <a
-              href={CHANGELOG_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-        >
-          <History className="h-3.5 w-3.5" />
-          {t(($) => $.help.changelog)}
-          <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          render={
-            <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer" />
-          }
-        >
-          <DiscordIcon className="h-3.5 w-3.5" />
-          {t(($) => $.help.discord)}
-          <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
-        </DropdownMenuItem>
+        {docsUrl && (
+          <DropdownMenuItem
+            render={
+              <a
+                href={docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            }
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            {t(($) => $.help.docs)}
+            <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
+          </DropdownMenuItem>
+        )}
+        {changelogUrl && (
+          <DropdownMenuItem
+            render={
+              <a
+                href={changelogUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            }
+          >
+            <History className="h-3.5 w-3.5" />
+            {t(($) => $.help.changelog)}
+            <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
+          </DropdownMenuItem>
+        )}
+        {communityUrl && (
+          <DropdownMenuItem
+            render={
+              <a href={communityUrl} target="_blank" rel="noopener noreferrer" />
+            }
+          >
+            <DiscordIcon className="h-3.5 w-3.5" />
+            {t(($) => $.help.discord)}
+            <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onClick={() => useModalStore.getState().open("feedback")}
         >

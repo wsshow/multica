@@ -17,15 +17,8 @@ describe("normalizeCommandURL", () => {
 });
 
 describe("daemonCommands", () => {
-  it("only returns Cloud commands for a confirmed Cloud deployment", () => {
-    const result = daemonCommands({ status: "ready", target: "cloud" });
-    expect(result.status).toBe("ready");
-    if (result.status !== "ready") {
-      throw new Error("expected confirmed Cloud commands");
-    }
-    expect(result.setupCmd).toBe("multica setup");
-    expect(result.tokenCmd).toContain("server_url https://api.multica.ai");
-    expect(result.tokenCmd).toContain("app_url https://multica.ai");
+  it("requires configured addresses even for a server identifying as cloud", () => {
+    expect(daemonCommands({ status: "ready", target: "cloud" })).toEqual({ status: "incomplete" });
   });
 
   it("returns self-host commands with the configured URLs", () => {

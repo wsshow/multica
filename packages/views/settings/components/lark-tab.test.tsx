@@ -1,3 +1,4 @@
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 import { StrictMode, type ReactNode } from "react";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
@@ -455,6 +456,7 @@ describe("LarkAgentBindButton (CTA gate)", () => {
 // invalidation, and toast feedback on success / failure.
 describe("LarkAgentBotConnectedBadge (Unbind / Disconnect)", () => {
   beforeEach(() => {
+  configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs", changelogUrl: "https://docs.example.test/releases", downloadUrl: "https://downloads.example.test", communityUrl: "https://community.example.test" });
     resetFixtures();
     installationsRef.current.installations = [
       {
@@ -495,7 +497,7 @@ describe("LarkAgentBotConnectedBadge (Unbind / Disconnect)", () => {
     expect(screen.getByText(/long connection/i)).toBeTruthy();
     const docs = screen.getByRole("link", { name: /Troubleshooting/i });
     expect(docs.getAttribute("href")).toBe(
-      "https://multica.ai/docs/lark-bot-integration",
+      "https://docs.example.test/docs/lark-bot-integration",
     );
   });
 

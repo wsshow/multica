@@ -1,5 +1,7 @@
 "use client";
 
+import { documentationUrl } from "../../common/docs-locale";
+
 import { useState } from "react";
 import { X, Plus, Filter, ExternalLink } from "@multica/ui/icons";
 import { cn } from "@multica/ui/lib/utils";
@@ -19,11 +21,10 @@ export function WebhookEventFilterSection({
   const { t, i18n } = useT("autopilots");
   const [newEvent, setNewEvent] = useState("");
   const [newActions, setNewActions] = useState("");
-  const docsHref = i18n.language?.startsWith("zh")
-    ? `https://multica.ai/docs/zh/autopilots#${encodeURIComponent("事件过滤")}`
-    : i18n.language?.startsWith("fr")
-      ? `https://multica.ai/docs/fr/autopilots#${encodeURIComponent("filtres-dévénements")}`
-      : "https://multica.ai/docs/autopilots#event-filters";
+  const docsBase = documentationUrl("/autopilots", i18n.language);
+  const anchor = i18n.language?.startsWith("zh") ? "事件过滤"
+    : i18n.language?.startsWith("fr") ? "filtres-dévénements" : "event-filters";
+  const docsHref = docsBase ? `${docsBase}#${encodeURIComponent(anchor)}` : undefined;
 
   const addFilter = () => {
     const event = newEvent.trim();
@@ -48,16 +49,18 @@ export function WebhookEventFilterSection({
       <div className="flex items-center gap-1.5 text-micro font-semibold tracking-[0.08em] text-muted-foreground uppercase">
         <Filter className="size-3" />
         {t(($) => $.dialog.event_filter_label)}
-        <a
-          href={docsHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={t(($) => $.dialog.event_filter_docs_link_label)}
-          title={t(($) => $.dialog.event_filter_docs_link_label)}
-          className="ml-0.5 inline-flex items-center text-faint-foreground hover:text-foreground transition-colors"
-        >
-          <ExternalLink className="size-3" />
-        </a>
+        {docsHref && (
+          <a
+            href={docsHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t(($) => $.dialog.event_filter_docs_link_label)}
+            title={t(($) => $.dialog.event_filter_docs_link_label)}
+            className="ml-0.5 inline-flex items-center text-faint-foreground hover:text-foreground transition-colors"
+          >
+            <ExternalLink className="size-3" />
+          </a>
+        )}
       </div>
 
       {filters.length > 0 && (

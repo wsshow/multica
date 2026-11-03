@@ -1,3 +1,4 @@
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
@@ -70,7 +71,7 @@ const wsEventState = vi.hoisted(() => ({
 }));
 
 const WINDOWS_CMD =
-  "irm https://raw.githubusercontent.com/multica-ai/multica/main/scripts/install.ps1 | iex";
+  "irm 'https://downloads.example.test/install.ps1' | iex";
 
 vi.mock("@multica/core/realtime", () => ({
   useWSEvent: (_event: string, handler: (payload: unknown) => void) => {
@@ -133,7 +134,7 @@ function renderDialog(config?: {
   daemonSetupTarget?: DaemonSetupTarget;
 }, status: DaemonConfigStatus = "ready", qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })) {
   resetConfigStore();
-  configStore.getState().setDaemonConfig(config ?? { daemonSetupTarget: "cloud" });
+  configStore.getState().setDaemonConfig(config ?? { daemonSetupTarget: "self_host", daemonServerUrl: "https://api.example.com", daemonAppUrl: "https://app.example.com" });
   configStore.getState().setDaemonConfigStatus(status);
   const dialog = () => (
     <QueryClientProvider client={qc}>
@@ -155,6 +156,7 @@ async function renderListeningDialog(runtimes: AgentRuntime[] = []) {
 
 describe("ConnectRemoteDialog", () => {
   beforeEach(() => {
+    configureDeploymentLinks({ cliInstallUrl: "https://downloads.example.test/install.sh", cliInstallWindowsUrl: "https://downloads.example.test/install.ps1" });
     workspaceState.id = WS_ID;
     workspaceState.slug = "workspace-test";
     authState.user = { id: USER_ID };
@@ -165,17 +167,10 @@ describe("ConnectRemoteDialog", () => {
     clipboard.copyText.mockReset().mockResolvedValue(true);
   });
 
-  it("uses cloud setup commands by default", () => {
-    const { baseElement } = renderDialog();
-
-    expect(baseElement).toHaveTextContent("multica setup");
-    expect(baseElement).not.toHaveTextContent("multica setup self-host");
-    expect(baseElement).toHaveTextContent(
-      "multica config set server_url https://api.multica.ai",
-    );
-    expect(baseElement).toHaveTextContent(
-      "multica config set app_url https://multica.ai",
-    );
+  it("withholds setup commands when a server supplies no addresses", () => {
+    const { baseElement } = renderDialog({ daemonSetupTarget: "cloud" });
+    expect(baseElement).not.toHaveTextContent("multica setup");
+    expect(baseElement).not.toHaveTextContent("multica config set server_url");
   });
 
   it("uses self-host daemon URLs from runtime config", () => {
@@ -284,7 +279,7 @@ describe("ConnectRemoteDialog", () => {
     const { qc } = await renderListeningDialog();
     await refreshRuntimes(qc, payload);
     expect(screen.queryByText("Machine connected")).not.toBeInTheDocument();
-    expect(screen.getByText("multica setup")).toBeInTheDocument();
+    expect(screen.getByText("multica setup self-host --server-url https://api.example.com --app-url https://app.example.com")).toBeInTheDocument();
   });
 
   it("does not report success from an offline notification alone", async () => {
@@ -474,7 +469,7 @@ describe("ConnectRemoteDialog", () => {
     await waitFor(() => expect(view.qc.getQueryData(runtimeKeys.listMine(nextWorkspace))).toEqual([]));
     await refreshRuntimes(view.qc, { runtime_profile_id: "existing-profile" });
     expect(screen.queryByText("Machine connected")).not.toBeInTheDocument();
-    expect(screen.getByText("multica setup")).toBeInTheDocument();
+    expect(screen.getByText("multica setup self-host --server-url https://api.example.com --app-url https://app.example.com")).toBeInTheDocument();
   });
 
 

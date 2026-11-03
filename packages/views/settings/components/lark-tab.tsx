@@ -41,7 +41,7 @@ import { larkInstallationsOptions, larkKeys } from "@multica/core/lark";
 import { api, ApiError } from "@multica/core/api";
 import type { LarkInstallation, LarkInstallStatusResponse } from "@multica/core/types";
 import { ActorAvatar } from "../../common/actor-avatar";
-import { docsLocalePrefix } from "../../common/docs-locale";
+import { documentationUrl } from "../../common/docs-locale";
 import { useLocale, useT } from "../../i18n";
 import { TooltipHint } from "@multica/ui/components/common/tooltip-hint";
 
@@ -543,7 +543,7 @@ function larkDevConsoleHost(region?: string): string {
 // larkDocsUrl points at the Lark/Feishu integration guide, localized the
 // same way as the Telegram and Slack docs links.
 function larkDocsUrl(lang: string | undefined): string {
-  return `https://multica.ai/docs${docsLocalePrefix(lang)}/lark-bot-integration`;
+  return documentationUrl("/lark-bot-integration", lang) ?? "";
 }
 
 function LarkAgentBotConnectedBadge({
@@ -652,16 +652,18 @@ function LarkAgentBotConnectedBadge({
       </a>
 
       {/* Keep troubleshooting reachable after the install dialog closes. */}
-      <p className="text-caption text-muted-foreground">
-        <a
-          href={larkDocsUrl(i18n.language)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 transition-colors hover:text-foreground"
-        >
-          {t(($) => $.lark.agent_bot_silent_hint_link)}
-        </a>
-      </p>
+      {larkDocsUrl(i18n.language) && (
+        <p className="text-caption text-muted-foreground">
+          <a
+            href={larkDocsUrl(i18n.language)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 transition-colors hover:text-foreground"
+          >
+            {t(($) => $.lark.agent_bot_silent_hint_link)}
+          </a>
+        </p>
+      )}
 
       <AlertDialog
         open={confirmOpen}

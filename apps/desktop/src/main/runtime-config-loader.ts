@@ -2,7 +2,6 @@ import { app } from "electron";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import {
-  DEFAULT_RUNTIME_CONFIG,
   parseRuntimeConfig,
   runtimeConfigFromDevEnv,
   type RuntimeConfig,
@@ -15,7 +14,7 @@ export async function loadRuntimeConfig(options: {
   env: RuntimeConfigEnv;
   configPath?: string;
 }): Promise<RuntimeConfigResult> {
-  if (options.isDev) {
+  if (options.isDev && Object.values(options.env).some((value) => value !== undefined)) {
     try {
       return { ok: true, config: runtimeConfigFromDevEnv(options.env) };
     } catch (err) {
@@ -29,7 +28,10 @@ export async function loadRuntimeConfig(options: {
     return { ok: true, config: parseRuntimeConfig(raw) };
   } catch (err) {
     if (isMissingFileError(err)) {
-      return { ok: true, config: { ...DEFAULT_RUNTIME_CONFIG } };
+      return {
+        ok: false,
+        error: { message: `Missing ${configPath}. Configure apiUrl and appUrl before connecting.` },
+      };
     }
     return {
       ok: false,

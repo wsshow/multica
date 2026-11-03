@@ -1,11 +1,12 @@
-import { docsLocalePrefix } from "../../common/docs-locale";
+import { documentationUrl } from "../../common/docs-locale";
 
 export function daemonRuntimesDocsHref(language?: string): string {
-  return `https://multica.ai/docs${docsLocalePrefix(language)}/daemon-runtimes`;
+  return documentationUrl("/daemon-runtimes", language) ?? "";
 }
 
 export function customRuntimeDocsHref(language?: string): string {
   const base = daemonRuntimesDocsHref(language);
+  if (!base) return "";
   if (language?.startsWith("zh")) {
     return `${base}#${encodeURIComponent("自定义运行时配置")}`;
   }

@@ -497,7 +497,11 @@ the environment registry, and waits until that renderer is actually serving.
 Several checkouts can therefore run Desktop side by side without maintaining a
 second path-derived identity. `make destroy` removes the marked env file and
 this environment's Electron userData. Direct `pnpm dev:desktop` still uses its
-path-derived fallback when it is run outside `make up`.
+path-derived renderer port and app identity outside `make up`. Service addresses
+must come from `~/.multica/desktop.json` or explicit development variables;
+`VITE_API_URL` and `VITE_APP_URL` are both required when using overrides. See
+[desktop connection configuration](docs/customization.md#desktop-service-configuration).
+There is no default cloud or localhost connection.
 
 Log in with `dev@localhost` and `888888`.
 
@@ -513,7 +517,7 @@ Nothing in this flow touches the system-installed `multica` or the default
 | Workspaces dir | `~/multica_workspaces/` | `~/multica_workspaces_dev-<slug>-<offset>/` |
 | Database | remote / production | local: `multica_<slug>_<offset>` |
 | Registry | — | `~/.multica/dev/envs/<name>/` |
-| Desktop profile | `desktop-api.multica.ai` | `desktop-localhost-<port>` |
+| Desktop profile | `desktop-<configured-api-host>` | `desktop-localhost-<port>` |
 
 Multiple environments run simultaneously without conflict; `make list` shows
 all of them.

@@ -170,15 +170,17 @@ export function RuntimeProfilesDialog({
                   })
                 : t(($) => $.profiles.dialog_description)}
             </span>{" "}
-            <a
-              href={docsHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-1 inline-flex items-center gap-1 rounded-sm font-medium text-foreground underline underline-offset-2 transition-colors hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {t(($) => $.profiles.learn_more)}
-              <ExternalLink aria-hidden="true" className="h-3 w-3" />
-            </a>
+            {docsHref && (
+              <a
+                href={docsHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-flex items-center gap-1 rounded-sm font-medium text-foreground underline underline-offset-2 transition-colors hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {t(($) => $.profiles.learn_more)}
+                <ExternalLink aria-hidden="true" className="h-3 w-3" />
+              </a>
+            )}
           </DialogDescription>
         </DialogHeader>
 

@@ -8,7 +8,7 @@ import { CODE_LIGATURE_CLASS } from "@multica/ui/lib/code-style";
 import { cn } from "@multica/ui/lib/utils";
 import { copyText } from "@multica/ui/lib/clipboard";
 import { useDaemonSetupCommands } from "@multica/core/runtimes";
-import { CliInstallCommand } from "../../common/cli-install-command";
+import { CliInstallCommand, getCliInstallCommands } from "../../common/cli-install-command";
 import { DaemonSetupNotice } from "../../common/daemon-setup-notice";
 import { useT } from "../../i18n";
 
@@ -88,17 +88,19 @@ export function CliInstallInstructions() {
         <p className="text-caption leading-[1.55] text-muted-foreground">
           {t(($) => $.cli_install.intro)}
         </p>
-        <Step n={1} label={t(($) => $.cli_install.step1_label)}>
-          <CliInstallCommand
-            labels={{
-              group: t(($) => $.cli_install.platform_group),
-              macosLinux: t(($) => $.cli_install.platform_macos_linux),
-              windows: t(($) => $.cli_install.platform_windows),
-            }}
-          >
-            {(cmd) => <CommandRow cmd={cmd} />}
-          </CliInstallCommand>
-        </Step>
+        {Object.keys(getCliInstallCommands()).length > 0 && (
+          <Step n={1} label={t(($) => $.cli_install.step1_label)}>
+            <CliInstallCommand
+              labels={{
+                group: t(($) => $.cli_install.platform_group),
+                macosLinux: t(($) => $.cli_install.platform_macos_linux),
+                windows: t(($) => $.cli_install.platform_windows),
+              }}
+            >
+              {(cmd) => <CommandRow cmd={cmd} />}
+            </CliInstallCommand>
+          </Step>
+        )}
         <Step n={2} label={t(($) => $.cli_install.step2_label)}>
           {commands.status === "ready" ? (
             <CommandRow cmd={commands.setupCmd} />

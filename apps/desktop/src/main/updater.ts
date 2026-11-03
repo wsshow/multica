@@ -16,7 +16,7 @@ import type { DaemonInstallPrep } from "./update-install-gate";
 // as `update-available` fires; we only surface UI when the package is fully
 // downloaded and ready to install on next quit.
 autoUpdater.autoDownload = true;
-autoUpdater.autoInstallOnAppQuit = true;
+autoUpdater.autoInstallOnAppQuit = false;
 
 // Windows arm64 ships its own update metadata channel because
 // electron-builder's `latest.yml` is not arch-suffixed on Windows — both
@@ -69,6 +69,7 @@ export interface UpdaterDaemonGate {
 }
 
 export interface SetupAutoUpdaterOptions {
+  feedUrl?: string;
   daemonGate?: UpdaterDaemonGate;
   platform?: NodeJS.Platform;
 }
@@ -152,6 +153,13 @@ export function setupAutoUpdater(
   getMainWindows: () => readonly BrowserWindow[],
   options: SetupAutoUpdaterOptions = {},
 ): void {
+  const feedUrl = options.feedUrl;
+  autoUpdater.autoInstallOnAppQuit = Boolean(feedUrl);
+  if (feedUrl) autoUpdater.setFeedURL({ provider: "generic", url: feedUrl });
+  const requireFeed = (): void => {
+    if (!feedUrl) throw new Error("Configure updateUrl in ~/.multica/desktop.json to enable updates");
+  };
+
   // Every main window mounts the update banner, so each one hears progress.
   const broadcast = (channel: RendererChannel, payload: unknown) => {
     for (const win of getMainWindows()) sendToLiveRenderer(win, channel, payload);
@@ -176,7 +184,7 @@ export function setupAutoUpdater(
   const runAutomaticCheck = (errorMessage: string): void => {
     void preferencesReady
       .then(() => {
-        if (!automaticUpdatesEnabled) return;
+        if (!feedUrl || !automaticUpdatesEnabled) return;
         return checkForUpdatesOnce();
       })
       .catch((err) => {
@@ -187,6 +195,7 @@ export function setupAutoUpdater(
   // Arm the startup + periodic background checks. Idempotent: an already-armed
   // timer is left in place so re-enabling never stacks duplicate schedules.
   const scheduleBackgroundChecks = (): void => {
+    if (!feedUrl) return;
     if (startupTimer === null && !startupCheckElapsed) {
       // Initial check shortly after startup so we don't block boot.
       startupTimer = setTimeout(() => {
@@ -308,10 +317,12 @@ export function setupAutoUpdater(
   // Retained for IPC back-compat with older renderer bundles. With
   // autoDownload=true the renderer no longer triggers this path.
   ipcMain.handle("updater:download", () => {
+    requireFeed();
     return autoUpdater.downloadUpdate();
   });
 
   ipcMain.handle("updater:install", async () => {
+    requireFeed();
     if (!daemonGate) {
       autoUpdater.quitAndInstall(false, true);
       return;
@@ -323,7 +334,7 @@ export function setupAutoUpdater(
     "updater:get-preferences",
     async (): Promise<UpdaterPreferences> => {
       await preferencesReady;
-      return { automaticUpdates: automaticUpdatesEnabled };
+      return { automaticUpdates: Boolean(feedUrl) && automaticUpdatesEnabled };
     },
   );
 
@@ -334,6 +345,7 @@ export function setupAutoUpdater(
         throw new TypeError("automaticUpdates must be a boolean");
       }
 
+      if (enabled) requireFeed();
       await preferencesReady;
       const wasEnabled = automaticUpdatesEnabled;
       const preferences = { automaticUpdates: enabled };
@@ -357,6 +369,7 @@ export function setupAutoUpdater(
 
   ipcMain.handle("updater:check", async (): Promise<ManualUpdateCheckResult> => {
     try {
+      requireFeed();
       const result = (await checkForUpdatesOnce()) as
         | { updateInfo: { version: string }; isUpdateAvailable?: boolean }
         | null;
