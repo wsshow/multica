@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,7 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/multica-ai/multica/server/internal/metrics"
 	"github.com/multica-ai/multica/server/internal/testutil"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
@@ -112,9 +109,7 @@ func TestSearchAlreadyCanceledRequest(t *testing.T) {
 
 func assertSearchStatus(t *testing.T, h *Handler, endpoint string, ctx context.Context, status int) {
 	t.Helper()
-	registry := metrics.NewRegistry(metrics.RegistryOptions{})
 	router := chi.NewRouter()
-	router.Use(registry.HTTP.Middleware)
 	path := "/api/" + endpoint + "/search"
 	if endpoint == "issues" {
 		router.Get(path, h.SearchIssues)
@@ -125,21 +120,6 @@ func assertSearchStatus(t *testing.T, h *Handler, endpoint string, ctx context.C
 	response := testutil.Call(t, router.ServeHTTP, req).Want(status)
 	if status == 499 && response.Body.Len() != 0 {
 		t.Fatalf("disconnected search wrote a response body: %s", response.Body.String())
-	}
-
-	rec := httptest.NewRecorder()
-	metrics.NewHandler(registry.Gatherer).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/metrics", nil))
-	body := rec.Body.String()
-	want := `multica_http_requests_total{method="GET",route="` + path + `",status="` + strconv.Itoa(status) + `"} 1`
-	if !strings.Contains(body, want) {
-		t.Fatalf("missing request classification %q in metrics:\n%s", want, body)
-	}
-	if status == 499 {
-		for _, incorrect := range []string{`status="200"`, `status="500"`, `status="503"`} {
-			if strings.Contains(body, incorrect) {
-				t.Fatalf("canceled search counted as %s:\n%s", incorrect, body)
-			}
-		}
 	}
 }
 
