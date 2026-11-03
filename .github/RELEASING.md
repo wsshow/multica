@@ -28,6 +28,13 @@ and container images.
 The verification job runs the Go tests and `govulncheck` before any publishing
 job starts. The vulnerability scan is fail-closed by default.
 
+Desktop metadata declares pnpm and the customized project homepage required
+by Linux DEB/RPM packaging. Keep its package manager version aligned with the
+workspace root. Desktop publishing explicitly selects the published release
+type to match the GitHub Release already created by GoReleaser. Confirm the
+expected installers are present in release assets; a successful packager can
+still skip uploads when release types do not match.
+
 CI and release jobs require Go `~1.27.3`: at least 1.27.3, while accepting
 newer 1.27 patches. This security floor is independent of the development
 minimum in `server/go.mod`. A plain `1.27.x` can resolve to an older patch

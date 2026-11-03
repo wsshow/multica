@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -32,6 +33,16 @@ describe("parsePublishRepository", () => {
     "rejects malformed repository %s",
     (value) => expect(() => parsePublishRepository(value)).toThrow(/owner\/repository/),
   );
+});
+
+describe("Desktop distribution metadata", () => {
+  it("declares the workspace package manager and customized project homepage", () => {
+    const metadata = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+    const workspace = JSON.parse(readFileSync(new URL("../../../package.json", import.meta.url), "utf8"));
+    expect(metadata.packageManager).toBe(workspace.packageManager);
+    expect(metadata.packageManager).toMatch(/^pnpm@/);
+    expect(metadata.homepage).toBe("https://github.com/wsshow/multica");
+  });
 });
 
 describe("normalizeGitVersion", () => {
@@ -302,6 +313,7 @@ describe("builderArgsForTarget", () => {
       "-c.publish.provider=github",
       "-c.publish.owner=wsshow",
       "-c.publish.repo=multica",
+      "-c.publish.releaseType=release",
     ]));
     const channels = args.filter((arg) => arg.startsWith("-c.publish.channel="));
     expect(channels).toEqual(channel ? [`-c.publish.channel=${channel}`] : []);
@@ -392,6 +404,7 @@ describe("builderArgsForTarget", () => {
       "-c.publish.provider=github",
       "-c.publish.owner=wsshow",
       "-c.publish.repo=multica",
+      "-c.publish.releaseType=release",
       "-c.publish.channel=latest-x64",
     ]);
   });

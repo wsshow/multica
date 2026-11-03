@@ -358,6 +358,7 @@ export function builderArgsForTarget(
     "-c.publish.provider=github",
     `-c.publish.owner=${publishRepository.owner}`,
     `-c.publish.repo=${publishRepository.repo}`,
+    "-c.publish.releaseType=release",
   );
   // electron-builder only adds an architecture suffix to Linux update
   // metadata. Windows x64/arm64 would both publish `latest.yml`, while macOS
