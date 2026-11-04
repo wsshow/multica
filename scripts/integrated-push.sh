@@ -12,5 +12,6 @@ docker image save "$INTEGRATED_BUILD_IMAGE" -o "$archive"
 digest=$(crane digest --tarball "$archive")
 [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
 mkdir -p /tmp/integrated-digests
-crane push "$archive" "$IMAGE@$digest" --image-refs "/tmp/integrated-digests/$ARCH"
+crane push "$archive" "$IMAGE@$digest"
 [[ "$(crane digest "$IMAGE@$digest")" == "$digest" ]]
+printf '%s\n' "$IMAGE@$digest" > "/tmp/integrated-digests/$ARCH"

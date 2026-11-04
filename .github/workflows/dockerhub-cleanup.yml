@@ -46,6 +46,7 @@ jobs:
           export INTEGRATED_BUILD_IMAGE="$IMAGE:$VERSION"
           docker pull --platform "linux/$ARCH" "$INTEGRATED_BUILD_IMAGE"
           bash scripts/integrated-push.sh
+          [[ "$(cat "/tmp/integrated-digests/$ARCH")" == "$IMAGE@sha256:"* ]]
           [[ "$(crane digest "$IMAGE:$VERSION")" == "$before" ]]
 
   cleanup:
