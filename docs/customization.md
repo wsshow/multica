@@ -39,15 +39,16 @@ the difference classification, conflict decisions, and verification results.
 Keep the original [comparison evidence](upstream-baseline.json) unchanged.
 
 Reuse the long-lived `feikong/upstream-sync` branch for every synchronization.
-`origin` is the customized repository; `upstream` is
-`https://github.com/multica-ai/multica.git` and is only a source for fetching.
+`origin` is the customized repository and the only persistent remote. Fetch
+official sources directly from `https://github.com/multica-ai/multica.git`
+by URL for each synchronization; do not add an official remote.
 Keep official tags under `refs/tags/upstream/` so they cannot collide with
 customized release tags. The local `upstream/source` branch points only to
 the last integrated official snapshot and never contains customized commits.
-On a fresh clone, add that remote with `git remote add --no-tags -t main upstream
-https://github.com/multica-ai/multica.git`, then create `upstream/source` at
-the `upstream_commit` recorded in `upstream-sync.json`. These local Git
-settings are not copied by cloning `origin`.
+The `upstream/` names are local source references, not a configured remote.
+On a fresh clone of `origin`, create `upstream/source` at the `upstream_commit`
+recorded in `upstream-sync.json`; that commit is retained in the merge history.
+This local branch is not copied by cloning `origin`.
 
 After the previous synchronization has been merged into `main`, prepare the
 next one with the following commands, replacing `vX.Y.Z` with the selected
@@ -56,7 +57,7 @@ official release tag:
 ```bash
 git switch feikong/upstream-sync
 git merge --ff-only main
-git fetch --no-tags upstream refs/tags/vX.Y.Z:refs/tags/upstream/vX.Y.Z
+git fetch --no-tags https://github.com/multica-ai/multica.git refs/tags/vX.Y.Z:refs/tags/upstream/vX.Y.Z
 git log --oneline upstream/source..upstream/vX.Y.Z
 git diff --stat upstream/source upstream/vX.Y.Z
 git merge --no-ff --no-commit upstream/vX.Y.Z
