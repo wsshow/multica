@@ -28,7 +28,7 @@ try {
   await supervisor.waitReady('http://127.0.0.1:8081/readyz');
   supervisor.start('web', process.execPath, ['/app/apps/web/server.js'], { PORT: '3000', HOSTNAME: '127.0.0.1' });
   await supervisor.waitReady('http://127.0.0.1:3000/readyz');
-  supervisor.start('gateway', '/usr/sbin/nginx', ['-c', `${directory}/nginx.conf`]);
+  supervisor.start('gateway', '/usr/sbin/nginx', ['-e', 'stderr', '-c', `${directory}/nginx.conf`]);
   await supervisor.waitReady('http://127.0.0.1:8080/readyz');
   console.log('integrated: ready on port 8080');
   await supervisor.failed;

@@ -59,7 +59,7 @@ if (process.argv[2] === 'restore') {
   assert.equal(range.status, 206);
   assert.equal((await range.arrayBuffer()).byteLength, 16);
   await new Promise((resolve, reject) => {
-    const ws = new WebSocket(origin.replace('http:', 'ws:') + '/ws');
+    const ws = new WebSocket(`${origin.replace('http:', 'ws:')}/ws?workspace_id=${encodeURIComponent(workspace.id)}`);
     const timer = setTimeout(() => { ws.close(); reject(new Error('WebSocket authentication timed out')); }, 10000);
     ws.onopen = () => ws.send(JSON.stringify({ type: 'auth', payload: { token } }));
     ws.onerror = () => { clearTimeout(timer); reject(new Error('WebSocket connection failed')); };
