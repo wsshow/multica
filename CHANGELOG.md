@@ -3,6 +3,17 @@
 Versions in this file belong to this customized edition. See
 [the source version mapping](docs/version-mapping.md) for upstream provenance.
 
+## Unreleased
+
+- Integrate official `v0.8.0` (`9b1ab4f9eed9153a94719596eb8a728d2770f065`),
+  including native ZCode support, Devin model discovery fixes, resolved-thread
+  summaries, superseded GitHub check handling, and the official Inbox rollback.
+- Establish traceable upstream merge ancestry and reuse `feikong/upstream-sync`
+  for future updates, with official tags in a separate namespace.
+- Advertise CLI contract version `0.8.0` independently of the customized release
+  number; retain disabled telemetry, explicit service/release configuration,
+  the bundled customized CLI, and integrated application packaging.
+
 ## 0.1.3 — 2026-11-04
 
 - Add one application image combining the Go backend, Next.js web application,

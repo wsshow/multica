@@ -154,6 +154,7 @@ Multica 不自带模型。它驱动的是你本来就装好、登录好的那些
 | DeepSeek Harness | `dsh` | Oh-My-Pi | `omp` |
 | MiniMax Code | `mcode` | Dim | `dim` |
 | 华为云 CodeArts | `codearts` | ZeroClaw | `zeroclaw` |
+| ZCode | `zcode` / ZCode Desktop | | |
 
 怎么装、怎么登录：[安装智能体运行时](apps/docs/content/docs/install-agent-runtime.zh.mdx) ·
 [AI 编程工具对照](apps/docs/content/docs/providers.zh.mdx)

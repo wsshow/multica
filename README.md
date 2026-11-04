@@ -159,6 +159,7 @@ authenticated — 26 of them today — so switching providers is a dropdown, not
 | DeepSeek Harness | `dsh` | Oh-My-Pi | `omp` |
 | MiniMax Code | `mcode` | Dim | `dim` |
 | Huawei Cloud CodeArts | `codearts` | ZeroClaw | `zeroclaw` |
+| ZCode | `zcode` / ZCode Desktop | | |
 
 Installing and authenticating them: [Install an agent runtime](apps/docs/content/docs/install-agent-runtime.mdx) ·
 [Providers](apps/docs/content/docs/providers.mdx)

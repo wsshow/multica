@@ -132,6 +132,7 @@ Workspace-scoped queries filter by `workspace_id`; membership gates access and `
 ## Customized Build Policy
 
 - Read [docs/customization.md](docs/customization.md) before syncing upstream code or changing analytics, diagnostics, client usage, operational metrics, or release sources.
+- Reuse `feikong/upstream-sync` for upstream updates, keep official tags under `upstream/`, and preserve the merge ancestry when merging its PR into `main`; do not squash, rebase, or delete the synchronization branch. Follow the source tracking workflow in `docs/customization.md`.
 - Deployment and installation docs must use the customized checkout or explicitly configured operator-owned artifacts. Update all documentation locales together; retain licenses, attribution, and historical source references.
 - Maintain independent release versions. Update [the source version mapping](docs/version-mapping.md) and [changelog](CHANGELOG.md) when releasing or syncing upstream; distinguish comparison candidates from verified source ancestry.
 - Runtime feature gates use advertised `cli_compatibility_version`; displays and updates use `cli_version`. Review `server/pkg/agent/cli_compatibility.go` when syncing upstream contracts, while retaining checks for older daemons without the new field.
