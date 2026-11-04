@@ -47,9 +47,9 @@ Historical changelogs, licenses, attribution, and source references may still id
 
 The Go vulnerability-scanning tool retains `golang.org/x/telemetry` as an indirect tooling dependency. It is not imported by the application. Required framework dependencies may likewise contain their own development tooling; this policy removes the application's telemetry implementations rather than rewriting installed third-party tools or user-installed agents.
 
-## Integrated application image (planned)
+## Integrated application image
 
-The [integrated image design](integrated-image.md) ([中文版](integrated-image.zh.md)) specifies a single application container with an internal gateway, the existing Go backend, and the Next.js standalone server. PostgreSQL, optional Redis, and S3-compatible object storage remain operator-managed external services. This is a design, not a published artifact or a replacement for the current split-image deployment. Keep configuration translation and process management in the packaging layer so upstream business features can continue to merge.
+The [integrated image guide](integrated-image.md) ([中文版](integrated-image.zh.md)) covers one application container with nginx, the existing Go backend, and Next.js. PostgreSQL, optional Redis, and S3-compatible object storage remain external. `make integrated` uses its own raw `.env.integrated`, isolated from development configuration. The reusable integrated workflow builds and tests both architectures; Release calls it to publish to the explicitly configured Docker Hub repository. Existing split-image publication remains available. Keep configuration translation and process management in the packaging layer so upstream business features can continue to merge.
 
 ## Desktop service configuration
 

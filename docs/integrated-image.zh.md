@@ -1,12 +1,12 @@
-# 一体化应用镜像设计
+# 一体化应用镜像
 
 [English](integrated-image.md)
 
-状态：待实现的设计方案。下述一体化镜像、部署文件和检查尚未提供。当前发行仍使用独立的后端与 Web 镜像；一体化镜像通过发布验收之前，继续使用[现有部署指南](deployment.zh.md)。
+一个应用容器包含 Go 服务端、Next.js standalone 页面服务和 nginx。PostgreSQL、可选 Redis、S3 兼容对象存储及生产登录投递服务由用户在外部配置。原有拆分部署继续见[部署指南](deployment.zh.md)。
 
-## 部署约定
+一体化镜像由新增发布 workflow 在验证通过后推送。现有 `v0.1.2` 产物不包含它，单独提交源码也不会发布镜像；部署时选择自己 Docker Hub 仓库里实际存在的版本。
 
-一个应用镜像包含现有 Go 服务端、Next.js standalone 页面服务和内部 nginx 网关。PostgreSQL、Redis、S3 兼容对象存储和生产邮件服务由用户在外部部署或配置。单实例应用可以不配置 Redis。
+## 架构
 
 ```mermaid
 flowchart LR
@@ -19,127 +19,91 @@ flowchart LR
     end
     api --> postgres[外部 PostgreSQL]
     api -. 可选 .-> redis[外部 Redis]
-    api --> objects[外部 S3 兼容对象存储]
+    api --> objects[外部 S3 兼容存储]
     api --> email[用户的邮件服务]
 ```
 
-- 仅发布容器的 `8080` 端口。TLS 在用户的外层代理终止；局域网部署也可以直接使用 HTTP。
-- 通过 `MULTICA_PUBLIC_URL` 显式配置一个公共 origin，不带路径前缀。第一版支持根路径部署。
-- 桌面端仍显式填写 `apiUrl`、`appUrl`，两者可以使用同一个公共地址，无需修改桌面端配置或连接默认值。
-- 智能体工具和执行仍位于 Electron/CLI 执行电脑。应用容器不启动 daemon，也不挂载宿主机 Docker socket。
-- 第一版按单应用实例编写部署说明。增加实例前仍需审查已有 Redis relay、通道租约和后台任务配置；合并镜像不会自动建立新的集群运行约定。
-- 保留现有拆分镜像及 Compose 部署，新增一体化镜像时不替换它们。
+显式配置一个不带路径前缀的 HTTP(S) 公共 origin。容器 `8080` 是唯一发布的应用入口；TLS 在外层代理终止，局域网也支持 HTTP。Go、Node 监听 loopback。桌面端仍显式把 `apiUrl`、`appUrl` 填为同一个实际可达地址。智能体工具和执行留在 Electron/CLI 执行电脑，镜像不启动执行器。
 
-## 构建与源码复用
+先按单应用实例部署；增加实例仍需审查现有 Redis relay、通道租约和后台任务配置。插件页面保留独立、无 Cookie 的 origin，可经同一网关转发。
 
-使用 Docker Buildx Bake 的命名上下文，在同一个源码提交、同一个目标架构下复用现有 `Dockerfile` 与 `Dockerfile.web` 的产物。新增组装 Dockerfile 消费这些上下文，不复制 Go 编译、pnpm 安装或 Next.js 构建流程。Bake 支持[将其他构建目标作为上下文](https://docs.docker.com/build/bake/contexts/#using-a-target-as-a-build-context)。
+## 配置与部署
 
-直接以现有 Web runner 作为组装基础，继承精确 Node 版本、安全版本下限、standalone/static/public 产物和 `LICENSE`、`NOTICE`。增加 nginx、Bash、Tini、CA 证书、时区数据，以及来自后端上下文的 Go 服务端、迁移与维护工具和迁移文件。构建时安装软件包可以使用 root，最终仍以非 root 用户运行。不复制构建工具链或源码目录里的凭据。缺少命名上下文时必须构建失败，不能转而从镜像仓库解析同名应用镜像。
+部署电脑需要 Docker、Compose 2.30+、Bash 和 OpenSSL，无需安装 Node、Go。取得本定制源码，选择用户配置的 Docker Hub 仓库里可用的镜像版本。
 
-构建时保持浏览器 API/WebSocket 地址为空，使客户端使用同源路径；仅将应用版本等发行信息写入产物。部署地址、密码和服务凭据都在运行时传入。启动应用时不下载其他 Multica 二进制或客户端包。
+```bash
+make integrated-init
+# 编辑 .env.integrated，再替换下面的镜像占位值。
+make integrated INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z
+```
 
-拟使用发行名称 `ghcr.io/<repository-owner>/multica:<release-tag>`，与后端、Web 镜像并存。实际 owner 读取 Actions 仓库信息。部署显式选择 tag 或 digest；该名称目前不代表已有可用产物。
+命令拉取镜像，启动唯一应用服务并等待整体就绪，镜像缺失时不会转为本地构建。默认绑定宿主机 `127.0.0.1:8080`，适合前置 TLS 代理。用 `INTEGRATED_HOST_PORT` 修改宿主机端口；需要直接供局域网访问时显式设置 `INTEGRATED_BIND_ADDRESS`。这些配置不改变内部端口。
 
-## 精简配置
+[精简示例](../.env.integrated.example)包含：
 
-提供独立的 `.env.integrated.example`，与完整开发配置 `.env.example` 分开。尽量复用已有环境变量名称：
-
-| 分组 | 用户填写 | 行为 |
-| --- | --- | --- |
-| 访问地址 | `MULTICA_PUBLIC_URL` | 必填 HTTP(S) origin，无官网或 localhost 默认值 |
-| 数据库 | `DATABASE_URL` | 必填外部数据库，复用现有迁移和连接重试 |
-| 认证 | `JWT_SECRET` | 必填、长期保留的随机密钥，部署准备时生成 |
-| 对象存储 | `S3_BUCKET`、`S3_REGION`；自定义服务另填 `AWS_ENDPOINT_URL` | 此部署模式要求外部存储，不回退到本地上传目录 |
-| 存储凭据 | `AWS_ACCESS_KEY_ID` 与 `AWS_SECRET_ACCESS_KEY`，或现有 AWS 凭据链 | 只填写一项静态凭据时报错，凭据不写入镜像 |
-| Redis | `REDIS_URL` | 可选；省略时使用单节点实时通信，且 Redis 认证限流不启用 |
-| 邮件 | SMTP 参数及 `SMTP_FROM_EMAIL`，或配置 Resend 凭据和发件地址 | 生产邮箱验证码登录必须说明如何配置可用的投递方式 |
-
-TLS/CA、Redis 集群、代理信任、附件投递、注册控制和集成参数放在高级示例或参考文档中，保留既有行为。生产登录不应依赖从容器日志中寻找验证码，也不预填原项目的发件地址。
-
-初始化命令只在用户持有的配置文件里生成一次密钥，不覆盖已有值。启用对应功能时再生成或配置 `MULTICA_VCS_SECRET_KEY`、插件密钥等；升级时保留，不能依赖容器文件系统保存。不同用途的加密密钥不从 `JWT_SECRET` 派生，也不在每次启动时重新生成。
-
-启动器把唯一公共地址转换成现有 `FRONTEND_ORIGIN`、`MULTICA_APP_URL`、公共 daemon 地址和同源 CORS 配置。`REMOTE_API_URL` 固定指向容器内部 Go 监听地址。Go 与 Node 分别接收端口和监听配置，不能共享同一个 `PORT` 导致冲突。公共地址参数互相矛盾时报错，不用隐藏的优先级选择其一。浏览器的 `NEXT_PUBLIC_*` 配置不能依赖在运行时替换构建中已内联的值。
-
-环境文件作为数据传入，不使用 `source` 或 `eval` 执行。可选 Compose 示例使用 `env_file` 的 `format: raw`，说明需要 Compose 2.30+，保留凭据中的 `$` 等字面字符；也支持 Docker `--env-file`。镜像/tag、宿主机端口放在部署命令或 Compose 输入中，与应用配置分开。[Compose 环境文件行为](https://docs.docker.com/reference/compose-file/services/#format)
-
-## 网关路由
-
-保留请求路径、查询参数、认证与 Cookie 请求头，以及响应安全头。路由约定如下：
-
-| 请求 | 目标 |
+| 输入 | 要求 |
 | --- | --- |
-| `/auth/callback` 及子路径、`/auth/hg-sso/callback` 及子路径 | Next.js，优先于通用认证路由 |
-| `/api`、`/api/*`、`/v1`、`/v1/*` | Go |
-| 其他 `/auth`、`/auth/*` 请求 | Go |
-| `/ws`、`/api/daemon/ws` | Go，支持 WebSocket upgrade |
-| `/uploads`、`/uploads/*`、`/plugin-surfaces/*` | Go，保留已有链接及域名边界 |
-| `/health` | 现有 Go 进程存活检查 |
-| `/readyz`、`/healthz` | 经 Next.js 的整体就绪检查，见下文 |
-| 其他路径，包括 `/_next/*` | Next.js |
+| `MULTICA_PUBLIC_URL` | 实际可达的公共 origin，无官网或 localhost 默认值 |
+| `DATABASE_URL` | 外部 PostgreSQL 连接 URL、数据库及执行现有迁移所需权限 |
+| `JWT_SECRET` | 初始化时生成一次，升级时保留 |
+| `S3_BUCKET`、`S3_REGION` | 必填外部对象存储，不回退到本地上传目录 |
+| `AWS_ENDPOINT_URL` | 自定义 S3 兼容服务必填；AWS S3 可以省略 |
+| `AWS_ACCESS_KEY_ID`、`AWS_SECRET_ACCESS_KEY` | 同时填写，或使用现有 AWS 凭据链 |
+| `REDIS_URL` | 单实例可选，省略时 Redis 认证限流不启用 |
+| SMTP 参数和发件地址 | 配置生产邮箱验证码登录，也可选择 Google OAuth 或已配置的 Resend 投递 |
+| `MULTICA_VCS_SECRET_KEY` | 启用 VCS 功能时初始化，与数据库备份一起保留 |
 
-显式转发浏览器和 daemon WebSocket 所需的 upgrade 请求头，按心跳行为配置超时，流式响应关闭缓冲。网关请求体限制不能低于后端已有的 100 MiB 请求限制，避免 nginx 默认上传限制缩小可上传范围。验证 Range 下载、附件预览和重定向。[nginx WebSocket 代理](https://nginx.org/en/docs/http/websocket.html)、[代理缓冲](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffering)
+配置是原始 `KEY=value` 数据，不加外层引号、不使用 shell 展开。密码中的 `$`、空格会保留；连接 URL 内的凭据按需使用 URL 编码。`.env.integrated` 不会作为 Make 语法 include，也不会被 shell 执行。初始化保留已有值及密钥，可用 `INTEGRATED_ENV_FILE` 选择另一个用户持有的文件。
 
-保留公共 Host 和协议。客户端 IP 转发头只接受明确配置的可信外层代理，再由网关规范化后传给 Go；Go 信任容器内的 loopback 网关。不能信任任意入站转发头，也不能丢失真实客户端 IP，否则会影响来源校验和按 IP 限流。外层代理信任范围作为高级配置，默认留空。
+外部服务地址必须从容器内可达。数据库或存储 URL 中的 `localhost` 指应用容器自身，不是 Docker 宿主机；使用服务的网络主机名或可达 IP，需要宿主机映射时通过用户的 Compose override 提供。
 
-附件默认使用现有 `proxy` 投递模式，让对象存储可以位于私网。不开启公开桶，不改写已有对象 URL；需要时显式配置直连/CDN 模式。插件页面仍要求独立、无 Cookie 的 origin，可经同一网关转发，并保留已有域名边界，不能强行合并到应用 origin。
+启动器从唯一公共 origin 派生应用、daemon、CORS 和回调地址，互相矛盾的 URL 配置会报错。浏览器 API/WebSocket 使用同源构建配置，保持 `NEXT_PUBLIC_API_URL`、`NEXT_PUBLIC_WS_URL` 为空。内部 `REMOTE_API_URL` 和各进程端口由启动器管理。
+
+可选集成及基础设施参数见[高级示例](../.env.integrated.advanced.example)。前置代理时，把代理的真实 IP/CIDR 填入 `MULTICA_GATEWAY_TRUSTED_PROXIES`，保留客户端 IP；网关规范化转发头，后端只信任 loopback 网关。Cookie domain 通常留空。SMTP/Resend 使用自己运营的发件地址，固定开发验证码会被拒绝。
 
 ## Make 命令
 
-镜像和 Compose 文件实现时，新增独立的 `integrated` 命令组。以下为拟定名称，目前还不是可执行的 target：
-
-| 命令 | 职责 |
+| 命令 | 行为 |
 | --- | --- |
-| `make integrated-init` | 缺少配置时创建 `.env.integrated` 和初始密钥，保留已有值；不启动、不构建 |
-| `make integrated` | 要求用户配置和明确的镜像引用，拉取镜像，启动唯一应用服务，等待整体就绪 |
-| `make integrated-status` | 查看应用容器及健康状态 |
-| `make integrated-logs` | 查看应用日志 |
-| `make integrated-stop` | 停止应用部署，不删除配置、不操作外部服务 |
-| `make integrated-build` | 维护者显式从当前源码构建一体化镜像，不隐式启动 |
+| `make integrated-init` | 准备配置和初始密钥，不启动服务 |
+| `make integrated INTEGRATED_IMAGE=…` | 拉取、启动已发布镜像，等待就绪 |
+| `make integrated-status INTEGRATED_IMAGE=…` | 查看容器及健康状态 |
+| `make integrated-logs INTEGRATED_IMAGE=…` | 跟踪应用日志 |
+| `make integrated-stop INTEGRATED_IMAGE=…` | 停止应用，保留配置和外部数据 |
+| `make integrated-build` | 维护者显式从当前源码构建，不启动服务 |
 
-日常部署命令不进行本地编译。现有 `selfhost`、`selfhost-build`、`selfhost-stop` 保持原样。新命令真正可用后才加入 `make help`，不增加没有部署任何内容却返回成功的占位命令。
+现有 `selfhost` 命令继续用于拆分部署。一体化与开发 target 分开调用 Make。`INTEGRATED_BUILD_IMAGE` 选择维护者构建的本地标签，与显式选择的部署镜像分开；使用已发布镜像时无需执行构建命令。
 
-这些命令需要与 Makefile 现有的开发 `.env` 加载及导出的 localhost/端口默认值隔离。`.env.integrated` 作为原始数据直接传给 Compose，不作为 Make 语法 include，也不复制开发配置的值。缺少配置或镜像选择时，报错并说明对应准备步骤；拉取镜像失败不会自动改为源码构建。就绪检查失败返回非零状态，保留日志供排查。
+## 运行行为
 
-## 启动、故障和停止
+Tini 作为 PID 1。Node 启动器复用页面服务已有运行时，负责校验配置、生成 nginx 配置和管理进程组。先执行现有迁移工具，保留数据库重试预算、迁移 advisory lock 和取消行为；再启动 Go 并检查后端就绪，启动 Next.js，页面服务就绪后启动网关。不会把数据库连接重试期限当作长耗时迁移 DDL 的统一超时。
 
-使用 Tini 作为 PID 1，以小型 Bash 启动器管理三个应用进程。Tini 负责信号转发和孤儿进程回收；启动器负责顺序、子进程退出检测和对各组件进程组有时限的停止。不增加第二套服务管理器，也不单独重启某个失败组件。[Docker 多进程说明](https://docs.docker.com/engine/containers/multi-service_container/)、[Tini 职责](https://github.com/krallin/tini#tini---a-tiny-but-valid-init-for-containers)
+任一关键组件意外退出，就停止其余组件并让容器失败，由 Docker 重启策略整体重启。正常停止时短暂排空网关，再终止 Go/Node；达到期限后清理进程组。`MULTICA_CONTAINER_SHUTDOWN_TIMEOUT` 默认 60 秒，Compose 停止宽限期默认 75 秒；增加 shutdown hold 或超时时，也要增加 `INTEGRATED_STOP_GRACE_PERIOD`。
 
-1. 校验必填配置，错误信息不输出密钥；以非 root 用户准备可写运行目录和缓存目录。
-2. 执行一次现有迁移工具，保留 `docker/entrypoint.sh` 的共享启动重试预算、迁移 advisory lock 和取消行为。数据库、权限或迁移失败时终止启动，不先提供看似可用但后端未就绪的页面。
-3. Go 监听 loopback，在启动期限内等待其现有 `/readyz`；随后启动监听 loopback 的 Next.js，等待其就绪接口，再以前台方式启动 nginx。所有等待都必须同时检测子进程是否已退出。
-4. 正常运行后，Go、Next.js 或 nginx 任意一个意外退出，就停止其余进程，让容器以失败状态退出，即使该子进程返回的是零。由 Docker 重启策略重启整个应用。
-5. 收到 `SIGTERM`/`SIGINT` 时先停止网关接收新请求，限时排空，再终止并等待 Go、Next.js，保留 Go 现有后台任务停止流程；超过期限才强制清理剩余后代进程。Compose 的停止宽限期必须长于该期限，用户配置的 shutdown hold 也要计入。
+网关把 `/api/*`、`/v1/*`、后端认证、浏览器/daemon WebSocket、上传和插件页面转给 Go。`/auth/callback`、`/auth/hg-sso/callback` 及其子路径保留给 Next.js；其他页面和编译资源由 Next.js 提供。保留 WebSocket upgrade、无缓冲流式响应和后端 100 MiB 请求体额度。
 
-数据库重试预算不作为整个迁移 DDL 的超时限制。保留长耗时迁移，并允许为它们调整健康检查的启动宽限期；迁移完成后的进程就绪等待仍需有时限。
+`/health` 是后端进程存活检查；公共 `/readyz`、`/healthz` 同时检查 nginx、动态 Node 就绪接口及 Go 数据库/迁移状态，镜像 healthcheck 使用这一整体检查。普通 Docker 不会仅因 unhealthy 自动重启。健康探针不反复操作 Redis/S3。`/metrics`、`/health/realtime` 继续不可用。
 
-Go 需要增加一个明确的监听 host 参数：目前监听地址是 `":" + PORT`，仅发布一个容器端口不会让内部 API 自动只监听 loopback。保留拆分部署的默认值，一体化启动器选择 `127.0.0.1`；不向 Go 业务路由添加前端代理。
+S3 初始化失败会终止启动，不再选择本地存储。配置校验不能证明桶权限正确，对用户开放前需使用实际桶验证上传。附件默认沿用 `proxy` 投递模式，私有对象存储地址无需暴露给客户端；直连/CDN 模式仍可显式配置。
 
-现有存储构造器可能返回 nil 并回退到本地文件。一体化启动器拒绝缺少 S3 配置；共享服务端初始化也要在显式配置的 S3 初始化失败时停止，拆分部署未配置 S3 时仍可选择本地存储。配置校验不等于已验证桶权限；不要求额外的列桶权限，也不在每次启动或健康检查时写测试对象。
+## 数据与升级
 
-## 健康检查和持久化
+应用进程使用 UID/GID 1001，代理和上传临时文件使用 `/tmp`，Next.js 缓存使用可写容器层，这些内容可以丢弃。部署示例暂不声明支持只读根文件系统。自定义 CA、本地插件源码按需独立挂载。
 
-新增动态、无缓存的 Next.js `/readyz` 路由，带短超时检查内部 Go `/readyz`。nginx 将 `/readyz` 和别名 `/healthz` 转给它。通过容器公共端口返回成功，就验证了网关路由、Node 请求处理和 Go 的数据库/迁移就绪状态。这些路径名已被保留。响应只返回简短状态，不包含凭据或基础设施详情；后端已有响应保持不变。
+持久化资源是 PostgreSQL、对象存储、用户持有的环境配置及加密密钥。备份这些资源、记录镜像 digest，再选择新版本重新运行 `make integrated`。重建应用不能轮换密钥或丢失附件；回退镜像不等于撤销数据库迁移，需要确认 schema 兼容或恢复对应备份。镜像保留迁移和维护工具供显式运维使用。
 
-镜像 healthcheck 调用这个整体就绪接口，数据库或前端不可用时标记 unhealthy。普通 Docker 不会仅因 unhealthy 自动重启，进程管理与编排行为要分开说明。Redis/S3 故障由受影响功能返回错误，不用反复写对象的方式把就绪检查扩大为集成测试。[Docker healthcheck 行为](https://docs.docker.com/reference/dockerfile/#healthcheck)
+## GitHub 构建与 Docker Hub 发布
 
-所有进程默认以非 root 用户运行。运行配置、代理临时文件、multipart 临时文件和 Next.js 缓存需要可写空间，使用临时目录并说明可选缓存挂载；业务数据及长期密钥不能依赖这些目录保存。只有通过相应 CI 验证后，才声明支持只读根文件系统及其必要可写挂载。自定义证书和用户提供的插件源码按需单独挂载。
+[一体化 workflow](../.github/workflows/integrated-image.yml)验证普通 main/PR 变更，由 [Release](../.github/workflows/release.yml)在版本 tag 时调用。仓库配置如下：
 
-持久化内容是外部数据库、对象存储和用户保存的环境配置/密钥。重建应用容器不能丢失附件、轮换密钥或重置账号。升级前备份这些资源，记录当前镜像 digest；新镜像执行正向迁移，回退镜像不等于撤销数据库迁移。保留维护工具供显式运维使用，不在已有迁移约定之外自动执行其他历史回填。
+| 设置 | 位置 | 值 |
+| --- | --- | --- |
+| `DOCKERHUB_USERNAME` | Actions Variables | Docker Hub 登录账号 |
+| `DOCKERHUB_IMAGE` | Actions Variables | 显式 `namespace/repository` |
+| `DOCKERHUB_TOKEN` | Actions Secrets | 有权向该仓库推送的令牌 |
 
-## 交付与验收
+Buildx Bake 在同一源码提交和架构下复用现有后端、Web Dockerfile。组装阶段消费它们的编译产物，不重复维护 Go/pnpm 编译步骤；AMD64、ARM64 使用原生 runner。BuildKit 缓存构建阶段，运行镜像不包含编译器和用户凭据。定制主要留在打包层，应用代码只增加监听/存储启动处理及 Web 就绪接口。
 
-实现时新增组装 Dockerfile 与 Bake 目标、`docker/integrated/` 下的启动器/网关/健康检查文件、小型 Web 就绪路由及 Go 监听参数、仅一个应用服务的 Compose 示例、精简和高级环境示例，以及上述 Make 命令。存储初始化落实前述严格行为；现有拆分镜像入口保持原样。测试与对应实现放在一起。
+各架构只构建、加载一次最终镜像，再运行可丢弃的[测试环境](../docker/integrated/compose.smoke.yml)。检查包括编译资源、SMTP 登录、CSRF 写操作、对象上传/下载及 Range、浏览器和 daemon WebSocket 认证、重建容器、关键进程退出、可选 Redis、数据库中断和正常停止。打包单元测试、存储/监听测试、Web 就绪测试、类型检查及遥测检查也作为前置条件。CI 测试环境不是用户的部署文件。
 
-在 GitHub Actions 构建并验证 `linux/amd64`、`linux/arm64`，前后端来自同一经过审查的 commit。保留 Go 漏洞检查、遥测检查、不可变发行 tag、源码/版本标签和当前发布流程。两个架构都通过才发布一体化 manifest/tag，失败时不覆盖上次已验证的 `latest`。不能混装不同版本前后端，也不能使用浮动 tag 拼装。本设计任务不做本地应用构建或打包。
-
-发布必须有以下证据：
-
-- 公共 URL、数据库配置、JWT 密钥或 S3 配置缺失/错误时，给出脱敏且可操作的报错。包含空格、`$` 和 URL 编码分隔符的凭据能正确传入。
-- 数据库延迟就绪、认证失败、迁移失败及迁移中取消，均符合启动/退出约定；复用现有迁移锁，不新增一套锁。
-- 经唯一公共 origin 完成浏览器登录/退出、OAuth 回调、带 CSRF 校验的写操作、公共链接生成，以及 Desktop/CLI 自建服务连接；覆盖局域网 HTTP、代理 HTTPS 和真实客户端 IP 转发。
-- 浏览器与 daemon WebSocket 保持连接并能重连；流式输出逐步到达。对外部测试对象存储验证接近上限的上传、认证下载、Range 请求和预览。
-- 缺少 S3 不会在本地保存上传文件；重建容器后账号、附件和配置的加密密钥保留。启用插件页面时仍使用无 Cookie 的独立 origin。
-- 杀死任一关键子进程会结束整个容器；正常停止不残留子进程。Node、Go、数据库任一不可用时整体健康检查失败。不配置 Redis 仍能使用说明中的单实例基础能力，并清楚报告 Redis 限流未启用。
-- 遥测保持空实现，不新增官方 Multica 服务、更新器、安装器、分析 SDK、指标监听器或额外执行器。测试使用假执行器，不调用用户安装的智能体工具。
-
-第一步完成镜像组装、启动生命周期及整体健康检查；第二步通过完整的同源、附件和认证验证；之后才接入发行和修改推荐部署说明。设计提交本身不代表一体化镜像已经可部署。
+仅版本 tag 调用可以发布。测试后的同一镜像以本次构建的候选标签推送，不重新编译。两个原生架构任务都成功后，其 digest 才合并为 `X.Y.Z` 与 `sha-<完整提交>` manifest。稳定版本成功后更新 `latest`，预发布版本不更新。候选标签只供发布中转，不推荐用于部署。现有 GHCR 拆分镜像另行发布；提交本次实现不会自动发布 Docker Hub 版本。

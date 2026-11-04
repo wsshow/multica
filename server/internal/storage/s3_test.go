@@ -498,7 +498,10 @@ func TestNewS3StorageFromEnv_ConfiguresEndpointPathStyle(t *testing.T) {
 		t.Setenv("AWS_ENDPOINT_URL", "https://objects.example.com")
 		t.Setenv("S3_USE_PATH_STYLE", "")
 
-		store := NewS3StorageFromEnv()
+		store, err := NewS3StorageFromEnv()
+		if err != nil {
+			t.Fatal(err)
+		}
 		if store == nil {
 			t.Fatal("NewS3StorageFromEnv() = nil")
 		}
@@ -518,7 +521,10 @@ func TestNewS3StorageFromEnv_ConfiguresEndpointPathStyle(t *testing.T) {
 		t.Setenv("AWS_ENDPOINT_URL", "https://objects.example.com")
 		t.Setenv("S3_USE_PATH_STYLE", "false")
 
-		store := NewS3StorageFromEnv()
+		store, err := NewS3StorageFromEnv()
+		if err != nil {
+			t.Fatal(err)
+		}
 		if store == nil {
 			t.Fatal("NewS3StorageFromEnv() = nil")
 		}
@@ -651,7 +657,10 @@ func newS3SigningTestStore(t *testing.T, server *httptest.Server, endpoint strin
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "SECRET")
 	t.Setenv("AWS_ENDPOINT_URL", endpoint)
 	t.Setenv("S3_USE_PATH_STYLE", "true")
-	store := NewS3StorageFromEnv()
+	store, err := NewS3StorageFromEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if store == nil {
 		t.Fatal("NewS3StorageFromEnv() = nil")
 	}

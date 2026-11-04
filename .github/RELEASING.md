@@ -10,6 +10,21 @@ Consumers must explicitly configure their own release repository and Desktop upd
 
 ## Normal release
 
+The integrated application workflow is called by Release after verification.
+Configure repository variables `DOCKERHUB_USERNAME` and `DOCKERHUB_IMAGE`
+(`namespace/repository`), plus the `DOCKERHUB_TOKEN` repository secret. This
+token must be allowed to push to that Docker Hub repository. Unlike GHCR,
+Docker Hub does not use `GITHUB_TOKEN` for this login.
+
+The workflow builds from this checkout using Bake and native AMD64/ARM64
+runners, then tests each assembled image before pushing the same image under
+a build-specific candidate tag. Only after both succeed does it merge their
+digests into the version (without `v`) and full-SHA image tags. Stable versions
+also update `latest`; prereleases do not. PR and ordinary main runs only build
+and test. Do not create a new release tag until the integrated-image CI checks
+for its source commit have passed. Check the published manifest includes both
+Linux architectures and record its digest. See the [integrated guide](../docs/integrated-image.md).
+
 This edition maintains its own version sequence, beginning with `v0.1.0`.
 Upstream version numbers describe source provenance, not this edition's release
 number. Record the relationship in [the version mapping](../docs/version-mapping.md)

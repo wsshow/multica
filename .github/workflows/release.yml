@@ -80,6 +80,15 @@ jobs:
         if: ${{ vars.ALLOW_VULN_BYPASS_FOR_TAG == github.ref_name }}
         run: echo "::warning::govulncheck was explicitly skipped for ${GITHUB_REF_NAME}; see .github/RELEASING.md"
 
+  integrated-image:
+    needs: verify
+    uses: ./.github/workflows/integrated-image.yml
+    with:
+      version: ${{ needs.verify.outputs.tag_name }}
+      publish: true
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
   release:
     needs: verify
     runs-on: ubuntu-latest

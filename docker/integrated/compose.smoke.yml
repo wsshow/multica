@@ -1,0 +1,51 @@
+# Disposable CI fixtures only. User deployments use docker-compose.integrated.yml.
+name: multica-integrated-smoke
+services:
+  database:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: multica
+      POSTGRES_USER: multica
+      POSTGRES_PASSWORD: smoke-database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U multica -d multica"]
+      interval: 2s
+      retries: 30
+    volumes: ["database:/var/lib/postgresql/data"]
+  objects:
+    image: chrislusf/seaweedfs:3.97@sha256:bb05d66d2963b1cc48073190781c3dd29e2c4c88a2ae2986bf58e38c86d89c6e
+    command: ["server", "-ip=objects", "-dir=/data", "-s3", "-s3.port=8333", "-s3.config=/etc/s3.json"]
+    ports: ["127.0.0.1:18333:8333"]
+    volumes:
+      - objects:/data
+      - ./smoke-s3.json:/etc/s3.json:ro
+  mail:
+    image: axllent/mailpit:v1.27.8@sha256:6abc8e633df15eaf785cfcf38bae48e66f64beecdc03121e249d0f9ec15f0707
+    ports: ["127.0.0.1:18025:8025"]
+  redis:
+    image: redis:7-alpine
+    profiles: [redis]
+  app:
+    image: ${INTEGRATED_BUILD_IMAGE:-multica-integrated:ci}
+    depends_on:
+      database: {condition: service_healthy}
+      objects: {condition: service_started}
+      mail: {condition: service_started}
+    ports: ["127.0.0.1:18080:8080"]
+    stop_grace_period: 75s
+    environment:
+      MULTICA_PUBLIC_URL: http://127.0.0.1:18080
+      DATABASE_URL: postgres://multica:smoke-database@database:5432/multica?sslmode=disable
+      JWT_SECRET: 7b01acf4ed632ece14748688f8a0b70ce5d20b342f9f85f964a0ca361177fd5a
+      S3_BUCKET: multica
+      S3_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://objects:8333
+      AWS_ACCESS_KEY_ID: smoke-access
+      AWS_SECRET_ACCESS_KEY: smoke-secret
+      SMTP_HOST: mail
+      SMTP_PORT: "1025"
+      SMTP_FROM_EMAIL: tasks@example.test
+      REDIS_URL: ${SMOKE_REDIS_URL:-}
+volumes:
+  database:
+  objects:

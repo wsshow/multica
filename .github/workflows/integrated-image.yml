@@ -1,0 +1,185 @@
+name: Integrated image
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: dev
+      publish:
+        type: boolean
+        default: false
+    secrets:
+      DOCKERHUB_TOKEN:
+        required: false
+  push:
+    branches: [main]
+    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
+  pull_request:
+    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      stable: ${{ steps.meta.outputs.stable }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release and Docker Hub configuration
+        id: meta
+        env:
+          RELEASE_VERSION: ${{ inputs.version || 'dev' }}
+          PUBLISH: ${{ inputs.publish || false }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          version="${RELEASE_VERSION#v}"
+          stable=false
+          if [[ "$PUBLISH" == true ]]; then
+            [[ "$GITHUB_REF_TYPE" == tag && "$RELEASE_VERSION" == "$GITHUB_REF_NAME" ]]
+            [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+            [[ -n "$DOCKERHUB_USERNAME" && -n "$DOCKERHUB_TOKEN" ]] || { echo '::error::Configure DOCKERHUB_USERNAME and DOCKERHUB_TOKEN'; exit 1; }
+            [[ "$DOCKERHUB_IMAGE" =~ ^[a-z0-9][a-z0-9_-]*/[a-z0-9][a-z0-9._-]*$ ]] || { echo '::error::DOCKERHUB_IMAGE must be namespace/repository'; exit 1; }
+            [[ "$(node -p 'require("./package.json").version')" == "$version" ]] || { echo '::error::Tag and package version differ'; exit 1; }
+            if [[ "$version" != *-* ]]; then stable=true; fi
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "stable=$stable" >> "$GITHUB_OUTPUT"
+      - name: Verify Docker Hub login before compiling a release
+        if: inputs.publish
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify packaging behavior and telemetry boundary
+        run: |
+          node --test docker/integrated/config.test.mjs docker/integrated/supervisor.test.mjs scripts/integrated.test.mjs
+          node scripts/check-telemetry.mjs
+          bash -n scripts/integrated.sh docker/integrated/smoke.sh
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "~1.27.3"
+          cache-dependency-path: server/go.sum
+      - name: Verify listener and storage startup contracts
+        working-directory: server
+        run: |
+          go test ./internal/storage -count=1
+          go test ./cmd/server/listener.go ./cmd/server/listener_test.go -count=1
+      - uses: pnpm/action-setup@v4
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify web readiness
+        run: |
+          pnpm --filter @multica/web exec vitest run app/readyz/route.test.ts
+          pnpm --filter @multica/web typecheck
+
+  build:
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      INTEGRATED_BUILD_IMAGE: multica-integrated:ci
+      VERSION: ${{ needs.verify.outputs.version }}
+      COMMIT: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 1
+      - name: Compile and assemble from the same source
+        uses: docker/bake-action@v6
+        with:
+          files: docker-bake.hcl
+          targets: integrated
+          load: true
+          set: |
+            *.platforms=linux/${{ matrix.arch }}
+            *.cache-from=type=gha,scope=integrated-${{ matrix.arch }}
+            integrated.cache-to=type=gha,mode=max,scope=integrated-${{ matrix.arch }}
+            integrated.labels.org.opencontainers.image.source=https://github.com/${{ github.repository }}
+      - name: Verify the assembled image
+        run: bash docker/integrated/smoke.sh
+      - name: Log in to Docker Hub
+        if: inputs.publish
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push the tested image and record its digest
+        if: inputs.publish
+        env:
+          IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          candidate="$IMAGE:build-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$ARCH"
+          docker tag "$INTEGRATED_BUILD_IMAGE" "$candidate"
+          docker push "$candidate"
+          digest=$(docker image inspect "$candidate" --format '{{index .RepoDigests 0}}')
+          [[ "$digest" == "$IMAGE@sha256:"* || "$digest" == "docker.io/$IMAGE@sha256:"* ]]
+          mkdir -p /tmp/integrated-digests
+          printf '%s\n' "$digest" > "/tmp/integrated-digests/$ARCH"
+      - name: Upload tested image digest
+        if: inputs.publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: integrated-digest-${{ matrix.arch }}
+          path: /tmp/integrated-digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    if: inputs.publish
+    needs: [verify, build]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: integrated-dockerhub-publish
+      cancel-in-progress: false
+    env:
+      IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+      VERSION: ${{ needs.verify.outputs.version }}
+      STABLE: ${{ needs.verify.outputs.stable }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: integrated-digest-*
+          merge-multiple: true
+          path: /tmp/integrated-digests
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Publish both architectures under the release tag
+        run: |
+          sources=()
+          for arch in amd64 arm64; do
+            digest=$(cat "/tmp/integrated-digests/$arch")
+            [[ "$digest" == "$IMAGE@sha256:"* || "$digest" == "docker.io/$IMAGE@sha256:"* ]]
+            sources+=("$digest")
+          done
+          docker buildx imagetools create -t "$IMAGE:$VERSION" -t "$IMAGE:sha-$GITHUB_SHA" "${sources[@]}"
+          docker buildx imagetools inspect --raw "$IMAGE:$VERSION" | jq -e '[.manifests[].platform | select(.os == "linux") | .architecture] | sort == ["amd64", "arm64"]'
+      - name: Promote the verified stable manifest
+        if: env.STABLE == 'true'
+        run: docker buildx imagetools create -t "$IMAGE:latest" "$IMAGE:$VERSION"

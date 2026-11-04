@@ -4,6 +4,14 @@ MAIN_ENV_FILE ?= .env
 WORKTREE_ENV_FILE ?= .env.worktree
 ENV_FILE ?= $(if $(wildcard $(MAIN_ENV_FILE)),$(MAIN_ENV_FILE),$(if $(wildcard $(WORKTREE_ENV_FILE)),$(WORKTREE_ENV_FILE),$(MAIN_ENV_FILE)))
 
+INTEGRATED_GOALS := $(filter integrated integrated-%,$(MAKECMDGOALS))
+ifneq ($(INTEGRATED_GOALS),)
+ifneq ($(filter-out integrated integrated-% help makehelp,$(MAKECMDGOALS)),)
+$(error Run integrated and development targets in separate make invocations)
+endif
+endif
+
+ifeq ($(INTEGRATED_GOALS),)
 ifneq ($(wildcard $(ENV_FILE)),)
 include $(ENV_FILE)
 endif
@@ -25,6 +33,7 @@ NEXT_PUBLIC_WS_URL ?= ws://localhost:$(PORT)/ws
 GOOGLE_REDIRECT_URI ?= $(FRONTEND_ORIGIN)/auth/callback
 MULTICA_SERVER_URL ?= ws://localhost:$(PORT)/ws
 LOCAL_UPLOAD_BASE_URL ?= http://localhost:$(PORT)
+endif
 
 export
 
@@ -75,6 +84,26 @@ help: ## Show available make targets and common local workflows
 		/^[a-zA-Z0-9_.-]+:.*## / {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 makehelp: help ## Alias for `make help`
+
+##@ Integrated application image
+.PHONY: integrated-init integrated integrated-status integrated-logs integrated-stop integrated-build
+integrated-init: ## Prepare .env.integrated and persistent initial secrets
+	@bash scripts/integrated.sh init
+
+integrated: ## Pull and start INTEGRATED_IMAGE with external infrastructure
+	@bash scripts/integrated.sh deploy
+
+integrated-status: ## Show integrated application and health status
+	@bash scripts/integrated.sh status
+
+integrated-logs: ## Follow integrated application logs
+	@bash scripts/integrated.sh logs
+
+integrated-stop: ## Stop the integrated application, preserving external data and configuration
+	@bash scripts/integrated.sh stop
+
+integrated-build: ## Explicitly build the integrated image from this checkout without starting it
+	@bash scripts/integrated.sh build
 
 # ---------- Self-hosting (Docker Compose) ----------
 ##@ Self-hosting

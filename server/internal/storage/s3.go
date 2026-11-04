@@ -31,7 +31,8 @@ type S3Storage struct {
 }
 
 // NewS3StorageFromEnv creates an S3Storage from environment variables.
-// Returns nil if S3_BUCKET is not set.
+// Returns nil without an error if S3_BUCKET is not set. Explicit configuration
+// errors are returned so callers cannot silently select local storage.
 //
 // Environment variables:
 //   - S3_BUCKET (required)
@@ -39,11 +40,11 @@ type S3Storage struct {
 //   - AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (optional; falls back to default credential chain)
 //   - AWS_ENDPOINT_URL (optional S3-compatible endpoint)
 //   - S3_USE_PATH_STYLE (optional; defaults to true when AWS_ENDPOINT_URL is set)
-func NewS3StorageFromEnv() *S3Storage {
+func NewS3StorageFromEnv() (*S3Storage, error) {
 	bucket := os.Getenv("S3_BUCKET")
 	if bucket == "" {
 		slog.Info("S3_BUCKET not set, cloud upload disabled")
-		return nil
+		return nil, nil
 	}
 	if looksLikeS3Hostname(bucket) {
 		slog.Warn(
@@ -71,8 +72,7 @@ func NewS3StorageFromEnv() *S3Storage {
 
 	cfg, err := config.LoadDefaultConfig(context.Background(), opts...)
 	if err != nil {
-		slog.Error("failed to load AWS config", "error", err)
-		return nil
+		return nil, fmt.Errorf("load configured S3 client: %w", err)
 	}
 
 	cdnDomain := os.Getenv("CLOUDFRONT_DOMAIN")
@@ -102,7 +102,7 @@ func NewS3StorageFromEnv() *S3Storage {
 		cdnDomain:    cdnDomain,
 		endpointURL:  endpointURL,
 		usePathStyle: usePathStyle,
-	}
+	}, nil
 }
 
 func (s *S3Storage) CdnDomain() string {

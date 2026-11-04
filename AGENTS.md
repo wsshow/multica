@@ -32,6 +32,7 @@ Use `Makefile`, workspace `package.json` files, and `pnpm-workspace.yaml` for cu
 
 - Use the checkout's managed environment: `make up`, `make status`, `make down`. `make down` preserves data; `make destroy` removes the environment and its data.
 - Worktrees share PostgreSQL but have isolated databases/ports. Use the environment scripts and `.env.worktree`; do not copy the main checkout's `.env` or manually create a database through an assumed PostgreSQL instance.
+- Integrated deployments use `make integrated-init` and `make integrated INTEGRATED_IMAGE=namespace/repository:version`, with external infrastructure and raw `.env.integrated` configuration. Keep these targets isolated from the development `.env` include/defaults; see [the integrated guide](docs/integrated-image.md). Image builds and smoke tests run in the integrated GitHub workflow; ordinary deployments only pull published images.
 - Regenerate sqlc with `make sqlc` after SQL changes.
 - Run the narrowest useful checks while iterating, then broaden when risk warrants it. Report what actually ran and any skipped checks.
 

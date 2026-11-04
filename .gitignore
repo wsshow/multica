@@ -20,6 +20,8 @@ dist-electron
 # env
 .env*
 !.env.example
+!.env.integrated.example
+!.env.integrated.advanced.example
 # Desktop connection values are user-specific; only the template is tracked.
 !apps/desktop/.env.example
 # Mobile staging config is public (staging API URL) — track it so a fresh

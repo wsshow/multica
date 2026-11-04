@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1
+# Required named contexts are provided by docker-bake.hcl, never floating images.
+ARG BACKEND_IMAGE
+ARG WEB_IMAGE
+FROM ${BACKEND_IMAGE} AS backend
+FROM ${WEB_IMAGE} AS runtime
+
+USER root
+RUN apk add --no-cache nginx tini ca-certificates tzdata
+COPY --from=backend /app/server /app/migrate /app/maintenance /app/backfill_task_usage_hourly /app/backfill_codex_usage_cache /app/
+COPY --from=backend /app/migrations/ /app/migrations/
+COPY --chown=1001:1001 docker/integrated/config.mjs docker/integrated/supervisor.mjs docker/integrated/entrypoint.mjs docker/integrated/healthcheck.mjs /app/integrated/
+
+USER 1001:1001
+WORKDIR /app
+ENV REMOTE_API_URL=http://127.0.0.1:8081
+EXPOSE 8080
+HEALTHCHECK --interval=15s --timeout=5s --start-period=5m --retries=3 CMD ["node", "/app/integrated/healthcheck.mjs"]
+ENTRYPOINT ["/sbin/tini", "--", "node", "/app/integrated/entrypoint.mjs"]
+CMD []
