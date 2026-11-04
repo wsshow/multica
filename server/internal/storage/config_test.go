@@ -20,11 +20,13 @@ func TestRequiredObjectStorageDoesNotCreateLocalFiles(t *testing.T) {
 
 func TestConfiguredS3ErrorDoesNotFallBackToLocal(t *testing.T) {
 	t.Setenv("S3_BUCKET", "test-bucket")
-	configPath := filepath.Join(t.TempDir(), "invalid-aws-config")
-	if err := os.WriteFile(configPath, []byte("[unclosed section"), 0600); err != nil {
+	configPath := filepath.Join(t.TempDir(), "aws-config")
+	if err := os.WriteFile(configPath, []byte("[default]\nregion=us-east-1\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("AWS_CONFIG_FILE", configPath)
+	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", configPath)
+	t.Setenv("AWS_PROFILE", "missing-storage-profile")
 	path := filepath.Join(t.TempDir(), "uploads")
 	t.Setenv("LOCAL_UPLOAD_DIR", path)
 	if _, err := NewFromEnv(false); err == nil {
