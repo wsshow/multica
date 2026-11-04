@@ -1,6 +1,6 @@
 # Local customization and upstream updates
 
-This checkout is an independent customized version of Multica. The original Git metadata was intentionally removed. Its new repository starts on `main` without remotes or inherited history. Licenses, copyright notices, Go module paths, and source references remain intact.
+This checkout is an independent customized version of Multica. The original Git metadata was intentionally removed. Its new repository began on `main` without remotes or inherited history. Licenses, copyright notices, Go module paths, and source references remain intact.
 
 ## Telemetry boundaries
 
@@ -24,15 +24,64 @@ User-visible usage, token counts, costs, run history, failure reasons, runtime h
 
 Keep customization concentrated in the boundaries above. Merge upstream business features with their call sites intact, and resolve boundary changes in favor of the no-op policy. Do not replace entire customized modules with upstream versions without reviewing newly added exports and initialization paths.
 
-Because the previous history was removed, there is no verified upstream merge base. For the first synchronization, identify the original source version and compare a separate upstream checkout against this repository. Establish a dedicated upstream snapshot branch from that verified version before importing subsequent snapshots. Do not blindly merge unrelated histories or use blanket conflict resolution. No upstream remote has been configured automatically.
+The first synchronization uses the separately checked-out official snapshot
+`87ec077e5f56ff66342caef1df1638780acfdf2e` as an explicitly reviewed comparison
+base. All 137 differences from the initial customized tree were classified
+against this policy; subsequent customized commits remain intact. The original
+checkout identity is still unknown. The first three-way result was computed
+with `git merge-tree --merge-base` at that snapshot, rather than treating
+unrelated histories as an ordinary merge or accepting one side wholesale.
+The reconciliation merge has the previous customized head and official
+`v0.8.0` as its parents. This establishes ancestry for subsequent merges;
+it does not recover ancestry for the initial customized snapshot.
+The [synchronization record](upstream-sync.json) contains exact source SHAs,
+the difference classification, conflict decisions, and verification results.
+Keep the original [comparison evidence](upstream-baseline.json) unchanged.
 
-Maintain this edition's independent release sequence and source provenance in [the version mapping](version-mapping.md). The recorded file-comparison candidate is a reference for review, not a recovered Git ancestor or a verified merge base.
+Reuse the long-lived `feikong/upstream-sync` branch for every synchronization.
+`origin` is the customized repository and the only persistent remote. Fetch
+official sources directly from `https://github.com/multica-ai/multica.git`
+by URL for each synchronization; do not add an official remote.
+Keep official tags under `refs/tags/upstream/` so they cannot collide with
+customized release tags. The local `upstream/source` branch points only to
+the last integrated official snapshot and never contains customized commits.
+The `upstream/` names are local source references, not a configured remote.
+On a fresh clone of `origin`, create `upstream/source` at the `upstream_commit`
+recorded in `upstream-sync.json`; that commit is retained in the merge history.
+This local branch is not copied by cloning `origin`.
+
+After the previous synchronization has been merged into `main`, prepare the
+next one with the following commands, replacing `vX.Y.Z` with the selected
+official release tag:
+
+```bash
+git switch feikong/upstream-sync
+git merge --ff-only main
+git fetch --no-tags https://github.com/multica-ai/multica.git refs/tags/vX.Y.Z:refs/tags/upstream/vX.Y.Z
+git log --oneline upstream/source..upstream/vX.Y.Z
+git diff --stat upstream/source upstream/vX.Y.Z
+git merge --no-ff --no-commit upstream/vX.Y.Z
+```
+
+Review changes and resolve conflicts individually, then complete the checks
+below before committing. Follow the official API and product behavior;
+do not add old-client adapters as part of an upstream sync. Preserve the
+customization boundaries, independent release numbering, and CLI contract
+version split. Update the synchronization record, version mapping, and
+changelog. After the merge is verified, advance `upstream/source` to the
+official tag. Open a PR from `feikong/upstream-sync` to `main`, preserve its
+merge history, and retain the branch after merging. Do not squash or rebase
+this synchronization PR: future merges need the recorded official ancestry.
+
+Maintain this edition's independent release sequence and source provenance in
+[the version mapping](version-mapping.md). Source synchronization does not
+publish binaries or create a customized release tag.
 
 After each synchronization:
 
 1. Run `pnpm check:telemetry` to reject telemetry SDK dependencies and imports.
 2. Run the analytics, client usage, Google Analytics, crash persistence/flush, self-host worker, and metrics regression tests. They verify inert behavior even with configured keys, active users, and callbacks.
-3. Run typecheck, lint, frontend tests, and Go tests. Database-backed and end-to-end tests need the managed local environment.
+3. Run typecheck, lint, frontend tests, and Go tests. Match the Node runtime selected in CI for frontend tests. Use the managed environment for the database, stop its application services while running database-backed Go tests, and start them afterwards for end-to-end tests so background dispatchers cannot consume test fixtures.
 4. Review new outbound HTTP clients, script injection, startup workers, and reporting endpoints. The dependency check cannot detect every newly invented telemetry implementation.
 
 ## Distribution sources

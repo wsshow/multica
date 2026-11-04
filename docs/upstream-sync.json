@@ -1,0 +1,297 @@
+{
+  "upstream_repository": "https://github.com/multica-ai/multica",
+  "tracking_branch": "feikong/upstream-sync",
+  "source_branch": "upstream/source",
+  "upstream_tag": "v0.8.0",
+  "upstream_commit": "9b1ab4f9eed9153a94719596eb8a728d2770f065",
+  "customized_parent": "f0be6db56bec8340c7bd3d8fc8693f0cf0797ed5",
+  "customized_release_before_sync": "v0.1.3",
+  "customized_release_after_sync": null,
+  "scope": "Full upstream v0.8.0 source integration, retaining documented customization and installed-client API contracts; not a binary release.",
+  "bootstrap": {
+    "comparison_commit": "87ec077e5f56ff66342caef1df1638780acfdf2e",
+    "initial_customized_commit": "fcd80467b2cf795a02310a37c921f8f2646ed24e",
+    "original_checkout_identity": "not_recovered",
+    "reviewed_on": "2026-11-04",
+    "method": "Reviewed all 137 initial tree differences and retained subsequent customized commits. Computed the first three-way merge using git merge-tree --merge-base at the reviewed comparison snapshot; the reconciliation commit records the customized parent and the official release as its two parents. This establishes future ancestry without claiming recovered historical ancestry.",
+    "reviewed_difference_count": 137,
+    "reviewed_difference_groups": {
+      "customized_distribution": [
+        ".env.example",
+        ".github/RELEASING.md",
+        ".github/workflows/release.yml",
+        ".goreleaser.yml",
+        "Makefile",
+        "README.md",
+        "SELF_HOSTING.md",
+        "apps/desktop/electron-builder.yml",
+        "apps/desktop/package.json",
+        "docker-compose.selfhost.yml",
+        "scripts/install.ps1",
+        "scripts/install.sh",
+        "scripts/install.test.sh",
+        "scripts/selfhost-wait.sh",
+        "server/cmd/multica/cmd_update.go",
+        "server/internal/cli/update.go",
+        "server/internal/cli/update_source_test.go"
+      ],
+      "customization_policy_and_ci": [
+        ".github/actions/frontend-quality/action.yml",
+        "AGENTS.md",
+        "docs/customization.md",
+        "scripts/check-telemetry.mjs"
+      ],
+      "telemetry_noop_boundaries_and_tests": [
+        "apps/desktop/src/main/freeze-breadcrumb.test.ts",
+        "apps/desktop/src/main/freeze-breadcrumb.ts",
+        "apps/desktop/src/renderer/src/freeze-flush.test.ts",
+        "apps/desktop/src/renderer/src/freeze-flush.ts",
+        "apps/desktop/src/renderer/src/platform/client-usage-reporter.tsx",
+        "apps/desktop/src/renderer/src/platform/diagnostic-route-reporter.test.tsx",
+        "apps/web/components/google-analytics.test.tsx",
+        "apps/web/config/google-analytics.test.ts",
+        "apps/web/config/google-analytics.ts",
+        "apps/web/lib/google-analytics.ts",
+        "packages/core/analytics/benign-exceptions.test.ts",
+        "packages/core/analytics/benign-exceptions.ts",
+        "packages/core/analytics/exception-dedupe.test.ts",
+        "packages/core/analytics/exception-dedupe.ts",
+        "packages/core/analytics/index.test.ts",
+        "packages/core/analytics/index.ts",
+        "packages/core/analytics/redact-exception.test.ts",
+        "packages/core/analytics/redact-exception.ts",
+        "packages/core/api/client.ts",
+        "packages/core/client-usage/install-id.test.ts",
+        "packages/core/client-usage/install-id.ts",
+        "packages/core/client-usage/reporter.test.tsx",
+        "packages/core/client-usage/reporter.tsx",
+        "packages/core/diagnostics/diagnostic-context.test.ts",
+        "packages/core/diagnostics/diagnostic-context.ts",
+        "packages/core/diagnostics/freeze-watchdog.test.ts",
+        "packages/core/diagnostics/freeze-watchdog.ts",
+        "server/cmd/server/health_realtime.go",
+        "server/cmd/server/health_realtime_test.go",
+        "server/internal/analytics/client.go",
+        "server/internal/analytics/client_test.go",
+        "server/internal/analytics/posthog.go",
+        "server/internal/daemonws/metrics.go",
+        "server/internal/handler/client_usage.go",
+        "server/internal/handler/client_usage_test.go",
+        "server/internal/handler/config.go",
+        "server/internal/handler/config_test.go",
+        "server/internal/integrations/lark/registration.go",
+        "server/internal/integrations/lark/registration_test.go",
+        "server/internal/metrics/agent_runtime_lookup_test.go",
+        "server/internal/metrics/business.go",
+        "server/internal/metrics/business_events.go",
+        "server/internal/metrics/business_test.go",
+        "server/internal/metrics/channel_lease.go",
+        "server/internal/metrics/channel_media.go",
+        "server/internal/metrics/config.go",
+        "server/internal/metrics/config_test.go",
+        "server/internal/metrics/daemonws.go",
+        "server/internal/metrics/daemonws_test.go",
+        "server/internal/metrics/db.go",
+        "server/internal/metrics/db_routing.go",
+        "server/internal/metrics/db_test.go",
+        "server/internal/metrics/http.go",
+        "server/internal/metrics/http_test.go",
+        "server/internal/metrics/labels_pr3_test.go",
+        "server/internal/metrics/noop.go",
+        "server/internal/metrics/noop_test.go",
+        "server/internal/metrics/realtime.go",
+        "server/internal/metrics/realtime_test.go",
+        "server/internal/metrics/record_event_test.go",
+        "server/internal/metrics/registry.go",
+        "server/internal/metrics/registry_test.go",
+        "server/internal/metrics/server.go",
+        "server/internal/metrics/server_test.go",
+        "server/internal/metrics/testutil.go",
+        "server/internal/metrics/wecom.go",
+        "server/internal/metrics/wecom_test.go",
+        "server/internal/realtime/metrics.go",
+        "server/internal/realtime/metrics_test.go",
+        "server/internal/realtime/sharded_stream_relay.go",
+        "server/internal/selfhosttelemetry/client.go",
+        "server/internal/selfhosttelemetry/client_test.go",
+        "server/internal/selfhosttelemetry/collector.go",
+        "server/internal/selfhosttelemetry/config.go",
+        "server/internal/selfhosttelemetry/event.go",
+        "server/internal/selfhosttelemetry/event_test.go",
+        "server/internal/selfhosttelemetry/postgres_test.go",
+        "server/internal/selfhosttelemetry/store.go",
+        "server/internal/selfhosttelemetry/worker.go",
+        "server/internal/selfhosttelemetry/worker_test.go",
+        "server/internal/service/task.go"
+      ],
+      "telemetry_configuration_and_documentation": [
+        "apps/docs/content/docs/environment-variables.fr.mdx",
+        "apps/docs/content/docs/environment-variables.ja.mdx",
+        "apps/docs/content/docs/environment-variables.ko.mdx",
+        "apps/docs/content/docs/environment-variables.mdx",
+        "apps/docs/content/docs/environment-variables.zh.mdx",
+        "apps/web/features/landing/i18n/en.ts",
+        "apps/web/features/landing/i18n/ja.ts",
+        "apps/web/features/landing/i18n/ko.ts",
+        "apps/web/features/landing/i18n/zh.ts",
+        "deploy/helm/multica/templates/configmap.yaml",
+        "deploy/helm/multica/templates/frontend.yaml",
+        "deploy/helm/multica/values.yaml"
+      ],
+      "telemetry_dependency_removal_and_check_command": [
+        "package.json",
+        "packages/core/package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "server/go.mod",
+        "server/go.sum"
+      ],
+      "telemetry_assertions_removed_with_product_assertions_retained": [
+        "server/internal/daemonws/hub_test.go",
+        "server/internal/daemonws/runtime_gone_test.go",
+        "server/internal/handler/daemon_chat_resume_fallback_test.go",
+        "server/internal/handler/invitation_test.go",
+        "server/internal/handler/onboarding_test.go",
+        "server/internal/handler/runtime_lookup_metrics_test.go",
+        "server/internal/handler/task_usage_snapshot_test.go",
+        "server/internal/realtime/hub_test.go",
+        "server/internal/realtime/redis_relay_test.go",
+        "server/internal/realtime/relay_lifecycle_test.go",
+        "server/internal/realtime/sharded_stream_relay_test.go",
+        "server/internal/service/agent_runtime_lookup_test.go",
+        "server/internal/service/channel_media_reconciler_test.go",
+        "server/internal/service/selfhost_telemetry_activity_test.go",
+        "server/internal/service/task_claim_decision_db_test.go",
+        "server/internal/service/task_claim_decision_test.go",
+        "server/internal/service/task_runtime_concurrency_db_test.go"
+      ]
+    }
+  },
+  "conflict_resolution": {
+    "apps/desktop/package.json": "Retain customized release version, homepage and package manager; accept other upstream changes.",
+    "apps/web/package.json": "Retain customized release version."
+  },
+  "cli_compatibility_version": "0.8.0",
+  "verification": {
+    "status": "source_integrated_with_recorded_suite_failures",
+    "telemetry_dependency_check": "passed: pnpm check:telemetry",
+    "frontend_typecheck": "passed: pnpm typecheck (9 tasks)",
+    "frontend_lint": "passed: pnpm lint (existing warnings, no errors)",
+    "mobile": "passed: typecheck, lint, 41 test files / 297 tests, and ios-run script regression tests",
+    "packaging": "passed: 34 integrated configuration/supervision, publishing cleanup and bundled-CLI regression tests",
+    "sqlc": "passed: make sqlc; generated output matches the imported official queries",
+    "source_record": "passed: all 137 initial differences classified; original comparison evidence unchanged; documentation references and independent package versions verified",
+    "agent_suite": {
+      "initial_run": "All agent tests ran behind the agent-CLI guard; two unchanged Codex timing tests failed during concurrent build/test load.",
+      "targeted_retries": "passed: both failing Codex tests, with GOMAXPROCS=2 and -parallel 1",
+      "upstream_runtime_tests": "passed: TestZcode*, TestDevin*, TestRuntimeCLICompatibilityVersion with fake executables",
+      "upstream_runtime_race_tests": "passed: TestZcode*, TestDevin*, TestRuntimeCLICompatibilityVersion with -race -p 1 -parallel 1 (35.833s); all executables were fake or missing test paths."
+    },
+    "frontend_tests": {
+      "coverage": "10950 unique non-mobile frontend/config tests across Core, UI, Views, Docs, Desktop, Web and ESLint config; 297 mobile tests separately.",
+      "core": "194 files / 2555 tests passed",
+      "ui": "4 files / 326 tests passed",
+      "docs": "5 files / 25 tests passed",
+      "views_full_run": "549 files / 6912 tests executed: 6903 passed, 9 hit the local 5-second test deadline.",
+      "views_retries": "All four affected files passed under Node 22.23.4: IssueDetail 106, property filters 11, workspace rail 12, runtime choices 5. The property-filter/runtime-choice retries used a 15-second CLI budget; assertions and source tests were unchanged.",
+      "desktop": "73 files / 829 tests passed under Node 22",
+      "web": "38 files / 299 tests passed under Node 22",
+      "eslint_config": "4 tests passed",
+      "commands": [
+        "NODE_OPTIONS=--no-experimental-webstorage pnpm test --concurrency=1 --filter=!@multica/eslint-config -- --maxWorkers=2",
+        "PATH=<verified Node 22>/bin:$PATH pnpm exec turbo test --filter=@multica/web --filter=@multica/desktop --concurrency=1 -- --maxWorkers=2 --testTimeout=15000"
+      ]
+    },
+    "backend_tests": {
+      "full_command": "GOMAXPROCS=2 GOFLAGS=-p=2 make env-exec ARGS=\"-- bash scripts/test-go.sh --race --only regular\"",
+      "full_result": "All regular packages passed except internal/handler: seven tests using the once-seeded shared runtime failed after its heartbeat exceeded the existing 150-second freshness window during a 515-second suite.",
+      "failed_tests": [
+        "TestClaimTaskByRuntime_ChatRolloutMissingDisclosesGap",
+        "TestClaimTaskByRuntime_RerunSourceRolloutMissingDisclosesGap",
+        "TestClaimTask_ProjectGithubReposOverrideWorkspaceRepos",
+        "TestClaimTask_ProjectDescriptionInjected",
+        "TestClaimTask_ProjectWithoutRepos_FallsBackToWorkspaceRepos",
+        "TestClaimTask_AutopilotRunOnly_PopulatesWorkspaceAndProjectContext",
+        "TestClaimTaskByRuntime_TaskWorkspaceMismatch_CancelsAndRejects"
+      ],
+      "targeted_retry": "All seven tests passed together with race detection and fresh TestMain fixtures (9.264s). No runtime freshness behavior or old-client adapters were changed.",
+      "test_environment": "The managed application services were stopped for the final database-backed run. The first run also had interference from the development API and was superseded."
+    },
+    "e2e": {
+      "command": "make env-exec ARGS=\"-- pnpm exec playwright test e2e/comments.spec.ts e2e/settings.spec.ts e2e/runtime-sharing.spec.ts --timeout=120000\" with Node 22",
+      "result": "1 passed / 4 failed; this is not a green browser verification.",
+      "failures": [
+        "Comment submission: expected posted comment was not visible within 5 seconds.",
+        "Runtime sharing: the old Private button selector was absent after opening the runtime row.",
+        "Workspace settings: the old current-workspace rail-link selector was absent; the current shell has a Switch workspace button.",
+        "Composio settings: navigation to the settings tab exceeded the local 120-second test deadline."
+      ],
+      "comment_retry": "A separate retry stopped earlier at the New Issue visibility wait; it did not establish a successful comment-submission flow.",
+      "scope": "No production UI/API or existing E2E tests were changed to accommodate old selectors. Native mobile, full E2E, dual-architecture image and full installer verification are not claimed."
+    },
+    "not_run": [
+      "Real installed-agent smoke tests (not explicitly authorized).",
+      "Native mobile simulator/device checks.",
+      "Local dual-architecture image builds and full desktop installers."
+    ],
+    "eslint_config_tests": "passed: 4 node:test cases",
+    "environment_cleanup": "Managed application services stopped after validation; development database/profile retained. Temporary upstream audit worktree removed via the repository wrapper."
+  },
+  "api_behavior": "Official v0.8.0 API and product behavior, including Inbox rollback; no additional old-client adapters.",
+  "upstream_commits_since_comparison": [
+    {
+      "sha": "d52e48f8c737eff69f971db906c95727e911fe57",
+      "subject": "MUL-8534: fix Devin model discovery with API key authentication (#9859)"
+    },
+    {
+      "sha": "d35410c0b7589f4f2da68ec8d4a2e9a49d42376a",
+      "subject": "MUL-8526: feat(wakeup): add PR review wakeup trigger (--until-pr reviewed) (#9839)"
+    },
+    {
+      "sha": "2115a513a375bfe2910b76725b617504faee4b25",
+      "subject": "MUL-7686: feat(runtime): add native ZCode protocol support (#9514)"
+    },
+    {
+      "sha": "e06640a565ec0601f56d90c1d491b3a5711ee822",
+      "subject": "Revert \"MUL-8526: feat(wakeup): add PR review wakeup trigger (--until-pr revi…\" (#9862)"
+    },
+    {
+      "sha": "049ca20ec5b80cb9bbe56dcd4f1896d6f2722ee6",
+      "subject": "feat(comments): surface thread resolution on roots-only list (#9858)"
+    },
+    {
+      "sha": "82492f94d669e504a2fda36fb6c76f4ac7d65f2e",
+      "subject": "MUL-8510: fix(ghsnapshot): drop cancelled workflow runs that a newer run of the same workflow replaced from the PR rollup (#9860)"
+    },
+    {
+      "sha": "cb5ed4f33e363b0444b86a62400ca0c4f85cb7fb",
+      "subject": "MUL-8541: feat(inbox): route comments by who they @mention, not who wrote them (#9864)"
+    },
+    {
+      "sha": "b6fc06820ad0f055722531920510cb6c12b49050",
+      "subject": "fix(settings): hide Browser notifications search result where the row does not render (#9867)"
+    },
+    {
+      "sha": "9044fb6fb4f628c3b7e822732048f214a33df9c4",
+      "subject": "MUL-8544: fix(ui): drop the outline on the selected tab in dark mode (#9874)"
+    },
+    {
+      "sha": "4e22663a61702c2c0e0b1e8fc35b6786272a791a",
+      "subject": "MUL-8541: revert the two-section Inbox (#9815, #9864) (#9875)"
+    },
+    {
+      "sha": "9b1ab4f9eed9153a94719596eb8a728d2770f065",
+      "subject": "MUL-8546: docs(changelog): release 0.8.0 (#9871)"
+    }
+  ],
+  "post_merge_adjustments": [
+    "Keep customized package versions at 0.1.3 until a separate release; advertise the imported CLI contract as 0.8.0.",
+    "Mirror the upstream ZCode README entry in Chinese and remove a trailing blank line in provider documentation.",
+    "Document the permanent synchronization branch, source ancestry and verification; preserve original baseline evidence."
+  ],
+  "outbound_review": [
+    "No telemetry SDK dependency or collector was added; existing no-op boundaries remain unchanged.",
+    "ZCode and Devin changes use provider subprocess protocols; the GitHub snapshot changes use the existing product integration client.",
+    "No startup reporting worker, script injection or telemetry endpoint was introduced by the upstream delta."
+  ]
+}

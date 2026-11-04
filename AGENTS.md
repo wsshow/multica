@@ -30,7 +30,8 @@ Multica is a task management platform where people and agents collaborate on iss
 
 Use `Makefile`, workspace `package.json` files, and `pnpm-workspace.yaml` for current commands and versions. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and worktree operations.
 
-- Use the checkout's managed environment: `make up`, `make status`, `make down`. `make down` preserves data; `make destroy` removes the environment and its data.
+- For this customized checkout, run tests in CI or an explicitly designated remote environment. Do not run tests or provision test services, containers, or databases on the local development machine.
+- In a remote development environment, use the checkout's managed environment: `make up`, `make status`, `make down`. `make down` preserves data; `make destroy` removes the environment and its data.
 - Worktrees share PostgreSQL but have isolated databases/ports. Use the environment scripts and `.env.worktree`; do not copy the main checkout's `.env` or manually create a database through an assumed PostgreSQL instance.
 - Integrated deployments use `make integrated-init` and `make integrated INTEGRATED_IMAGE=namespace/repository:version`, with external infrastructure and raw `.env.integrated` configuration. Keep these targets isolated from the development `.env` include/defaults; see [the integrated guide](docs/integrated-image.md). Image builds and smoke tests run in the integrated GitHub workflow; ordinary deployments only pull published images.
 - Regenerate sqlc with `make sqlc` after SQL changes.
@@ -132,6 +133,7 @@ Workspace-scoped queries filter by `workspace_id`; membership gates access and `
 ## Customized Build Policy
 
 - Read [docs/customization.md](docs/customization.md) before syncing upstream code or changing analytics, diagnostics, client usage, operational metrics, or release sources.
+- Keep only the customized repository as a persistent remote; fetch official sources directly by URL for each synchronization without adding an official remote. Reuse `feikong/upstream-sync` for upstream updates, keep official tags under `upstream/`, and preserve the merge ancestry when merging its PR into `main`; do not squash, rebase, or delete the synchronization branch. Follow the source tracking workflow in `docs/customization.md`.
 - Deployment and installation docs must use the customized checkout or explicitly configured operator-owned artifacts. Update all documentation locales together; retain licenses, attribution, and historical source references.
 - Maintain independent release versions. Update [the source version mapping](docs/version-mapping.md) and [changelog](CHANGELOG.md) when releasing or syncing upstream; distinguish comparison candidates from verified source ancestry.
 - Runtime feature gates use advertised `cli_compatibility_version`; displays and updates use `cli_version`. Review `server/pkg/agent/cli_compatibility.go` when syncing upstream contracts, while retaining checks for older daemons without the new field.
