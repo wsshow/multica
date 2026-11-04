@@ -1,0 +1,68 @@
+name: Clean Docker Hub tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Current stable image version (without v), also referenced by latest
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integrated-dockerhub-publish
+  cancel-in-progress: false
+
+jobs:
+  verify-digest-upload:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    env:
+      IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+      VERSION: ${{ inputs.version }}
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-crane
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Verify digest-only upload using the existing release image
+        shell: bash
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          before=$(crane digest "$IMAGE:$VERSION")
+          export INTEGRATED_BUILD_IMAGE="$IMAGE:$VERSION"
+          docker pull --platform "linux/$ARCH" "$INTEGRATED_BUILD_IMAGE"
+          bash scripts/integrated-push.sh
+          [[ "$(crane digest "$IMAGE:$VERSION")" == "$before" ]]
+
+  cleanup:
+    needs: verify-digest-upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify cleanup guards
+        run: node --test scripts/dockerhub-cleanup.test.mjs
+      - name: Remove internal tags already covered by the stable manifest
+        env:
+          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/dockerhub-cleanup.mjs

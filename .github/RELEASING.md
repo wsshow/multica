@@ -17,13 +17,26 @@ token must be allowed to push to that Docker Hub repository. Unlike GHCR,
 Docker Hub does not use `GITHUB_TOKEN` for this login.
 
 The workflow builds from this checkout using Bake and native AMD64/ARM64
-runners, then tests each assembled image before pushing the same image under
-a build-specific candidate tag. Only after both succeed does it merge their
-digests into the version (without `v`) and full-SHA image tags. Stable versions
-also update `latest`; prereleases do not. PR and ordinary main runs only build
+runners, then tests each assembled image before exporting and uploading the
+same image by digest, without a temporary tag. The registry client is a pinned,
+checksum-verified precompiled crane binary. Only after both succeed does the
+workflow merge their digests into the version tag (without `v`). Stable versions
+also update `latest`; prereleases do not. Public tags contain only release
+versions and `latest`; source commits remain recorded in image labels and the
+release workflow. PR and ordinary main runs only build
 and test. Do not create a new release tag until the integrated-image CI checks
 for its source commit have passed. Check the published manifest includes both
 Linux architectures and record its digest. See the [integrated guide](../docs/integrated-image.md).
+
+For internal tags left by the previous publisher, run **Clean Docker Hub tags**
+with the current stable image version. This maintenance workflow first verifies
+digest-only uploads on both architectures using the existing release image;
+it does not compile or publish a new version. It then removes only `build-*`
+and `sha-*` tags whose digests are retained by that stable multi-platform
+manifest, while preserving the version and `latest`. The Docker Hub token needs
+tag deletion permission for this maintenance action; normal releases only need
+read/write permission. Never use the registry manifest deletion endpoint to
+remove an alias: version and `latest` can share that manifest.
 
 This edition maintains its own version sequence, beginning with `v0.1.0`.
 Upstream version numbers describe source provenance, not this edition's release

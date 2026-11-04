@@ -14,9 +14,9 @@ on:
         required: false
   push:
     branches: [main]
-    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
+    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/actions/setup-crane/**", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
   pull_request:
-    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
+    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/actions/setup-crane/**", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
 
 permissions:
   contents: read
@@ -61,9 +61,9 @@ jobs:
           node-version: 22
       - name: Verify packaging behavior and telemetry boundary
         run: |
-          node --test docker/integrated/config.test.mjs docker/integrated/supervisor.test.mjs scripts/integrated.test.mjs
+          node --test docker/integrated/config.test.mjs docker/integrated/supervisor.test.mjs scripts/integrated.test.mjs scripts/dockerhub-cleanup.test.mjs
           node scripts/check-telemetry.mjs
-          bash -n scripts/integrated.sh docker/integrated/smoke.sh
+          bash -n scripts/integrated.sh scripts/integrated-push.sh docker/integrated/smoke.sh
       - uses: actions/setup-go@v5
         with:
           go-version: "~1.27.3"
@@ -120,6 +120,9 @@ jobs:
             integrated.labels.org.opencontainers.image.source=https://github.com/${{ github.repository }}
       - name: Verify the assembled image
         run: bash docker/integrated/smoke.sh
+      - name: Set up registry client
+        if: inputs.publish
+        uses: ./.github/actions/setup-crane
       - name: Log in to Docker Hub
         if: inputs.publish
         uses: docker/login-action@v3
@@ -131,14 +134,7 @@ jobs:
         env:
           IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
           ARCH: ${{ matrix.arch }}
-        run: |
-          candidate="$IMAGE:build-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$ARCH"
-          docker tag "$INTEGRATED_BUILD_IMAGE" "$candidate"
-          docker push "$candidate"
-          digest=$(docker image inspect "$candidate" --format '{{index .RepoDigests 0}}')
-          [[ "$digest" == "$IMAGE@sha256:"* || "$digest" == "docker.io/$IMAGE@sha256:"* ]]
-          mkdir -p /tmp/integrated-digests
-          printf '%s\n' "$digest" > "/tmp/integrated-digests/$ARCH"
+        run: bash scripts/integrated-push.sh
       - name: Upload tested image digest
         if: inputs.publish
         uses: actions/upload-artifact@v4
@@ -178,7 +174,7 @@ jobs:
             [[ "$digest" == "$IMAGE@sha256:"* || "$digest" == "docker.io/$IMAGE@sha256:"* ]]
             sources+=("$digest")
           done
-          docker buildx imagetools create -t "$IMAGE:$VERSION" -t "$IMAGE:sha-$GITHUB_SHA" "${sources[@]}"
+          docker buildx imagetools create -t "$IMAGE:$VERSION" "${sources[@]}"
           docker buildx imagetools inspect --raw "$IMAGE:$VERSION" | jq -e '[.manifests[].platform | select(.os == "linux") | .architecture] | sort == ["amd64", "arm64"]'
       - name: Promote the verified stable manifest
         if: env.STABLE == 'true'

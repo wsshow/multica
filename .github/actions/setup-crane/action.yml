@@ -1,0 +1,22 @@
+name: Set up crane
+description: Install a checksum-verified registry client without compiling it
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        RUNNER_ARCH: ${{ runner.arch }}
+      run: |
+        case "$RUNNER_ARCH" in
+          X64) arch=x86_64; checksum=0ab7a1d6932a213aed964ce97666c3077fe691c8606413674a8b3e0b9ec4cda0 ;;
+          ARM64) arch=arm64; checksum=898c0cff975f898a33e8c4580bdafb0e7c02c7faa33374e946762f97c4ab7110 ;;
+          *) echo '::error::Unsupported crane runner architecture'; exit 1 ;;
+        esac
+        install_dir="$RUNNER_TEMP/crane"
+        mkdir -p "$install_dir"
+        curl --fail --silent --show-error --location --retry 3 \
+          "https://github.com/google/go-containerregistry/releases/download/v0.22.1/go-containerregistry_Linux_${arch}.tar.gz" \
+          -o "$install_dir/crane.tar.gz"
+        printf '%s  %s\n' "$checksum" "$install_dir/crane.tar.gz" | sha256sum --check
+        tar -xzf "$install_dir/crane.tar.gz" -C "$install_dir" crane
+        echo "$install_dir" >> "$GITHUB_PATH"
