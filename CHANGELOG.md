@@ -3,6 +3,20 @@
 Versions in this file belong to this customized edition. See
 [the source version mapping](docs/version-mapping.md) for upstream provenance.
 
+## 0.1.3 — 2026-11-04
+
+- Add one application image combining the Go backend, Next.js web application,
+  and nginx, with external PostgreSQL, S3-compatible storage, and optional Redis.
+- Add isolated deployment configuration and `make integrated` commands,
+  combined readiness, migration ordering, and supervised process shutdown.
+- Build and smoke-test native Linux AMD64/ARM64 images in GitHub Actions,
+  then publish the tested images and multi-platform manifest to the configured
+  Docker Hub repository on a release tag.
+- Use an explicit missing AWS profile for the storage initialization regression
+  test so its failure case follows the SDK's configuration-loading behavior.
+- Keep application telemetry disabled and disable Next.js telemetry in web
+  container builds and the integrated runtime.
+
 ## 0.1.2 — 2026-11-03
 
 - Separate this edition's release version from its advertised CLI contract
