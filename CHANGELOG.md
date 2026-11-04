@@ -3,7 +3,7 @@
 Versions in this file belong to this customized edition. See
 [the source version mapping](docs/version-mapping.md) for upstream provenance.
 
-## Unreleased
+## 0.1.4 — 2026-11-04
 
 - Integrate official `v0.8.0` (`9b1ab4f9eed9153a94719596eb8a728d2770f065`),
   including native ZCode support, Devin model discovery fixes, resolved-thread

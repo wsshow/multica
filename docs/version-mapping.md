@@ -10,7 +10,7 @@
 | `v0.1.1` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.1)，修复 `v0.1.0` 的桌面打包与上传配置 | `v0.7.2`，未新增上游同步 | `87ec077e5f56ff66342caef1df1638780acfdf2e`，沿用同一比对参考 | 同上；本次仅修改定制发行配置 |
 | `v0.1.2` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.2)，拆分发行版本与 CLI 功能兼容版本 | `v0.7.2`，未新增上游同步 | `87ec077e5f56ff66342caef1df1638780acfdf2e`，沿用同一比对参考 | 同上；CLI 兼容版本声明为 `0.7.2` |
 | `v0.1.3` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.3)，新增一体化应用镜像、独立部署配置和 Docker Hub 双架构自动发布 | `v0.7.2`，未新增上游同步 | `87ec077e5f56ff66342caef1df1638780acfdf2e`，沿用同一比对参考 | 同上；CLI 兼容版本仍为 `0.7.2` |
-| 未发布 | `feikong/upstream-sync`，从 `v0.1.3` 之后的定制提交 `f0be6db56bec8340c7bd3d8fc8693f0cf0797ed5` 同步 | [`v0.8.0`](https://github.com/multica-ai/multica/releases/tag/v0.8.0) | [`9b1ab4f9eed9153a94719596eb8a728d2770f065`](https://github.com/multica-ai/multica/commit/9b1ab4f9eed9153a94719596eb8a728d2770f065) | 完整导入该 tag 的上游变更并保留定制边界；首次建立可追溯的合并关系，原始 checkout 身份仍未恢复；见[同步记录](upstream-sync.json) |
+| `v0.1.4` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.4)，首次上游同步经 [PR #1](https://github.com/wsshow/multica/pull/1) 合入 `main` | [`v0.8.0`](https://github.com/multica-ai/multica/releases/tag/v0.8.0) | [`9b1ab4f9eed9153a94719596eb8a728d2770f065`](https://github.com/multica-ai/multica/commit/9b1ab4f9eed9153a94719596eb8a728d2770f065) | 完整导入该 tag 的上游变更并保留定制边界；首次建立可追溯的合并关系，原始 checkout 身份仍未恢复；见[同步记录](upstream-sync.json) |
 
 `v0.1.0` 的桌面发行不完整；`v0.1.1` 修复桌面打包，但独立编号仍会触发原有 CLI 功能版本门槛；`v0.1.2` 修复该兼容问题，`v0.1.3` 在此基础上增加一体化镜像发行。保留已发布 tag，避免同一版本号对应不同源码。
 
@@ -33,7 +33,7 @@
 
 文件比对能确认相同内容和剩余差异，不能证明已丢失的 Git 祖先关系。2026-11-04 的首次同步审查了这 137 项差异，确认其属于遥测边界、相关测试、依赖、配置、文档和定制发行修改，并将候选快照作为明确指定的三方对照点。首次集成提交以旧定制主线和官方 `v0.8.0` 为双亲，从这次集成开始建立真实可追溯的合并关系；不将候选点标为已恢复的历史祖先。后续按[同步策略](customization.md#synchronizing-upstream-features)复用 `feikong/upstream-sync`，`upstream/source` 仅跟踪已经导入的纯净官方快照。
 
-初始源码中的 Web 和 Desktop `package.json` 都声明 `0.7.2`，这是版本元数据证据，不能单独证明源码等于官方 tag。当前定制版的根目录、Web、Desktop 包版本仍统一为 `0.1.3`；此次源码同步尚未创建新的定制发行 tag，变更记录放在 Unreleased。Go 的 `go.mod` 版本字段描述 Go 工具链要求，不是产品版本。
+初始源码中的 Web 和 Desktop `package.json` 都声明 `0.7.2`，这是版本元数据证据，不能单独证明源码等于官方 tag。当前定制版的根目录、Web、Desktop 包版本统一为 `0.1.4`；该版本首次将已同步的官方 `v0.8.0` 源码发布为定制发行版本，变更记录见 [Changelog](../CHANGELOG.md)。Go 的 `go.mod` 版本字段描述 Go 工具链要求，不是产品版本。
 
 ## 发行版本与功能兼容版本
 
