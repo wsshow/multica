@@ -224,7 +224,7 @@
       "Local tests, telemetry checker, typecheck, lint, builds, sqlc generation, browser/simulator checks, containers or databases, per the user request.",
       "Real installed-agent smoke tests."
     ],
-    "ci": "Initial Integrated image run 44000090822 passed all 20 packaging tests, then the telemetry guard misclassified the connected-app catalog slug posthog as a Go SDK import. Restrict Go scanning to import declarations, retain SDK rejection and add regression tests; later CI runs are reported separately by PR #2."
+    "ci": "Initial Integrated image run 44000090822 passed all 20 packaging tests, then the telemetry guard misclassified the connected-app catalog slug posthog as a Go SDK import. Restrict Go scanning to import declarations, retain SDK rejection and add regression tests; later CI runs are reported separately by PR #2. The initial backend compile also found an upstream chat-submission test importing the removed Prometheus SDK; remove only its collector setup/assertion and retain concurrent acceptance, persistence, event, timestamp and wakeup assertions. The telemetry guard now scans Go test imports as well."
   },
   "api_behavior": "Follow upstream v0.10.0 APIs and business behavior; retain installed-client response defaults and the independent CLI contract field without adding old-client adapters.",
   "post_merge_adjustments": [
@@ -234,7 +234,8 @@
     "Keep all guide and changelog destinations optional and configured; gate desktop release lookup on MULTICA_RELEASE_REPOSITORY. Keep GitHub repository prompts on the explicitly supplied customized repository.",
     "Adapt new Japanese README and Traditional Chinese installation/deployment docs to customized artifacts and disabled telemetry.",
     "Update the customized integrated-image workflow to the upstream Go 1.27.4 security floor.",
-    "Fix the telemetry guard's connected-app catalog false positive by scanning actual Go import declarations, and explicitly reject Go PostHog SDK imports."
+    "Fix the telemetry guard's connected-app catalog false positive by scanning actual Go import declarations, and explicitly reject Go PostHog SDK imports.",
+    "Adapt the new chat-submission contract test to no-op metrics without weakening its product assertions; reject SDK imports from Go tests too."
   ],
   "outbound_review": [
     "Existing analytics, client-usage, crash, self-host telemetry and operational-metrics facades remain inert; no telemetry SDK/collector is imported.",

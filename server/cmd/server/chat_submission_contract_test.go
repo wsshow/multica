@@ -19,7 +19,6 @@ import (
 	"github.com/multica-ai/multica/server/internal/realtime"
 	"github.com/multica-ai/multica/server/internal/testutil"
 	"github.com/multica-ai/multica/server/pkg/protocol"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 func submissionHTTP(serverURL, token, workspaceID, method, path string, body any) (int, map[string]any, error) {
@@ -123,8 +122,6 @@ func TestChatSubmissionConcurrentFirstSendAndPersistentReplay(t *testing.T) {
 	hub := realtime.NewHub()
 	go hub.Run()
 	metrics := obsmetrics.NewBusinessMetrics()
-	registry := prometheus.NewRegistry()
-	registry.MustRegister(metrics.Collectors()...)
 	router, h := NewRouterWithOptions(testPool, hub, bus, analytics.NoopClient{}, nil, RouterOptions{BusinessMetrics: metrics})
 	wakeups := &submissionWakeupCounter{}
 	h.TaskService.Wakeup = wakeups
@@ -183,20 +180,8 @@ func TestChatSubmissionConcurrentFirstSendAndPersistentReplay(t *testing.T) {
 	}
 	var afterTouch string
 	workspaceFixture(t).QueryRow(t, `SELECT updated_at::text FROM chat_session WHERE id=$1`, sessionID).Scan(&afterTouch)
-	families, err := registry.Gather()
-	if err != nil {
-		t.Fatal(err)
-	}
-	var sentMetrics float64
-	for _, family := range families {
-		if family.GetName() == "multica_chat_message_sent_total" {
-			for _, metric := range family.Metric {
-				sentMetrics += metric.GetCounter().GetValue()
-			}
-		}
-	}
-	if beforeTouch != afterTouch || wakeups.calls.Load() != 1 || sentMetrics != 1 {
-		t.Fatalf("replay side effects touch=%s/%s wakeups=%d chat metrics=%v", beforeTouch, afterTouch, wakeups.calls.Load(), sentMetrics)
+	if beforeTouch != afterTouch || wakeups.calls.Load() != 1 {
+		t.Fatalf("replay side effects touch=%s/%s wakeups=%d", beforeTouch, afterTouch, wakeups.calls.Load())
 	}
 }
 

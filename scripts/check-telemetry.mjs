@@ -32,7 +32,8 @@ function walk(dir) {
         }
       }
     }
-    if (!/\.(?:ts|tsx|js|mjs|go)$/.test(entry.name) || /(?:\.test\.|_test\.go$)/.test(entry.name)) continue;
+    if (!/\.(?:ts|tsx|js|mjs|go)$/.test(entry.name)) continue;
+    if (!entry.name.endsWith(".go") && /\.test\./.test(entry.name)) continue;
     for (const name of findForbiddenImports(source, entry.name.endsWith(".go") ? ".go" : ".js")) {
       violations.push(`${relative(root, path)}: ${name}`);
     }
