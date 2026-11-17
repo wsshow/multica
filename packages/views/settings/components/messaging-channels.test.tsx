@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Agent } from "@multica/core/types";
@@ -112,6 +113,7 @@ function show(ui: React.ReactElement) {
 }
 
 beforeEach(() => {
+  configureDeploymentLinks({});
   vi.clearAllMocks();
   state.role = "admin";
   state.member = true;
@@ -139,6 +141,16 @@ beforeEach(() => {
 });
 
 describe("agent messaging channels", () => {
+  it("keeps bot management available without an unconfigured troubleshooting link", async () => {
+    vi.mocked(api.listLarkInstallations).mockResolvedValue(
+      listing([{ ...active, app_id: "cli_mika", region: "feishu" }]) as never,
+    );
+    show(<AgentChannelsSection agent={agent} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Manage Lark" }));
+    expect(await screen.findByRole("menuitem", { name: "Manage in Feishu" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Troubleshooting" })).not.toBeInTheDocument();
+  });
+
   it.each([
     ["feishu", "open.feishu.cn", "Manage in Feishu"],
     ["lark", "open.larksuite.com", "Manage in Lark"],
@@ -146,6 +158,7 @@ describe("agent messaging channels", () => {
   ])(
     "keeps management and troubleshooting available for an existing %s bot",
     async (region, host, label) => {
+      configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs" });
       vi.mocked(api.listLarkInstallations).mockResolvedValue({
         ...listing([{ ...active, app_id: "cli_a&b", region }]),
         install_supported: false,
@@ -161,7 +174,7 @@ describe("agent messaging channels", () => {
         await screen.findByRole("menuitem", { name: "Troubleshooting" }),
       );
       expect(state.open).toHaveBeenCalledWith(
-        "https://multica.ai/docs/lark-bot-integration",
+        "https://docs.example.test/docs/lark-bot-integration",
       );
     },
   );
@@ -626,3 +639,5 @@ describe("workspace overview", () => {
     ).toBeInTheDocument();
   });
 });
+
+afterEach(() => configureDeploymentLinks({}));

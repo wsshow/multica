@@ -1,4 +1,5 @@
-import { beforeEach, expect, it, vi } from "vitest";
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -100,6 +101,7 @@ function mount() {
   );
 }
 beforeEach(() => {
+  configureDeploymentLinks({});
   queries = [];
   rowLinks.length = 0;
   rows = ["a", "b"].map((id) => ({
@@ -400,6 +402,7 @@ it("opens the create form for the picked issue", async () => {
 });
 
 it("introduces wakeups when the workspace has none yet", async () => {
+  configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs" });
   const user = userEvent.setup();
   list.mockResolvedValue({
     items: [],
@@ -411,7 +414,7 @@ it("introduces wakeups when the workspace has none yet", async () => {
   const intro = await screen.findByRole("region", { name: "Bring agents back at the right moment" });
   expect(within(intro).getByRole("link", { name: /Read the docs/ })).toHaveAttribute(
     "href",
-    "https://multica.ai/docs/issue-wakeups",
+    "https://docs.example.test/docs/issue-wakeups",
   );
   await user.click(within(intro).getByRole("button", { name: "New wakeup" }));
   expect(await screen.findByRole("dialog", { name: "Pick issue" })).toBeVisible();
@@ -428,3 +431,5 @@ it("keeps the empty list when only the current scope has no wakeups", async () =
   expect(await screen.findByText("No matching wakeups")).toBeInTheDocument();
   expect(screen.queryByRole("region", { name: "Bring agents back at the right moment" })).toBeNull();
 });
+
+afterEach(() => configureDeploymentLinks({}));

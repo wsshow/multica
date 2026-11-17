@@ -1,5 +1,6 @@
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 import React from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, within } from "@testing-library/react";
 import type { Agent } from "@multica/core/types";
 import type { AgentActivity } from "@multica/core/agents";
@@ -246,6 +247,7 @@ function betaPrecedesAlpha(): boolean {
 }
 
 beforeEach(() => {
+  configureDeploymentLinks({});
   vi.clearAllMocks();
   mocks.agents = [ALPHA, BETA];
   mocks.agentsLoading = false;
@@ -351,6 +353,7 @@ describe("AgentsPage listReady gate", () => {
   });
 
   it("introduces agents without blocking on auxiliary queries when there are none", () => {
+    configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs" });
     mocks.agents = [];
     // All auxiliary queries pending — the empty state must not wait on them.
     mocks.activity = { byAgent: new Map(), loading: true };
@@ -363,7 +366,7 @@ describe("AgentsPage listReady gate", () => {
     expect(within(intro).getByRole("button", { name: "New agent" })).toBeInTheDocument();
     expect(within(intro).getByRole("link", { name: /Read the docs/ })).toHaveAttribute(
       "href",
-      "https://multica.ai/docs/agents",
+      "https://docs.example.test/docs/agents",
     );
     const steps = within(intro).getByRole("list", { name: "Setup steps" });
     expect(within(steps).getByRole("link", { name: "Connect" })).toHaveAttribute(
@@ -483,3 +486,5 @@ describe("AgentsPage model column (GitHub #9500)", () => {
     expect(screen.getAllByText("claude").length).toBeGreaterThan(0);
   });
 });
+
+afterEach(() => configureDeploymentLinks({}));

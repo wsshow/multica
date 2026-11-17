@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Squad } from "@multica/core/types";
@@ -95,6 +96,7 @@ function renderPage() {
 }
 
 beforeEach(() => {
+  configureDeploymentLinks({});
   mocks.squads = [squad("s1", "Strike Team", "me"), squad("s2", "Design Crew", "someone")];
   mocks.viewState.scope = "all";
   mocks.viewState.filters = { leaders: [], creators: [] };
@@ -153,6 +155,7 @@ describe("SquadsPage header", () => {
   });
 
   it("introduces squads and offers to create the first one when there are none", async () => {
+    configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs" });
     const user = userEvent.setup();
     mocks.squads = [];
     renderPage();
@@ -162,9 +165,11 @@ describe("SquadsPage header", () => {
     });
     expect(screen.getByRole("link", { name: "Read the docs" })).toHaveAttribute(
       "href",
-      "https://multica.ai/docs/squads",
+      "https://docs.example.test/docs/squads",
     );
     await user.click(within(intro).getByRole("button", { name: "New squad" }));
     expect(mocks.openModal).toHaveBeenCalledWith("create-squad");
   });
 });
+
+afterEach(() => configureDeploymentLinks({}));

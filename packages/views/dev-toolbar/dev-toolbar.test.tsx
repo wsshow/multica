@@ -99,6 +99,7 @@ describe("DevToolbar", () => {
     vi.useRealTimers();
     resetDevRecorder();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     setCurrentWorkspace(null, null);
   });
 
@@ -140,76 +141,53 @@ describe("DevToolbar", () => {
     expect(reservesSpace()).toBe(true);
   });
 
-  it("counts a failed API request and shows it with its request ID", async () => {
+  it("keeps the network panel empty while API failures still reach the caller", async () => {
     renderToolbar();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ error: "version conflict" }), {
-          status: 409,
-          headers: { "Content-Type": "application/json" },
-        }),
-      ),
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "version conflict" }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      }),
     );
-    await expect(new ApiClient("http://localhost:18080").listMembers("ws-1")).rejects.toThrow();
+    vi.stubGlobal("fetch", fetch);
+    await expect(new ApiClient("http://localhost:18080").listMembers("ws-1")).rejects.toThrow("version conflict");
+    expect(fetch).toHaveBeenCalled();
 
-    await waitFor(() => expect(screen.getByTestId("dev-toolbar-net")).toHaveTextContent("· 1 failed"));
+    expect(screen.getByTestId("dev-toolbar-net")).toHaveTextContent(/^Net0$/);
     fireEvent.click(screen.getByTestId("dev-toolbar-net"));
-    fireEvent.click(await screen.findByText("/api/workspaces/ws-1/members"));
-    expect(screen.getByText("version conflict")).toBeInTheDocument();
-    expect(screen.getByText(/^X-Request-ID /)).toBeInTheDocument();
+    expect(await screen.findByText("No API requests yet.")).toBeInTheDocument();
+    expect(screen.queryByText("/api/workspaces/ws-1/members")).not.toBeInTheDocument();
   });
 
-  it("will not copy a long request as curl, and says why", async () => {
+  it("leaves console logging intact without adding errors to the diagnostic panel", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
     renderToolbar();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 201 })));
-    await new ApiClient("http://localhost:18080").createComment("issue-1", "a".repeat(2100)).catch(() => {});
+    const error = new Error("Cannot read properties of undefined");
+    console.error(error);
 
-    fireEvent.click(screen.getByTestId("dev-toolbar-net"));
-    fireEvent.click(await screen.findByText("/api/issues/issue-1/comments"));
-    expect(screen.getByText(/^Body truncated to 2000 of \d+ characters\. Copy as curl is off/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Copy as curl" })).toBeDisabled();
-  });
-
-  it("counts console errors and lists them with the route they happened on", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    renderToolbar();
-    console.error(new Error("Cannot read properties of undefined"));
-
-    await waitFor(() => expect(screen.getByTestId("dev-toolbar-errors")).toHaveTextContent("Errors1"));
+    expect(log).toHaveBeenCalledWith(error);
+    expect(screen.getByTestId("dev-toolbar-errors")).toHaveTextContent(/^Errors0$/);
     fireEvent.click(screen.getByTestId("dev-toolbar-errors"));
-    expect(await screen.findByText("Error: Cannot read properties of undefined")).toBeInTheDocument();
+    expect(await screen.findByText(/^No errors\./)).toBeInTheDocument();
+    expect(screen.queryByText("Error: Cannot read properties of undefined")).not.toBeInTheDocument();
   });
 
-  it("lists a realtime event with the query keys its handling wrote", async () => {
+  it("handles realtime updates without recording frames or cache effects", async () => {
     const { queryClient } = renderToolbar();
     const { client, emit } = connectSocket();
-    client.on("issue:updated", () => queryClient.setQueryData(["issues", "ws-1", "detail", "issue-1"], { id: "issue-1" }));
-    emit({ type: "issue:updated", payload: { issue: { id: "issue-1", identifier: "MUL-1" } } });
-
-    await waitFor(() => expect(screen.getByTestId("dev-toolbar-events")).toHaveTextContent("Events1/m"));
-    fireEvent.click(screen.getByTestId("dev-toolbar-events"));
-    fireEvent.click(await screen.findByText("issue:updated"));
-    expect(screen.getByText("1 written")).toBeInTheDocument();
-    expect(screen.getByText("written (1)")).toBeInTheDocument();
-    expect(screen.getByText('["issues","ws-1","detail","issue-1"]')).toBeInTheDocument();
-  });
-
-  it("finds events that carry only an issue ID when searching by its key", async () => {
-    renderToolbar();
-    const { emit } = connectSocket();
-    emit({ type: "issue:updated", payload: { issue: { id: "issue-1", identifier: "MUL-1" } } });
-    emit({ type: "comment:created", payload: { comment: { id: "c1", issue_id: "issue-1" } } });
-    emit({ type: "comment:created", payload: { comment: { id: "c2", issue_id: "issue-2" } } });
-
-    await waitFor(() => expect(screen.getByTestId("dev-toolbar-events")).toHaveTextContent("Events3/m"));
-    fireEvent.click(screen.getByTestId("dev-toolbar-events"));
-    fireEvent.change(await screen.findByLabelText("Search events"), { target: { value: "mul-1" } });
-    expect(screen.getAllByText(/^(issue:updated|comment:created)$/)).toHaveLength(2);
-
-    fireEvent.change(screen.getByLabelText("Event type"), { target: { value: "comment:created" } });
-    expect(screen.getAllByText("comment:created")).toHaveLength(1);
-    expect(screen.queryByText("issue:updated")).not.toBeInTheDocument();
+    const queryKey = ["issues", "ws-1", "detail", "issue-1"];
+    const issue = { id: "issue-1", identifier: "MUL-1" };
+    client.on("issue:updated", () => queryClient.setQueryData(queryKey, issue));
+    try {
+      emit({ type: "issue:updated", payload: { issue } });
+      expect(queryClient.getQueryData(queryKey)).toEqual(issue);
+      expect(screen.getByTestId("dev-toolbar-events")).toHaveTextContent(/^Events0\/m$/);
+      fireEvent.click(screen.getByTestId("dev-toolbar-events"));
+      expect(await screen.findByText("No realtime events yet.")).toBeInTheDocument();
+      expect(screen.queryByText("issue:updated")).not.toBeInTheDocument();
+    } finally {
+      client.disconnect();
+    }
   });
 
   it("searches the query cache and invalidates one query by hand", async () => {

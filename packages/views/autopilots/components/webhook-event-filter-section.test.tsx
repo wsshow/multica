@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
+import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import { renderWithI18n } from "../../test/i18n";
 import { WebhookEventFilterSection } from "./webhook-event-filter-section";
@@ -8,7 +9,16 @@ import { WebhookEventFilterSection } from "./webhook-event-filter-section";
 // sighted users had nothing telling them the row still had to be committed.
 // getByRole(..., { name }) is the assertion that keeps them named.
 
+beforeEach(() => configureDeploymentLinks({}));
+
+afterEach(() => configureDeploymentLinks({}));
+
 describe("WebhookEventFilterSection", () => {
+  it("omits the docs link when no documentation site is configured", () => {
+    renderWithI18n(<WebhookEventFilterSection filters={[]} onChange={vi.fn()} />);
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
   it("names the add control instead of shipping a bare + icon", () => {
     renderWithI18n(
       <WebhookEventFilterSection filters={[]} onChange={vi.fn()} />,
@@ -86,13 +96,14 @@ describe("WebhookEventFilterSection", () => {
   it.each([
     [
       "zh-Hans",
-      `https://multica.ai/docs/zh/autopilots#${encodeURIComponent("事件过滤")}`,
+      `https://docs.example.test/docs/zh/autopilots#${encodeURIComponent("事件过滤")}`,
     ],
     [
       "zh-Hant",
-      `https://multica.ai/docs/zh-Hant/autopilots#${encodeURIComponent("事件過濾")}`,
+      `https://docs.example.test/docs/zh-Hant/autopilots#${encodeURIComponent("事件過濾")}`,
     ],
   ] as const)("links the %s event filter docs section", (locale, href) => {
+    configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs" });
     renderWithI18n(
       <WebhookEventFilterSection filters={[]} onChange={vi.fn()} />,
       {
