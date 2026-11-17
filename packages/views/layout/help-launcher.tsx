@@ -1,11 +1,13 @@
 "use client";
 
+import { useRef, useState } from "react";
 import {
   ArrowUpRight,
   BookOpen,
   CircleHelp,
   Download,
   History,
+  Megaphone,
   MessageCircle,
 } from "@multica/ui/icons";
 import {
@@ -26,7 +28,7 @@ import { useT } from "../i18n";
 import { documentationUrl } from "../common/docs-locale";
 import { RAIL_ICON_BUTTON_CLASS } from "./rail-styles";
 import { getDeploymentLinks } from "@multica/core/platform/deployment-links";
-
+import { useWhatsNewMenuPanel, WhatsNewMenuPanel } from "../whats-new/whats-new-menu-panel";
 
 export function HelpLauncher() {
   const { t, i18n } = useT("layout");
@@ -43,103 +45,125 @@ export function HelpLauncher() {
   // markup matches either way, so the link can ship in the SSR payload instead
   // of popping in a frame late.
   const desktop = isDesktopShell();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const whatsNew = useWhatsNewMenuPanel();
+  const [open, setOpen] = useState(false);
   return (
-    <DropdownMenu>
-      <TooltipHint label={t(($) => $.help.trigger)} side="right">
-        <DropdownMenuTrigger
-          aria-label={t(($) => $.help.trigger)}
-          className={RAIL_ICON_BUTTON_CLASS}
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <TooltipHint label={t(($) => $.help.trigger)} side="right">
+          <DropdownMenuTrigger
+            ref={triggerRef}
+            aria-label={t(($) => $.help.trigger)}
+            className={RAIL_ICON_BUTTON_CLASS}
+          >
+            <CircleHelp />
+          </DropdownMenuTrigger>
+        </TooltipHint>
+        <DropdownMenuContent
+          align="end"
+          side="right"
+          sideOffset={8}
+          className="min-w-40 max-w-56"
         >
-          <CircleHelp />
-        </DropdownMenuTrigger>
-      </TooltipHint>
-      <DropdownMenuContent
-        align="end"
-        side="right"
-        sideOffset={8}
-        className="min-w-40 max-w-56"
-      >
-        {!desktop && downloadUrl && (
-          <>
+          {!desktop && downloadUrl && (
+            <>
+              <DropdownMenuItem
+                render={
+                  <a
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                }
+              >
+                <Download className="h-3.5 w-3.5" />
+                {t(($) => $.help.download_desktop)}
+                <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          {docsUrl && (
             <DropdownMenuItem
               render={
                 <a
-                  href={downloadUrl}
+                  href={docsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 />
               }
             >
-              <Download className="h-3.5 w-3.5" />
-              {t(($) => $.help.download_desktop)}
+              <BookOpen className="h-3.5 w-3.5" />
+              {t(($) => $.help.docs)}
               <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
-        {docsUrl && (
+          )}
+          {whatsNew.available && (
+            <DropdownMenuItem onClick={whatsNew.show}>
+              <Megaphone className="h-3.5 w-3.5" />
+              {t(($) => $.whats_new.trigger)}
+              {whatsNew.newestUnread && (
+                <span
+                  data-slot="whats-new-tag"
+                  className="ml-auto text-caption font-medium text-brand tabular-nums"
+                >
+                  {`v${whatsNew.newestUnread}`}
+                </span>
+              )}
+            </DropdownMenuItem>
+          )}
+          {changelogUrl && (
+            <DropdownMenuItem
+              render={
+                <a
+                  href={changelogUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
+            >
+              <History className="h-3.5 w-3.5" />
+              {t(($) => $.help.changelog)}
+              <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
+            </DropdownMenuItem>
+          )}
+          {communityUrl && (
+            <DropdownMenuItem
+              render={
+                <a href={communityUrl} target="_blank" rel="noopener noreferrer" />
+              }
+            >
+              <DiscordIcon className="h-3.5 w-3.5" />
+              {t(($) => $.help.discord)}
+              <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
+            </DropdownMenuItem>
+          )}
+
           <DropdownMenuItem
-            render={
-              <a
-                href={docsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              />
-            }
+            onClick={() => useModalStore.getState().open("feedback")}
           >
-            <BookOpen className="h-3.5 w-3.5" />
-            {t(($) => $.help.docs)}
-            <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
+            <MessageCircle className="h-3.5 w-3.5" />
+            {t(($) => $.help.feedback)}
           </DropdownMenuItem>
-        )}
-        {changelogUrl && (
-          <DropdownMenuItem
-            render={
-              <a
-                href={changelogUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              />
-            }
-          >
-            <History className="h-3.5 w-3.5" />
-            {t(($) => $.help.changelog)}
-            <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
-          </DropdownMenuItem>
-        )}
-        {communityUrl && (
-          <DropdownMenuItem
-            render={
-              <a href={communityUrl} target="_blank" rel="noopener noreferrer" />
-            }
-          >
-            <DiscordIcon className="h-3.5 w-3.5" />
-            {t(($) => $.help.discord)}
-            <ArrowUpRight className="size-3 translate-y-px text-faint-foreground" />
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuItem
-          onClick={() => useModalStore.getState().open("feedback")}
-        >
-          <MessageCircle className="h-3.5 w-3.5" />
-          {t(($) => $.help.feedback)}
-        </DropdownMenuItem>
-        {serverVersion && (
-          <>
-            <DropdownMenuSeparator />
-            {/* DropdownMenuLabel renders Base UI's Menu.GroupLabel, which reads
-                a Menu.Group context and throws if it has no Group ancestor. It
-                must always be wrapped in a DropdownMenuGroup — without it the
-                Help menu crashes the whole app on open (no error boundary sits
-                above the rail). */}
-            <DropdownMenuGroup>
-              <DropdownMenuLabel className="font-normal break-words">
-                {t(($) => $.help.server_version, { version: serverVersion })}
-              </DropdownMenuLabel>
-            </DropdownMenuGroup>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          {serverVersion && (
+            <>
+              <DropdownMenuSeparator />
+              {/* DropdownMenuLabel renders Base UI's Menu.GroupLabel, which reads
+                  a Menu.Group context and throws if it has no Group ancestor. It
+                  must always be wrapped in a DropdownMenuGroup — without it the
+                  Help menu crashes the whole app on open (no error boundary sits
+                  above the rail). */}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="font-normal break-words">
+                  {t(($) => $.help.server_version, { version: serverVersion })}
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <WhatsNewMenuPanel panel={whatsNew} anchor={triggerRef} />
+    </>
   );
 }

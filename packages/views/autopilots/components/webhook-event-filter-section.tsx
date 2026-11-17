@@ -1,6 +1,6 @@
 "use client";
 
-import { documentationUrl } from "../../common/docs-locale";
+import { documentationUrl, isTraditionalChinese } from "../../common/docs-locale";
 
 import { useState } from "react";
 import { X, Plus, Filter, ExternalLink } from "@multica/ui/icons";
@@ -22,7 +22,8 @@ export function WebhookEventFilterSection({
   const [newEvent, setNewEvent] = useState("");
   const [newActions, setNewActions] = useState("");
   const docsBase = documentationUrl("/autopilots", i18n.language);
-  const anchor = i18n.language?.startsWith("zh") ? "事件过滤"
+  const anchor = isTraditionalChinese(i18n.language) ? "事件過濾"
+    : i18n.language?.startsWith("zh") ? "事件过滤"
     : i18n.language?.startsWith("fr") ? "filtres-dévénements" : "event-filters";
   const docsHref = docsBase ? `${docsBase}#${encodeURIComponent(anchor)}` : undefined;
 

@@ -1,0 +1,67 @@
+---
+title: 定製 Electron 桌面端
+description: 使用定製安裝包，明確配置自己的 API 和 Web 網址。
+---
+
+import { DesktopTabsDemo } from "@/components/demos/desktop-tabs-demo";
+
+本文適用於定製版本。請使用目前定製原始碼或部署維護者提供的產物；上游安裝包不包含這些修改。
+
+## 建置定製安裝包
+
+使用維護者提供的定製安裝包，或在定製 checkout 執行以下腳本。建置需要 Go、目標平台的建置與簽署工具。
+
+```bash
+pnpm install --frozen-lockfile
+pnpm --filter @multica/desktop package
+```
+
+## 配置服務網址
+
+將有效 JSON 儲存到 `~/.multica/desktop.json`，Windows 路徑為 `%USERPROFILE%\.multica\desktop.json`，使用 UTF-8。`apiUrl` 與 `appUrl` 都是必填項；修改後重新啟動。
+
+```json
+{
+  "schemaVersion": 1,
+  "apiUrl": "http://localhost:8080",
+  "appUrl": "http://localhost:3000"
+}
+```
+
+Web 網址用於瀏覽器登入與分享連結，不會從 API 網域推測。桌面端與 Docker 不在同一臺電腦時，請使用可存取的自建服務網址與 TLS 反向代理。
+
+## 標籤頁與內建執行器
+
+桌面端依工作區儲存標籤頁。登入後，會在目前 API 專屬的 profile 中啟動內建定製 CLI，不會下載上游 CLI，也不會選擇系統 CLI。缺少內建 CLI 時應重新安裝或重新建置定製桌面包。
+
+<DesktopTabsDemo />
+
+## 更新與說明來源
+
+僅在設定自己的 `updateUrl` 時啟用更新。`links.docsUrl`、`links.changelogUrl`、`links.downloadUrl`、`links.communityUrl`、`links.feedbackUrl` 為可選說明入口；未設定就不顯示。`links.cliInstallUrl`、`links.cliInstallWindowsUrl` 可指定自己的安裝腳本，`links.runtimeReleaseUrl` 可指定獨立執行時的發行資訊。桌面端管理的執行時不查詢 CLI 發行來源。
+
+## 語音輸入
+
+Desktop 可以在本機把語音轉成文字，填入聊天、評論、回覆和新建任務的描述。語音輸入**預設關閉**，網頁版不提供此功能。
+
+1. 開啟**設定 → 語音輸入**，啟用**語音輸入**。
+2. 下載支援所用語言的語音模型。下載需要連網，安裝後在本機轉寫。如果頁面提示本機無法使用轉寫，表示目前版本的應用程式沒有可用的語音引擎。
+3. 依提示允許麥克風存取。也可以在同一設定頁選擇並測試麥克風。
+
+預設的**點按或按住**模式支援兩種用法：點選麥克風開始，點選勾號插入文字；或按住麥克風說話，放開後插入。插入的文字留在編輯器中，供你檢查。聊天和評論的錄音列中，點選傳送按鈕或在錄音時按 `Enter` 會轉寫並傳送；`Esc` 取消。
+
+語音快捷鍵**預設未設定**。在**設定 → 快捷鍵**中綁定後，只要支援的編輯器可見，即使未聚焦也能使用。**語音輸入**頁還可以把啟動方式改為僅點按或僅按住。
+
+### 錄音與歷史記錄
+
+音訊在本機轉寫，不會為轉寫而上傳。傳送的文字按一般聊天訊息或評論提交。
+
+錄音和轉寫文字**預設在本機保留 30 天**。在**設定 → 語音輸入 → 歷史記錄**中，可以播放錄音、複製文字、重新轉寫、刪除單筆或全部清除。**保留歷史記錄**可選不保留、1 天、7 天、30 天或永久。
+
+關閉**語音輸入**會隱藏麥克風並停用語音快捷鍵，不會刪除已有錄音；仍可在同一頁面管理歷史記錄。
+
+## 接下來
+
+- [自託管](/self-host-quickstart)
+- [CLI](/cli)
+- [疑難排解](/troubleshooting)

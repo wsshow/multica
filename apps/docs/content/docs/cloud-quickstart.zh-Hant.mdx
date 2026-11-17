@@ -1,0 +1,20 @@
+---
+title: 定製版本快速上手
+description: 連線自建服務，完成第一個 AI 代理任務。
+---
+
+本文適用於定製版本。請使用目前定製原始碼或部署維護者提供的產物；上游安裝包不包含這些修改。
+
+1. 按[定製版本自託管](/self-host-quickstart)部署服務，開啟自己的 Web 網址。
+2. 配置 [Electron 桌面端](/desktop-app)，或從定製原始碼建置 [CLI](/cli)，明確設定 API 和 Web 網址。
+3. 在執行電腦安裝並登入受支援的[AI 程式設計工具](/install-agent-runtime)。
+4. 建立 AI 代理，選擇執行電腦、執行時和模型，再分配一個小任務。
+5. 查看執行日誌和結果留言，核對產生的檔案。
+
+```bash
+multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000
+multica auth status
+multica daemon status
+```
+
+驗證 `/readyz`、登入、執行時註冊、任務執行和附件。`/health` 只表示程序存活。產品遙測、當機上報、用戶端使用量上報與運作指標在定製版本中停用。

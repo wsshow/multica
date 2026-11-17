@@ -3,7 +3,10 @@ import { mkdtemp, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
 import { describe, expect, it, vi } from "vitest";
-vi.mock("electron", () => ({ app: { getPath: () => "/test/home" } }));
+
+vi.mock("electron", () => ({
+  app: { getPath: () => tmpdir() },
+}));
 
 import { loadRuntimeConfig } from "./runtime-config-loader";
 

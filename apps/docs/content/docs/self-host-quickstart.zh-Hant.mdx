@@ -1,0 +1,43 @@
+---
+title: 定製版本自託管
+description: 從定製原始碼建置 Docker 服務，配置桌面端及自己的發行來源。
+---
+
+本文適用於定製版本。請使用目前定製原始碼或部署維護者提供的產物；上游安裝包不包含這些修改。
+
+## 準備與啟動
+
+取得經過審查的定製 checkout，準備 Docker Compose、Make 和 OpenSSL。在儲存庫根目錄執行：
+
+```bash
+make selfhost-build
+docker compose -f docker-compose.selfhost.yml ps
+curl -fsS http://localhost:8080/readyz
+```
+
+Web：`http://localhost:3000`，API：`http://localhost:8080`。設定檔與既有資料卷會保留；部署前檢查金鑰。正式環境需設定自己的郵件服務及 Google OAuth（如需使用）。
+
+## 連線桌面端與執行電腦
+
+使用[定製桌面端](/desktop-app)，將 `apps/desktop/desktop.example.json` 複製到 `~/.multica/desktop.json`，修改 `apiUrl`、`appUrl` 後重新啟動。缺少配置時不會連線。桌面端已內建定製 CLI。
+
+其他執行電腦從同一份定製原始碼建置 [CLI](/cli)：
+
+```bash
+go -C server build -o bin/multica ./cmd/multica
+multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000
+```
+
+執行電腦仍需自行安裝並登入受支援的 AI 程式設計工具。
+
+## 遠端存取
+
+Compose 範例僅綁定 `127.0.0.1`。跨電腦存取請使用帶 TLS 的反向代理，設定自己的 `FRONTEND_ORIGIN`、`MULTICA_APP_URL`、`MULTICA_PUBLIC_URL`、`CORS_ALLOWED_ORIGINS` 與上傳網址。桌面端的 `localhost` 指桌面端所在電腦。
+
+## 備份與升級
+
+先備份 PostgreSQL、上傳檔案、金鑰與部署版本。切換至經過審查的定製提交後執行 `make selfhost-build`。使用維護者發行的映像時，明確設定 `MULTICA_BACKEND_IMAGE`、`MULTICA_WEB_IMAGE` 與不可變的 `MULTICA_IMAGE_TAG`，再執行 `make selfhost`。不要用上游 `latest` 覆蓋定製版本；回退映像不會撤銷資料庫遷移。
+
+Kubernetes 使用原始碼中的 `deploy/helm/multica`，配置自己的映像與 Secret。
+
+產品遙測、當機上報、用戶端使用量上報與運作指標固定停用，環境變數無法重新啟用。執行用量、費用、歷史記錄與執行時心跳仍可使用。

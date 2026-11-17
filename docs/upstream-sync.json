@@ -2,12 +2,15 @@
   "upstream_repository": "https://github.com/multica-ai/multica",
   "tracking_branch": "feikong/upstream-sync",
   "source_branch": "upstream/source",
-  "upstream_tag": "v0.8.0",
-  "upstream_commit": "9b1ab4f9eed9153a94719596eb8a728d2770f065",
-  "customized_parent": "f0be6db56bec8340c7bd3d8fc8693f0cf0797ed5",
-  "customized_release_before_sync": "v0.1.3",
-  "customized_release_after_sync": "v0.1.4",
-  "scope": "Full upstream v0.8.0 source integration, retaining documented customization and installed-client API contracts; first distributed in customized release v0.1.4.",
+  "upstream_tag": "v0.10.0",
+  "upstream_commit": "2fcb424b72b024f65161809081009063846ea44d",
+  "previous_upstream_tag": "v0.8.0",
+  "previous_upstream_commit": "9b1ab4f9eed9153a94719596eb8a728d2770f065",
+  "customized_parent": "f95e89949ad17817669e1f72e056925745092b71",
+  "customized_release_before_sync": "v0.1.4",
+  "customized_release_after_sync": null,
+  "reviewed_on": "2026-11-17",
+  "scope": "Merge the complete upstream v0.8.0..v0.10.0 source range (493 commits), including v0.8.1, v0.8.2 and v0.9.0, with documented customization. No customized release is published by this source synchronization; package versions stay 0.1.4.",
   "bootstrap": {
     "comparison_commit": "87ec077e5f56ff66342caef1df1638780acfdf2e",
     "initial_customized_commit": "fcd80467b2cf795a02310a37c921f8f2646ed24e",
@@ -168,130 +171,215 @@
     }
   },
   "conflict_resolution": {
-    "apps/desktop/package.json": "Retain customized release version, homepage and package manager; accept other upstream changes.",
-    "apps/web/package.json": "Retain customized release version."
+    ".env.example": "Accept updated GitHub App requirements; keep realtime metrics configuration removed.",
+    ".github/ISSUE_TEMPLATE/feature_request.yml": "Accept the upstream problem/goal/proposal form; the obsolete deployment dropdown is removed upstream.",
+    ".github/RELEASING.md": "Keep customized distribution and release numbering, and import author attribution plus Go 1.27.4 security floor.",
+    ".github/actions/frontend-quality/action.yml": "Keep telemetry guard and add upstream repository-script checks.",
+    ".goreleaser.yml": "Import author attribution and remove changelog exclusion filters; keep upstream Homebrew publication disabled.",
+    "AGENTS.md": "Keep customized test, deployment, release and telemetry policies alongside upstream state/toast/documentation rules.",
+    "README.zh.md": "Keep the removed banner and customized links; import Japanese locale and the Amp/Droid/Muse runtime entries.",
+    "SELF_HOSTING.md": "Keep customized build, configuration and distribution instructions.",
+    "apps/desktop/package.json": "Keep customized version 0.1.4, homepage and package manager; import all feature dependencies.",
+    "apps/web/package.json": "Keep customized version 0.1.4; import all feature dependencies.",
+    "apps/desktop/src/main/daemon-manager.ts": "Use upstream launcher-environment sanitization, then pin customized service URLs and disable CLI auto replacement.",
+    "apps/desktop/src/main/runtime-config-loader.test.ts": "Use upstream temporary-directory Electron mock and retain all explicit-config regressions.",
+    "apps/desktop/src/renderer/src/main.tsx": "Keep deployment-link configuration and upstream development User Timing buffer cap.",
+    "packages/core/package.json": "Import Markdown dependencies; exclude PostHog.",
+    "packages/views/package.json": "Keep docs-locale subpath export and add upstream explicit locale exports.",
+    "packages/views/common/docs-locale.ts": "Keep operator-configured docs URLs and import Traditional Chinese locale routing.",
+    "packages/views/layout/account-menu.tsx": "Keep configured optional links and import upstream appearance controls.",
+    "packages/views/layout/help-launcher.tsx": "Import What's new panel; preserve configured optional destinations and avoid upstream GitHub star lookup in Help.",
+    "packages/views/layout/help-launcher.test.tsx": "Retain configured-link regressions, add Traditional Chinese coverage and remove tests for the omitted upstream Help star link.",
+    "packages/views/runtimes/components/runtime-docs.ts": "Retain configured docs origin and import Traditional Chinese anchors.",
+    "packages/views/runtimes/components/runtime-docs.test.ts": "Assert all locales against configured docs origin.",
+    "packages/views/autopilots/components/webhook-event-filter-section.tsx": "Retain configured optional docs destination and add Traditional Chinese anchor.",
+    "pnpm-lock.yaml": "Regenerate metadata only from upstream resolutions with PostHog and its unused SDK/exporter dependencies removed; no scripts or package installation.",
+    "scripts/dev-env.sh": "Accept upstream Desktop environment writer, CDP and cleanup changes; the writer already supplies explicit API/app/WebSocket URLs.",
+    "server/internal/handler/client_usage_test.go": "Keep deleted telemetry persistence tests removed; customized client-usage no-op behavior remains covered separately.",
+    "server/internal/handler/config.go": "Import theme-store and batch-operation capabilities; keep analytics config fields empty.",
+    "apps/docs/content/docs/daemon-runtimes.ja.mdx": "Import current feature documentation while retaining customized installation, service configuration and local source references.",
+    "apps/docs/content/docs/daemon-runtimes.ko.mdx": "Import current feature documentation while retaining customized installation, service configuration and local source references.",
+    "apps/docs/content/docs/desktop-app.fr.mdx": "Import current feature documentation while retaining customized installation, service configuration and local source references.",
+    "apps/docs/content/docs/desktop-app.ja.mdx": "Import current feature documentation while retaining customized installation, service configuration and local source references.",
+    "apps/docs/content/docs/desktop-app.ko.mdx": "Import current feature documentation while retaining customized installation, service configuration and local source references.",
+    "apps/docs/content/docs/desktop-app.mdx": "Import current feature documentation while retaining customized installation, service configuration and local source references.",
+    "apps/docs/content/docs/desktop-app.zh.mdx": "Import current feature documentation while retaining customized installation, service configuration and local source references.",
+    "apps/docs/content/docs/providers.mdx": "Import current feature documentation while retaining customized installation, service configuration and local source references.",
+    "apps/web/app/(landing)/download/download-client.tsx": "Import upstream download layout and platform flow; retain configured self-host CLI/install commands and explicit customized release source.",
+    "apps/web/app/(landing)/download/page.tsx": "Import upstream download layout and platform flow; retain configured self-host CLI/install commands and explicit customized release source.",
+    "apps/web/features/landing/components/download/cli-section.tsx": "Import upstream download layout and platform flow; retain configured self-host CLI/install commands and explicit customized release source.",
+    "packages/views/settings/components/dingtalk-tab.tsx": "Accept upstream removal; channel setup now uses shared channel components, whose guide URLs use the configured docs origin.",
+    "packages/views/settings/components/lark-tab.test.tsx": "Accept upstream removal; channel setup now uses shared channel components, whose guide URLs use the configured docs origin.",
+    "packages/views/settings/components/lark-tab.tsx": "Accept upstream removal; channel setup now uses shared channel components, whose guide URLs use the configured docs origin.",
+    "packages/views/settings/components/slack-tab.tsx": "Accept upstream removal; channel setup now uses shared channel components, whose guide URLs use the configured docs origin.",
+    "packages/views/settings/components/telegram-tab.test.tsx": "Accept upstream removal; channel setup now uses shared channel components, whose guide URLs use the configured docs origin.",
+    "packages/views/settings/components/telegram-tab.tsx": "Accept upstream removal; channel setup now uses shared channel components, whose guide URLs use the configured docs origin."
   },
-  "cli_compatibility_version": "0.8.0",
+  "cli_compatibility_version": "0.10.0",
   "verification": {
-    "status": "source_integrated_with_recorded_suite_failures",
-    "telemetry_dependency_check": "passed: pnpm check:telemetry",
-    "frontend_typecheck": "passed: pnpm typecheck (9 tasks)",
-    "frontend_lint": "passed: pnpm lint (existing warnings, no errors)",
-    "mobile": "passed: typecheck, lint, 41 test files / 297 tests, and ios-run script regression tests",
-    "packaging": "passed: 34 integrated configuration/supervision, publishing cleanup and bundled-CLI regression tests",
-    "sqlc": "passed: make sqlc; generated output matches the imported official queries",
-    "source_record": "passed: all 137 initial differences classified; original comparison evidence unchanged; documentation references and independent package versions verified",
-    "agent_suite": {
-      "initial_run": "All agent tests ran behind the agent-CLI guard; two unchanged Codex timing tests failed during concurrent build/test load.",
-      "targeted_retries": "passed: both failing Codex tests, with GOMAXPROCS=2 and -parallel 1",
-      "upstream_runtime_tests": "passed: TestZcode*, TestDevin*, TestRuntimeCLICompatibilityVersion with fake executables",
-      "upstream_runtime_race_tests": "passed: TestZcode*, TestDevin*, TestRuntimeCLICompatibilityVersion with -race -p 1 -parallel 1 (35.833s); all executables were fake or missing test paths."
-    },
-    "frontend_tests": {
-      "coverage": "10950 unique non-mobile frontend/config tests across Core, UI, Views, Docs, Desktop, Web and ESLint config; 297 mobile tests separately.",
-      "core": "194 files / 2555 tests passed",
-      "ui": "4 files / 326 tests passed",
-      "docs": "5 files / 25 tests passed",
-      "views_full_run": "549 files / 6912 tests executed: 6903 passed, 9 hit the local 5-second test deadline.",
-      "views_retries": "All four affected files passed under Node 22.23.4: IssueDetail 106, property filters 11, workspace rail 12, runtime choices 5. The property-filter/runtime-choice retries used a 15-second CLI budget; assertions and source tests were unchanged.",
-      "desktop": "73 files / 829 tests passed under Node 22",
-      "web": "38 files / 299 tests passed under Node 22",
-      "eslint_config": "4 tests passed",
-      "commands": [
-        "NODE_OPTIONS=--no-experimental-webstorage pnpm test --concurrency=1 --filter=!@multica/eslint-config -- --maxWorkers=2",
-        "PATH=<verified Node 22>/bin:$PATH pnpm exec turbo test --filter=@multica/web --filter=@multica/desktop --concurrency=1 -- --maxWorkers=2 --testTimeout=15000"
-      ]
-    },
-    "backend_tests": {
-      "full_command": "GOMAXPROCS=2 GOFLAGS=-p=2 make env-exec ARGS=\"-- bash scripts/test-go.sh --race --only regular\"",
-      "full_result": "All regular packages passed except internal/handler: seven tests using the once-seeded shared runtime failed after its heartbeat exceeded the existing 150-second freshness window during a 515-second suite.",
-      "failed_tests": [
-        "TestClaimTaskByRuntime_ChatRolloutMissingDisclosesGap",
-        "TestClaimTaskByRuntime_RerunSourceRolloutMissingDisclosesGap",
-        "TestClaimTask_ProjectGithubReposOverrideWorkspaceRepos",
-        "TestClaimTask_ProjectDescriptionInjected",
-        "TestClaimTask_ProjectWithoutRepos_FallsBackToWorkspaceRepos",
-        "TestClaimTask_AutopilotRunOnly_PopulatesWorkspaceAndProjectContext",
-        "TestClaimTaskByRuntime_TaskWorkspaceMismatch_CancelsAndRejects"
-      ],
-      "targeted_retry": "All seven tests passed together with race detection and fresh TestMain fixtures (9.264s). No runtime freshness behavior or old-client adapters were changed.",
-      "test_environment": "The managed application services were stopped for the final database-backed run. The first run also had interference from the development API and was superseded."
-    },
-    "e2e": {
-      "command": "make env-exec ARGS=\"-- pnpm exec playwright test e2e/comments.spec.ts e2e/settings.spec.ts e2e/runtime-sharing.spec.ts --timeout=120000\" with Node 22",
-      "result": "1 passed / 4 failed; this is not a green browser verification.",
-      "failures": [
-        "Comment submission: expected posted comment was not visible within 5 seconds.",
-        "Runtime sharing: the old Private button selector was absent after opening the runtime row.",
-        "Workspace settings: the old current-workspace rail-link selector was absent; the current shell has a Switch workspace button.",
-        "Composio settings: navigation to the settings tab exceeded the local 120-second test deadline."
-      ],
-      "comment_retry": "A separate retry stopped earlier at the New Issue visibility wait; it did not establish a successful comment-submission flow.",
-      "scope": "No production UI/API or existing E2E tests were changed to accommodate old selectors. Native mobile, full E2E, dual-architecture image and full installer verification are not claimed."
-    },
+    "status": "source_review_only_at_user_request",
+    "review": "Reviewed merge conflicts and upstream changes at telemetry, diagnostics, distribution, explicit Desktop configuration, bundled CLI and CLI feature-contract boundaries. Imported SQL queries, migrations and generated sqlc output together without local generation.",
+    "lockfile": "pnpm install --lockfile-only --ignore-scripts; retained upstream resolutions and pruned unused telemetry dependencies. This edits dependency metadata and does not run validation or install packages.",
     "not_run": [
-      "Real installed-agent smoke tests (not explicitly authorized).",
-      "Native mobile simulator/device checks.",
-      "Local dual-architecture image builds and full desktop installers."
+      "Local tests, telemetry checker, typecheck, lint, builds, sqlc generation, browser/simulator checks, containers or databases, per the user request.",
+      "Real installed-agent smoke tests."
     ],
-    "eslint_config_tests": "passed: 4 node:test cases",
-    "environment_cleanup": "Managed application services stopped after validation; development database/profile retained. Temporary upstream audit worktree removed via the repository wrapper."
+    "ci": "CI results are reported by the synchronization PR; no passing runtime or test validation is claimed by this record."
   },
-  "api_behavior": "Official v0.8.0 API and product behavior, including Inbox rollback; no additional old-client adapters.",
-  "upstream_commits_since_comparison": [
-    {
-      "sha": "d52e48f8c737eff69f971db906c95727e911fe57",
-      "subject": "MUL-8534: fix Devin model discovery with API key authentication (#9859)"
-    },
-    {
-      "sha": "d35410c0b7589f4f2da68ec8d4a2e9a49d42376a",
-      "subject": "MUL-8526: feat(wakeup): add PR review wakeup trigger (--until-pr reviewed) (#9839)"
-    },
-    {
-      "sha": "2115a513a375bfe2910b76725b617504faee4b25",
-      "subject": "MUL-7686: feat(runtime): add native ZCode protocol support (#9514)"
-    },
-    {
-      "sha": "e06640a565ec0601f56d90c1d491b3a5711ee822",
-      "subject": "Revert \"MUL-8526: feat(wakeup): add PR review wakeup trigger (--until-pr revi…\" (#9862)"
-    },
-    {
-      "sha": "049ca20ec5b80cb9bbe56dcd4f1896d6f2722ee6",
-      "subject": "feat(comments): surface thread resolution on roots-only list (#9858)"
-    },
-    {
-      "sha": "82492f94d669e504a2fda36fb6c76f4ac7d65f2e",
-      "subject": "MUL-8510: fix(ghsnapshot): drop cancelled workflow runs that a newer run of the same workflow replaced from the PR rollup (#9860)"
-    },
-    {
-      "sha": "cb5ed4f33e363b0444b86a62400ca0c4f85cb7fb",
-      "subject": "MUL-8541: feat(inbox): route comments by who they @mention, not who wrote them (#9864)"
-    },
-    {
-      "sha": "b6fc06820ad0f055722531920510cb6c12b49050",
-      "subject": "fix(settings): hide Browser notifications search result where the row does not render (#9867)"
-    },
-    {
-      "sha": "9044fb6fb4f628c3b7e822732048f214a33df9c4",
-      "subject": "MUL-8544: fix(ui): drop the outline on the selected tab in dark mode (#9874)"
-    },
-    {
-      "sha": "4e22663a61702c2c0e0b1e8fc35b6786272a791a",
-      "subject": "MUL-8541: revert the two-section Inbox (#9815, #9864) (#9875)"
-    },
-    {
-      "sha": "9b1ab4f9eed9153a94719596eb8a728d2770f065",
-      "subject": "MUL-8546: docs(changelog): release 0.8.0 (#9871)"
-    }
-  ],
+  "api_behavior": "Follow upstream v0.10.0 APIs and business behavior; retain installed-client response defaults and the independent CLI contract field without adding old-client adapters.",
   "post_merge_adjustments": [
-    "Keep customized package versions at 0.1.3 until a separate release; advertise the imported CLI contract as 0.8.0.",
-    "Mirror the upstream ZCode README entry in Chinese and remove a trailing blank line in provider documentation.",
-    "Document the permanent synchronization branch, source ancestry and verification; preserve original baseline evidence."
+    "Remove English and Simplified Chinese README banners in a separate documentation commit.",
+    "Keep customized root/web/desktop package versions at 0.1.4; advertise imported CLI contract 0.10.0.",
+    "Keep new development diagnostic recorder and navigation metrics inert, preserving exported APIs, pure formatters, and explicit reconnect recovery. Replace collection tests with disabled-boundary regressions.",
+    "Keep all guide and changelog destinations optional and configured; gate desktop release lookup on MULTICA_RELEASE_REPOSITORY. Keep GitHub repository prompts on the explicitly supplied customized repository.",
+    "Adapt new Japanese README and Traditional Chinese installation/deployment docs to customized artifacts and disabled telemetry.",
+    "Update the customized integrated-image workflow to the upstream Go 1.27.4 security floor."
   ],
   "outbound_review": [
-    "No telemetry SDK dependency or collector was added; existing no-op boundaries remain unchanged.",
-    "ZCode and Devin changes use provider subprocess protocols; the GitHub snapshot changes use the existing product integration client.",
-    "No startup reporting worker, script injection or telemetry endpoint was introduced by the upstream delta."
+    "Existing analytics, client-usage, crash, self-host telemetry and operational-metrics facades remain inert; no telemetry SDK/collector is imported.",
+    "Upstream development recorder would subscribe to requests, WebSockets, query-cache changes, errors, long tasks and heap sampling; its facade and navigation hook are inert in this edition, including development builds.",
+    "Voice input downloads user-selected model assets from provider mirrors and transcribes locally. Theme-store requests remain product functionality, as do task usage/costs, runtime heartbeats and Git integrations.",
+    "New marketing footer star counter stores only a public interaction total, and star/What's new dismissal records are product UI preferences; these do not restore installation inventory or diagnostic reporting.",
+    "Web desktop downloads require an explicit customized release repository; Help, new channel/feature/theme guides and release-note links use operator configuration."
+  ],
+  "history": [
+    {
+      "upstream_repository": "https://github.com/multica-ai/multica",
+      "tracking_branch": "feikong/upstream-sync",
+      "source_branch": "upstream/source",
+      "upstream_tag": "v0.8.0",
+      "upstream_commit": "9b1ab4f9eed9153a94719596eb8a728d2770f065",
+      "customized_parent": "f0be6db56bec8340c7bd3d8fc8693f0cf0797ed5",
+      "customized_release_before_sync": "v0.1.3",
+      "customized_release_after_sync": "v0.1.4",
+      "scope": "Full upstream v0.8.0 source integration, retaining documented customization and installed-client API contracts; first distributed in customized release v0.1.4.",
+      "conflict_resolution": {
+        "apps/desktop/package.json": "Retain customized release version, homepage and package manager; accept other upstream changes.",
+        "apps/web/package.json": "Retain customized release version."
+      },
+      "cli_compatibility_version": "0.8.0",
+      "verification": {
+        "status": "source_integrated_with_recorded_suite_failures",
+        "telemetry_dependency_check": "passed: pnpm check:telemetry",
+        "frontend_typecheck": "passed: pnpm typecheck (9 tasks)",
+        "frontend_lint": "passed: pnpm lint (existing warnings, no errors)",
+        "mobile": "passed: typecheck, lint, 41 test files / 297 tests, and ios-run script regression tests",
+        "packaging": "passed: 34 integrated configuration/supervision, publishing cleanup and bundled-CLI regression tests",
+        "sqlc": "passed: make sqlc; generated output matches the imported official queries",
+        "source_record": "passed: all 137 initial differences classified; original comparison evidence unchanged; documentation references and independent package versions verified",
+        "agent_suite": {
+          "initial_run": "All agent tests ran behind the agent-CLI guard; two unchanged Codex timing tests failed during concurrent build/test load.",
+          "targeted_retries": "passed: both failing Codex tests, with GOMAXPROCS=2 and -parallel 1",
+          "upstream_runtime_tests": "passed: TestZcode*, TestDevin*, TestRuntimeCLICompatibilityVersion with fake executables",
+          "upstream_runtime_race_tests": "passed: TestZcode*, TestDevin*, TestRuntimeCLICompatibilityVersion with -race -p 1 -parallel 1 (35.833s); all executables were fake or missing test paths."
+        },
+        "frontend_tests": {
+          "coverage": "10950 unique non-mobile frontend/config tests across Core, UI, Views, Docs, Desktop, Web and ESLint config; 297 mobile tests separately.",
+          "core": "194 files / 2555 tests passed",
+          "ui": "4 files / 326 tests passed",
+          "docs": "5 files / 25 tests passed",
+          "views_full_run": "549 files / 6912 tests executed: 6903 passed, 9 hit the local 5-second test deadline.",
+          "views_retries": "All four affected files passed under Node 22.23.4: IssueDetail 106, property filters 11, workspace rail 12, runtime choices 5. The property-filter/runtime-choice retries used a 15-second CLI budget; assertions and source tests were unchanged.",
+          "desktop": "73 files / 829 tests passed under Node 22",
+          "web": "38 files / 299 tests passed under Node 22",
+          "eslint_config": "4 tests passed",
+          "commands": [
+            "NODE_OPTIONS=--no-experimental-webstorage pnpm test --concurrency=1 --filter=!@multica/eslint-config -- --maxWorkers=2",
+            "PATH=<verified Node 22>/bin:$PATH pnpm exec turbo test --filter=@multica/web --filter=@multica/desktop --concurrency=1 -- --maxWorkers=2 --testTimeout=15000"
+          ]
+        },
+        "backend_tests": {
+          "full_command": "GOMAXPROCS=2 GOFLAGS=-p=2 make env-exec ARGS=\"-- bash scripts/test-go.sh --race --only regular\"",
+          "full_result": "All regular packages passed except internal/handler: seven tests using the once-seeded shared runtime failed after its heartbeat exceeded the existing 150-second freshness window during a 515-second suite.",
+          "failed_tests": [
+            "TestClaimTaskByRuntime_ChatRolloutMissingDisclosesGap",
+            "TestClaimTaskByRuntime_RerunSourceRolloutMissingDisclosesGap",
+            "TestClaimTask_ProjectGithubReposOverrideWorkspaceRepos",
+            "TestClaimTask_ProjectDescriptionInjected",
+            "TestClaimTask_ProjectWithoutRepos_FallsBackToWorkspaceRepos",
+            "TestClaimTask_AutopilotRunOnly_PopulatesWorkspaceAndProjectContext",
+            "TestClaimTaskByRuntime_TaskWorkspaceMismatch_CancelsAndRejects"
+          ],
+          "targeted_retry": "All seven tests passed together with race detection and fresh TestMain fixtures (9.264s). No runtime freshness behavior or old-client adapters were changed.",
+          "test_environment": "The managed application services were stopped for the final database-backed run. The first run also had interference from the development API and was superseded."
+        },
+        "e2e": {
+          "command": "make env-exec ARGS=\"-- pnpm exec playwright test e2e/comments.spec.ts e2e/settings.spec.ts e2e/runtime-sharing.spec.ts --timeout=120000\" with Node 22",
+          "result": "1 passed / 4 failed; this is not a green browser verification.",
+          "failures": [
+            "Comment submission: expected posted comment was not visible within 5 seconds.",
+            "Runtime sharing: the old Private button selector was absent after opening the runtime row.",
+            "Workspace settings: the old current-workspace rail-link selector was absent; the current shell has a Switch workspace button.",
+            "Composio settings: navigation to the settings tab exceeded the local 120-second test deadline."
+          ],
+          "comment_retry": "A separate retry stopped earlier at the New Issue visibility wait; it did not establish a successful comment-submission flow.",
+          "scope": "No production UI/API or existing E2E tests were changed to accommodate old selectors. Native mobile, full E2E, dual-architecture image and full installer verification are not claimed."
+        },
+        "not_run": [
+          "Real installed-agent smoke tests (not explicitly authorized).",
+          "Native mobile simulator/device checks.",
+          "Local dual-architecture image builds and full desktop installers."
+        ],
+        "eslint_config_tests": "passed: 4 node:test cases",
+        "environment_cleanup": "Managed application services stopped after validation; development database/profile retained. Temporary upstream audit worktree removed via the repository wrapper."
+      },
+      "api_behavior": "Official v0.8.0 API and product behavior, including Inbox rollback; no additional old-client adapters.",
+      "upstream_commits_since_comparison": [
+        {
+          "sha": "d52e48f8c737eff69f971db906c95727e911fe57",
+          "subject": "MUL-8534: fix Devin model discovery with API key authentication (#9859)"
+        },
+        {
+          "sha": "d35410c0b7589f4f2da68ec8d4a2e9a49d42376a",
+          "subject": "MUL-8526: feat(wakeup): add PR review wakeup trigger (--until-pr reviewed) (#9839)"
+        },
+        {
+          "sha": "2115a513a375bfe2910b76725b617504faee4b25",
+          "subject": "MUL-7686: feat(runtime): add native ZCode protocol support (#9514)"
+        },
+        {
+          "sha": "e06640a565ec0601f56d90c1d491b3a5711ee822",
+          "subject": "Revert \"MUL-8526: feat(wakeup): add PR review wakeup trigger (--until-pr revi…\" (#9862)"
+        },
+        {
+          "sha": "049ca20ec5b80cb9bbe56dcd4f1896d6f2722ee6",
+          "subject": "feat(comments): surface thread resolution on roots-only list (#9858)"
+        },
+        {
+          "sha": "82492f94d669e504a2fda36fb6c76f4ac7d65f2e",
+          "subject": "MUL-8510: fix(ghsnapshot): drop cancelled workflow runs that a newer run of the same workflow replaced from the PR rollup (#9860)"
+        },
+        {
+          "sha": "cb5ed4f33e363b0444b86a62400ca0c4f85cb7fb",
+          "subject": "MUL-8541: feat(inbox): route comments by who they @mention, not who wrote them (#9864)"
+        },
+        {
+          "sha": "b6fc06820ad0f055722531920510cb6c12b49050",
+          "subject": "fix(settings): hide Browser notifications search result where the row does not render (#9867)"
+        },
+        {
+          "sha": "9044fb6fb4f628c3b7e822732048f214a33df9c4",
+          "subject": "MUL-8544: fix(ui): drop the outline on the selected tab in dark mode (#9874)"
+        },
+        {
+          "sha": "4e22663a61702c2c0e0b1e8fc35b6786272a791a",
+          "subject": "MUL-8541: revert the two-section Inbox (#9815, #9864) (#9875)"
+        },
+        {
+          "sha": "9b1ab4f9eed9153a94719596eb8a728d2770f065",
+          "subject": "MUL-8546: docs(changelog): release 0.8.0 (#9871)"
+        }
+      ],
+      "post_merge_adjustments": [
+        "Keep customized package versions at 0.1.3 until a separate release; advertise the imported CLI contract as 0.8.0.",
+        "Mirror the upstream ZCode README entry in Chinese and remove a trailing blank line in provider documentation.",
+        "Document the permanent synchronization branch, source ancestry and verification; preserve original baseline evidence."
+      ],
+      "outbound_review": [
+        "No telemetry SDK dependency or collector was added; existing no-op boundaries remain unchanged.",
+        "ZCode and Devin changes use provider subprocess protocols; the GitHub snapshot changes use the existing product integration client.",
+        "No startup reporting worker, script injection or telemetry endpoint was introduced by the upstream delta."
+      ]
+    }
   ]
 }

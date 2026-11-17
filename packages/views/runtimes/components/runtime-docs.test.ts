@@ -16,6 +16,7 @@ describe("runtime docs links", () => {
   it.each([
     ["en", "https://docs.example.test/docs/daemon-runtimes"],
     ["zh-Hans", "https://docs.example.test/docs/zh/daemon-runtimes"],
+    ["zh-Hant", "https://docs.example.test/docs/zh-Hant/daemon-runtimes"],
     ["ja", "https://docs.example.test/docs/ja/daemon-runtimes"],
     ["ko", "https://docs.example.test/docs/ko/daemon-runtimes"],
     ["fr", "https://docs.example.test/docs/fr/daemon-runtimes"],
@@ -26,6 +27,9 @@ describe("runtime docs links", () => {
   it("adds the localized custom runtime section", () => {
     expect(customRuntimeDocsHref("zh-Hans")).toBe(
       `https://docs.example.test/docs/zh/daemon-runtimes#${encodeURIComponent("自定义运行时配置")}`,
+    );
+    expect(customRuntimeDocsHref("zh-Hant")).toBe(
+      `https://docs.example.test/docs/zh-Hant/daemon-runtimes#${encodeURIComponent("自定義執行時配置")}`,
     );
     expect(customRuntimeDocsHref("fr")).toBe(
       `https://docs.example.test/docs/fr/daemon-runtimes#${encodeURIComponent("profils-de-runtime-personnalisés")}`,

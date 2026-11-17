@@ -1,4 +1,4 @@
-import { documentationUrl } from "../../common/docs-locale";
+import { documentationUrl, isTraditionalChinese } from "../../common/docs-locale";
 
 export function daemonRuntimesDocsHref(language?: string): string {
   return documentationUrl("/daemon-runtimes", language) ?? "";
@@ -7,6 +7,9 @@ export function daemonRuntimesDocsHref(language?: string): string {
 export function customRuntimeDocsHref(language?: string): string {
   const base = daemonRuntimesDocsHref(language);
   if (!base) return "";
+  if (isTraditionalChinese(language)) {
+    return `${base}#${encodeURIComponent("自定義執行時配置")}`;
+  }
   if (language?.startsWith("zh")) {
     return `${base}#${encodeURIComponent("自定义运行时配置")}`;
   }
