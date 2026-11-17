@@ -1,5 +1,3 @@
-> **Customized edition:** Deploy this checkout or artifacts published by your own maintainer. Telemetry is disabled, and Desktop requires explicit service configuration. Start with [self-hosting](SELF_HOSTING.md) and [the customization policy](docs/customization.md).
-
 <div align="center">
 
 <picture>

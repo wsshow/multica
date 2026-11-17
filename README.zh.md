@@ -1,5 +1,3 @@
-> **定制版本：**从当前定制源码部署，桌面端必须配置自己的服务地址。详见[部署指南](docs/deployment.zh.md)。
-
 <div align="center">
 
 <picture>
