@@ -8,9 +8,9 @@
   "previous_upstream_commit": "9b1ab4f9eed9153a94719596eb8a728d2770f065",
   "customized_parent": "f95e89949ad17817669e1f72e056925745092b71",
   "customized_release_before_sync": "v0.1.4",
-  "customized_release_after_sync": null,
+  "customized_release_after_sync": "v0.1.5",
   "reviewed_on": "2026-11-17",
-  "scope": "Merge the complete upstream v0.8.0..v0.10.0 source range (493 commits), including v0.8.1, v0.8.2 and v0.9.0, with documented customization. No customized release is published by this source synchronization; package versions stay 0.1.4.",
+  "scope": "Merge the complete upstream v0.8.0..v0.10.0 source range (493 commits), including v0.8.1, v0.8.2 and v0.9.0, with documented customization; first distributed in customized release v0.1.5.",
   "bootstrap": {
     "comparison_commit": "87ec077e5f56ff66342caef1df1638780acfdf2e",
     "initial_customized_commit": "fcd80467b2cf795a02310a37c921f8f2646ed24e",
@@ -217,14 +217,20 @@
   },
   "cli_compatibility_version": "0.10.0",
   "verification": {
-    "status": "source_review_only_at_user_request",
+    "status": "source_reviewed_and_verified_in_ci",
     "review": "Reviewed merge conflicts and upstream changes at telemetry, diagnostics, distribution, explicit Desktop configuration, bundled CLI and CLI feature-contract boundaries. Imported SQL queries, migrations and generated sqlc output together without local generation.",
     "lockfile": "pnpm install --lockfile-only --ignore-scripts; retained upstream resolutions and pruned unused telemetry dependencies. This edits dependency metadata and does not run validation or install packages.",
     "not_run": [
       "Local tests, telemetry checker, typecheck, lint, builds, sqlc generation, browser/simulator checks, containers or databases, per the user request.",
       "Real installed-agent smoke tests."
     ],
-    "ci": "Initial Integrated image run 44000090822 passed all 20 packaging tests, then the telemetry guard misclassified the connected-app catalog slug posthog as a Go SDK import. Restrict Go scanning to import declarations, retain SDK rejection and add regression tests; later CI runs are reported separately by PR #2. The initial backend compile also found an upstream chat-submission test importing the removed Prometheus SDK; remove only its collector setup/assertion and retain concurrent acceptance, persistence, event, timestamp and wakeup assertions. The telemetry guard now scans Go test imports as well."
+    "ci": "Initial Integrated image run 44000090822 passed all 20 packaging tests, then the telemetry guard misclassified the connected-app catalog slug posthog as a Go SDK import. Restrict Go scanning to import declarations, retain SDK rejection and add regression tests; later CI runs are reported separately by PR #2. The initial backend compile also found an upstream chat-submission test importing the removed Prometheus SDK; remove only its collector setup/assertion and retain concurrent acceptance, persistence, event, timestamp and wakeup assertions. The telemetry guard now scans Go test imports as well.",
+    "post_sync_ci": {
+      "source_commit": "5e386d18bf3bdf1e75dbeb441b96848eb27f3dbf",
+      "frontend": "Passed main CI, including typecheck, lint, quality, web/core/desktop tests and both full Views shards: https://github.com/wsshow/multica/actions/runs/44006819484",
+      "integrated_image": "Passed verification and native AMD64/ARM64 builds and smoke tests; publication skipped for the ordinary main push: https://github.com/wsshow/multica/actions/runs/44006819263",
+      "test_adjustments": "PR #3 aligns tests with inert diagnostics and explicit help configuration; PR #4 bounds Views workers in CI and gives the named asynchronous interaction regressions adequate deadlines."
+    }
   },
   "api_behavior": "Follow upstream v0.10.0 APIs and business behavior; retain installed-client response defaults and the independent CLI contract field without adding old-client adapters.",
   "post_merge_adjustments": [

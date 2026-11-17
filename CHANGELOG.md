@@ -3,7 +3,7 @@
 Versions in this file belong to this customized edition. See
 [the source version mapping](docs/version-mapping.md) for upstream provenance.
 
-## Unreleased
+## 0.1.5 — 2026-11-17
 
 - Synchronize official `v0.10.0` (`2fcb424b72b024f65161809081009063846ea44d`),
   including `v0.8.1`, `v0.8.2` and `v0.9.0`: Work-panel Inbox and snooze,
@@ -14,9 +14,11 @@ Versions in this file belong to this customized edition. See
   configured installation/update sources. Advertise CLI contract `0.10.0`.
 - Remove the customized-edition banner from both existing README locales and
   adapt the new Japanese README and Traditional Chinese deployment guides.
-- Review source and merge conflicts only, at the user's request; local tests,
-  builds and application verification were not run. Package versions remain
-  `0.1.4` until a separate customized release.
+- Align view tests with disabled diagnostics and explicitly configured help
+  links, and stabilize timing-sensitive interactions on shared CI runners.
+- Verify the synchronized source in GitHub Actions, including frontend checks
+  and both native integrated-image architectures. Local tests, builds and
+  application verification were not run, at the user's request.
 
 ## 0.1.4 — 2026-11-04
 
