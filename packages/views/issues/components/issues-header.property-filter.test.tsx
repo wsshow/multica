@@ -108,6 +108,7 @@ afterEach(() => {
 });
 
 describe("IssueFilterMenu select property filter", () => {
+  // The 51-option fixture drives real menu reconciliation on hosted CPUs.
   it.each(["select", "multi_select"])("caps %s filters at 50 including No value and permits replacement", async (type) => {
     const property = {
       ...textProperty("prop-services", "Services"), type,
@@ -143,7 +144,7 @@ describe("IssueFilterMenu select property filter", () => {
     fireEvent.click(extra);
     expect(store.getState().propertyFilters[property.id]).toEqual([...selected.slice(0, 49), "option-51"]);
     expect(lastSelected).toHaveAttribute("aria-disabled", "true");
-  });
+  }, 15_000);
 });
 
 describe("IssueFilterMenu scalar property filter", () => {

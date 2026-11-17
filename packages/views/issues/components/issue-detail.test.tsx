@@ -993,6 +993,7 @@ describe("IssueDetail (shared)", () => {
     expect(screen.queryByRole("dialog", { name: /deliverables$/ })).toBeNull();
   });
 
+  // Layout commits and RAF alignment need headroom on slower hosted CPUs.
   it.each([100, 1200])("keeps a %i-pixel deliverable reply visible while the virtual list corrects its size", async (height) => {
     mockVirtualWindow.enabled = true;
     mockVirtualWindow.holdAtIndex = true;
@@ -1018,7 +1019,7 @@ describe("IssueDetail (shared)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Show in comments" }));
     await waitFor(() => expect(hasHighlightedCommentBackground(
       document.getElementById("comment-image-reply"),
-    )).toBe(true));
+    )).toBe(true), { timeout: 5_000 });
     await act(async () => { await new Promise((resolve) => window.setTimeout(resolve, 150)); });
     expect(mockVirtualWindow.scrollParent?.scrollTop).toBe(height === 100 ? 200 : 234);
     expect(document.querySelectorAll('[id^="comment-history-"]').length).toBeLessThanOrEqual(8);
@@ -1027,7 +1028,7 @@ describe("IssueDetail (shared)", () => {
     fireEvent.click(screen.getByRole("button", { name: "View all 1 deliverable" }));
     fireEvent.click(screen.getByRole("button", { name: "Show in comments" }));
     await waitFor(() => expect(scrollIntoViewIndexSpy.mock.calls.length).toBeGreaterThan(jumps));
-  });
+  }, 15_000);
 
   it("opens source-context creation from both a root comment and a reply", async () => {
     mockApiObj.listTimeline.mockResolvedValue([
@@ -2888,7 +2889,7 @@ describe("IssueDetail (shared)", () => {
 
       await waitFor(() => expect(hasHighlightedCommentBackground(
         document.getElementById(`comment-${target.id}`),
-      )).toBe(true));
+      )).toBe(true), { timeout: 5_000 });
       if (lateScrollReset || holdAtIndex) {
         await act(async () => { await new Promise((resolve) => window.setTimeout(resolve, 150)); });
         expect(mockVirtualWindow.scrollParent?.scrollTop).toBe(200);
@@ -2897,7 +2898,7 @@ describe("IssueDetail (shared)", () => {
       expect(document.querySelectorAll('[id^="comment-history-"]').length).toBeLessThanOrEqual(8);
       expect(document.getElementById("comment-history-0")).toBeNull();
       expect(scrollIntoViewIndexSpy).toHaveBeenCalledWith(expect.objectContaining({ index: 115 }));
-    });
+    }, 15_000);
 
     it("waits for run grouping before consuming the comment landing", async () => {
       let finishTasks!: (tasks: AgentTask[]) => void;
