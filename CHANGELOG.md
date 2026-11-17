@@ -3,6 +3,21 @@
 Versions in this file belong to this customized edition. See
 [the source version mapping](docs/version-mapping.md) for upstream provenance.
 
+## Unreleased
+
+- Synchronize official `v0.10.0` (`2fcb424b72b024f65161809081009063846ea44d`),
+  including `v0.8.1`, `v0.8.2` and `v0.9.0`: Work-panel Inbox and snooze,
+  private/archived projects, bulk issue editing, themes, on-device Desktop
+  voice input, connected apps, and additional agent runtimes.
+- Retain disabled telemetry and development diagnostic collection, explicit
+  Desktop service configuration, the bundled customized CLI and independently
+  configured installation/update sources. Advertise CLI contract `0.10.0`.
+- Remove the customized-edition banner from both existing README locales and
+  adapt the new Japanese README and Traditional Chinese deployment guides.
+- Review source and merge conflicts only, at the user's request; local tests,
+  builds and application verification were not run. Package versions remain
+  `0.1.4` until a separate customized release.
+
 ## 0.1.4 — 2026-11-04
 
 - Integrate official `v0.8.0` (`9b1ab4f9eed9153a94719596eb8a728d2770f065`),

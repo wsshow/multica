@@ -13,7 +13,7 @@ Upstream business code may continue calling the existing APIs. The following bou
 | Activity and runtime inventory reporting | `packages/core/client-usage/`, desktop `platform/client-usage-reporter.tsx`, `ApiClient.upsertClientUsage`, `server/internal/handler/client_usage.go` |
 | Self-host snapshot and member activity | `server/internal/selfhosttelemetry/worker.go`, `TaskService.RecordHumanDelegation` |
 | Crash persistence and flush | desktop `main/freeze-breadcrumb.ts`, renderer `freeze-flush.ts` |
-| Long-task observation | `packages/core/diagnostics/freeze-watchdog.ts` |
+| Long-task observation and development recording | `packages/core/diagnostics/freeze-watchdog.ts`, `dev-recorder.ts`, views `dev-toolbar/use-dev-metrics.ts` |
 | Prometheus and WebSocket operational statistics | `server/internal/metrics/noop.go`, realtime and daemonws `metrics.go` |
 
 `/metrics` is unavailable; `/health/realtime` returns 404. Configuration cannot enable these features, including when an older server returns an analytics key or an older client posts a usage report. Ordinary health checks and user-facing error recovery remain functional.
@@ -121,6 +121,8 @@ Omit optional URLs to disable their links or requests. API authentication, daemo
 Shared help components also have no upstream link defaults. Other shells can install their own links with `configureDeploymentLinks` before rendering. Product integrations with Git providers and third-party agent services remain available.
 
 ## Web download CLI instructions
+
+The web download page and homepage only request desktop release metadata when `MULTICA_RELEASE_REPOSITORY=owner/repository` is explicitly configured. Without it, no release lookup is made and no upstream artifact is offered.
 
 The web download page only shows CLI instructions when public API and app URLs are configured. The API address comes from `MULTICA_DAEMON_SERVER_URL`, then `MULTICA_PUBLIC_URL`, then `NEXT_PUBLIC_API_URL`; the app address comes from `MULTICA_APP_URL`, then `FRONTEND_ORIGIN`. The internal Docker proxy address `REMOTE_API_URL` is never offered to CLI users. The setup command explicitly selects `self-host` and includes both addresses.
 

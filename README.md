@@ -1,5 +1,3 @@
-> **Customized edition:** Deploy this checkout or artifacts published by your own maintainer. Telemetry is disabled, and Desktop requires explicit service configuration. Start with [self-hosting](SELF_HOSTING.md) and [the customization policy](docs/customization.md).
-
 <div align="center">
 
 <picture>
@@ -17,7 +15,7 @@ back for review. Self-hostable, works with the agent CLIs you already use, no lo
 
 [Deployment](SELF_HOSTING.md) · [中文部署指南](docs/deployment.zh.md) · [Desktop configuration](docs/customization.md#desktop-service-configuration) · [CLI installation](CLI_INSTALL.md) · [Vision](VISION.md)
 
-**English | [简体中文](README.zh.md)**
+**English | [简体中文](README.zh.md) | [日本語](README.ja.md)**
 
 </div>
 
@@ -142,7 +140,7 @@ Full walkthrough: [Quickstart](apps/docs/content/docs/cloud-quickstart.mdx) · [
 ## Runtimes
 
 Multica does not ship a model. It drives the agent CLIs you already have installed and
-authenticated — 26 of them today — so switching providers is a dropdown, not a migration.
+authenticated — the current source supports 31 — so switching providers is a dropdown, not a migration.
 
 | Provider | CLI | Provider | CLI |
 | --- | --- | --- | --- |
@@ -159,6 +157,8 @@ authenticated — 26 of them today — so switching providers is a dropdown, not
 | DeepSeek Harness | `dsh` | Oh-My-Pi | `omp` |
 | MiniMax Code | `mcode` | Dim | `dim` |
 | Huawei Cloud CodeArts | `codearts` | ZeroClaw | `zeroclaw` |
+| Muse Code | `muse` | Devin CLI | `devin` |
+| Amp | `amp` | Factory Droid | `droid` |
 | ZCode | `zcode` / ZCode Desktop | | |
 
 Installing and authenticating them: [Install an agent runtime](apps/docs/content/docs/install-agent-runtime.mdx) ·

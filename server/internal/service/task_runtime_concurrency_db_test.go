@@ -59,7 +59,7 @@ func TestRuntimeConcurrencyCapLimitsAcrossAgents(t *testing.T) {
 	f.setRuntimeCap(t, int32Ptr(1))
 	ctx := context.Background()
 
-	claimed, err := f.svc.ClaimTasksForRuntimes(ctx, []pgtype.UUID{f.runtimeID}, 8)
+	claimed, _, err := f.svc.ClaimTasksForRuntimes(ctx, []pgtype.UUID{f.runtimeID}, 8)
 	if err != nil {
 		t.Fatalf("ClaimTasksForRuntimes: %v", err)
 	}
@@ -67,7 +67,7 @@ func TestRuntimeConcurrencyCapLimitsAcrossAgents(t *testing.T) {
 		t.Fatalf("claimed %d tasks, want 1 under runtime cap 1", len(claimed))
 	}
 
-	again, err := f.svc.ClaimTasksForRuntimes(ctx, []pgtype.UUID{f.runtimeID}, 8)
+	again, _, err := f.svc.ClaimTasksForRuntimes(ctx, []pgtype.UUID{f.runtimeID}, 8)
 	if err != nil {
 		t.Fatalf("second ClaimTasksForRuntimes: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestRuntimeConcurrencyCapLimitsAcrossAgents(t *testing.T) {
 	); err != nil {
 		t.Fatalf("complete first task: %v", err)
 	}
-	next, err := f.svc.ClaimTasksForRuntimes(ctx, []pgtype.UUID{f.runtimeID}, 8)
+	next, _, err := f.svc.ClaimTasksForRuntimes(ctx, []pgtype.UUID{f.runtimeID}, 8)
 	if err != nil {
 		t.Fatalf("third ClaimTasksForRuntimes: %v", err)
 	}
@@ -99,7 +99,7 @@ func TestRuntimeConcurrencyCapNullIsUnlimited(t *testing.T) {
 	f.insertTask(t, "queued")
 	f.addRuntimeAgentWithTask(t, "runtime-nocap-agent-b")
 
-	claimed, err := f.svc.ClaimTasksForRuntimes(context.Background(), []pgtype.UUID{f.runtimeID}, 8)
+	claimed, _, err := f.svc.ClaimTasksForRuntimes(context.Background(), []pgtype.UUID{f.runtimeID}, 8)
 	if err != nil {
 		t.Fatalf("ClaimTasksForRuntimes: %v", err)
 	}

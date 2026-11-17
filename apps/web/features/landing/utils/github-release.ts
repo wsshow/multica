@@ -1,7 +1,10 @@
 import {
   hasCompleteAssetSet,
   parseReleaseAssets,
+  parseReleaseAssetSizes,
   type DownloadAssets,
+  type DownloadSizes,
+  type GitHubAsset,
 } from "./parse-release-assets";
 
 /**
@@ -20,7 +23,7 @@ import {
  * asset set is complete — every button on the page then resolves to a
  * real file.
  *
- * On any failure (network, rate limit, malformed payload) returns a
+ * On any failure (network, timeout, rate limit, malformed payload) returns a
  * `null`-shaped result and logs — the page degrades to a "version
  * unavailable" view rather than 500ing.
  */
@@ -30,16 +33,19 @@ export interface LatestRelease {
   publishedAt: string | null;
   htmlUrl: string | null;
   assets: DownloadAssets;
+  sizes: DownloadSizes;
 }
 
 // Five candidates tolerates four consecutive incomplete releases before
 // the page has to fall back to showing the newest one as-is. Releases
 // ship roughly daily, so that is days of head room — while staying one
 // cheap request.
-const GITHUB_RELEASES_URL =
-  "https://api.github.com/repos/multica-ai/multica/releases?per_page=5";
-
 const REVALIDATE_SECONDS = 300;
+
+// The homepage hero awaits this on a cold cache, so a GitHub that accepts
+// the connection but never answers would hold the whole page. Past this,
+// the page renders with the empty release instead.
+export const RELEASE_TIMEOUT_MS = 3000;
 
 interface GitHubReleasePayload {
   tag_name?: string;
@@ -47,10 +53,15 @@ interface GitHubReleasePayload {
   html_url?: string;
   prerelease?: boolean;
   draft?: boolean;
-  assets?: Array<{ name: string; browser_download_url: string }>;
+  assets?: GitHubAsset[];
 }
 
 export async function fetchLatestRelease(): Promise<LatestRelease> {
+  const repository = process.env.MULTICA_RELEASE_REPOSITORY?.trim();
+  if (!repository || !/^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(repository)) {
+    return emptyRelease();
+  }
+  const releasesUrl = `https://api.github.com/repos/${repository}/releases?per_page=5`;
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
@@ -66,10 +77,16 @@ export async function fetchLatestRelease(): Promise<LatestRelease> {
     headers.Authorization = `Bearer ${token}`;
   }
 
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(new Error(`GitHub API timed out after ${RELEASE_TIMEOUT_MS}ms`)),
+    RELEASE_TIMEOUT_MS,
+  );
   try {
-    const res = await fetch(GITHUB_RELEASES_URL, {
+    const res = await fetch(releasesUrl, {
       next: { revalidate: REVALIDATE_SECONDS },
       headers,
+      signal: controller.signal,
     });
     if (!res.ok) {
       throw new Error(`GitHub API responded ${res.status}`);
@@ -91,10 +108,13 @@ export async function fetchLatestRelease(): Promise<LatestRelease> {
       publishedAt: chosen.release.published_at ?? null,
       htmlUrl: chosen.release.html_url ?? null,
       assets: chosen.assets,
+      sizes: parseReleaseAssetSizes(chosen.release.assets ?? []),
     };
   } catch (err) {
     console.warn("[download] fetchLatestRelease failed:", err);
     return emptyRelease();
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -138,5 +158,6 @@ function emptyRelease(): LatestRelease {
     publishedAt: null,
     htmlUrl: null,
     assets: {},
+    sizes: {},
   };
 }

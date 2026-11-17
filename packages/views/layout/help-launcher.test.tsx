@@ -1,6 +1,7 @@
 import { configureDeploymentLinks } from "@multica/core/platform/deployment-links";
 import { cloneElement, type ReactElement, type ReactNode } from "react";
-import { render, screen } from "@testing-library/react";
+import { render as rtlRender, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { configStore } from "@multica/core/config";
 import enLayout from "../locales/en/layout.json";
@@ -12,6 +13,12 @@ import { HelpLauncher } from "./help-launcher";
 // reachable from the same suite.
 vi.mock("../platform/local-directory", () => ({
   isDesktopShell: vi.fn(() => false),
+}));
+
+// The What's new entry is covered with the real menu in whats-new-menu-panel.test.tsx.
+vi.mock("../whats-new/whats-new-menu-panel", () => ({
+  useWhatsNewMenuPanel: () => ({ available: false }),
+  WhatsNewMenuPanel: () => null,
 }));
 
 // The UI language the mocked i18n instance reports; drives locale-aware links.
@@ -58,10 +65,12 @@ vi.mock("@multica/ui/components/ui/dropdown-menu", async () => {
     DropdownMenuItem: ({
       children,
       render,
+      onClick,
     }: {
       children: ReactNode;
       render?: ReactElement;
-    }) => (render ? cloneElement(render, undefined, children) : <>{children}</>),
+      onClick?: () => void;
+    }) => (render ? cloneElement(render, { onClick } as object, children) : <>{children}</>),
     DropdownMenuGroup: ({ children }: { children: ReactNode }) => (
       <GroupContext.Provider value={true}>{children}</GroupContext.Provider>
     ),
@@ -78,14 +87,22 @@ vi.mock("@multica/ui/components/ui/dropdown-menu", async () => {
   };
 });
 
+let qc: QueryClient;
+
+function render(ui: ReactElement) {
+  return rtlRender(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
+}
+
 beforeEach(() => {
   configureDeploymentLinks({ docsUrl: "https://docs.example.test/docs", changelogUrl: "https://docs.example.test/releases", downloadUrl: "https://downloads.example.test", communityUrl: "https://community.example.test" });
+  qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   vi.mocked(isDesktopShell).mockReturnValue(false);
   i18nState.language = "en";
 });
 
 afterEach(() => {
   configStore.getState().setServerVersion("");
+  qc.clear();
 });
 
 describe("HelpLauncher", () => {
@@ -118,6 +135,7 @@ describe("HelpLauncher", () => {
   it.each([
     ["en", "https://docs.example.test/docs"],
     ["zh-Hans", "https://docs.example.test/docs/zh"],
+    ["zh-Hant", "https://docs.example.test/docs/zh-Hant"],
     ["fr", "https://docs.example.test/docs/fr"],
   ])("links Docs to the %s docs", (language, href) => {
     i18nState.language = language;
@@ -137,4 +155,5 @@ describe("HelpLauncher", () => {
     // The rest of the menu is unaffected by the gate.
     expect(screen.getByText("Docs")).toBeInTheDocument();
   });
+
 });

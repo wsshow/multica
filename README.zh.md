@@ -1,5 +1,3 @@
-> **定制版本：**从当前定制源码部署，桌面端必须配置自己的服务地址。详见[部署指南](docs/deployment.zh.md)。
-
 <div align="center">
 
 <picture>
@@ -17,7 +15,7 @@ Multica 是一个源码公开的团队工作区。你像给同事派活一样，
 [部署指南](docs/deployment.zh.md) · [桌面端配置](docs/customization.md#desktop-service-configuration) · [CLI 安装](CLI_INSTALL.md) · [愿景](VISION.zh.md)
 
 
-**[English](README.md) | 简体中文**
+**[English](README.md) | 简体中文 | [日本語](README.ja.md)**
 
 </div>
 
@@ -136,7 +134,7 @@ diff，全都挂在同一个任务下——没人需要重新捋一遍上下文�
 
 ## 运行时
 
-Multica 不自带模型。它驱动的是你本来就装好、登录好的那些智能体 CLI——目前支持 26 种——所以换提供方
+Multica 不自带模型。它驱动的是你本来就装好、登录好的那些智能体 CLI——当前源码支持 31 种——所以换提供方
 就是切个下拉框，谈不上迁移。
 
 | Provider | CLI | Provider | CLI |
@@ -154,6 +152,8 @@ Multica 不自带模型。它驱动的是你本来就装好、登录好的那些
 | DeepSeek Harness | `dsh` | Oh-My-Pi | `omp` |
 | MiniMax Code | `mcode` | Dim | `dim` |
 | 华为云 CodeArts | `codearts` | ZeroClaw | `zeroclaw` |
+| Muse Code | `muse` | Devin CLI | `devin` |
+| Amp | `amp` | Factory Droid | `droid` |
 | ZCode | `zcode` / ZCode Desktop | | |
 
 怎么装、怎么登录：[安装智能体运行时](apps/docs/content/docs/install-agent-runtime.zh.mdx) ·

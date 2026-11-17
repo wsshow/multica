@@ -1,6 +1,6 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchLatestRelease } from "./github-release";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fetchLatestRelease, RELEASE_TIMEOUT_MS } from "./github-release";
 
 /** The twelve desktop artifacts a finished release carries. */
 function completeAssets(version: string) {
@@ -37,7 +37,7 @@ function releasePayload(overrides: {
   return {
     tag_name: overrides.tag,
     published_at: "2026-08-17T10:00:00Z",
-    html_url: `https://github.com/multica-ai/multica/releases/tag/${overrides.tag}`,
+    html_url: `https://github.com/custom-owner/custom-multica/releases/tag/${overrides.tag}`,
     prerelease: overrides.prerelease ?? false,
     draft: overrides.draft ?? false,
     assets: overrides.assets ?? [],
@@ -61,6 +61,16 @@ afterEach(() => {
 });
 
 describe("fetchLatestRelease", () => {
+  beforeEach(() => vi.stubEnv("MULTICA_RELEASE_REPOSITORY", "custom-owner/custom-multica"));
+  afterEach(() => vi.unstubAllEnvs());
+
+  it.each(["", "invalid"])("makes no release request for unconfigured or invalid source %s", async (repository) => {
+    vi.stubEnv("MULTICA_RELEASE_REPOSITORY", repository);
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    expect((await fetchLatestRelease()).version).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
   it("uses the latest release when its desktop assets are complete", async () => {
     mockFetchWithReleases([
       releasePayload({ tag: "v0.2.14", assets: completeAssets("0.2.14") }),
@@ -158,8 +168,56 @@ describe("fetchLatestRelease", () => {
       publishedAt: null,
       htmlUrl: null,
       assets: {},
+      sizes: {},
     });
     expect(warnSpy).toHaveBeenCalled();
+  });
+
+  // The homepage awaits this on a cold cache; a GitHub that accepts the
+  // connection and then stalls must not hold the page.
+  it("gives up on a stalled request and returns the empty release", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetchMock = vi.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init.signal?.addEventListener("abort", () => reject(init.signal?.reason));
+          }),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const pending = fetchLatestRelease();
+      await vi.advanceTimersByTimeAsync(RELEASE_TIMEOUT_MS);
+
+      await expect(pending).resolves.toMatchObject({ version: null, assets: {} });
+      expect(warnSpy).toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("gives up when the response body stalls after the headers arrive", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
+        const body = new ReadableStream({
+          start(controller) {
+            init.signal?.addEventListener("abort", () => controller.error(init.signal?.reason));
+          },
+        });
+        return new Response(body, { status: 200 });
+      });
+      vi.stubGlobal("fetch", fetchMock);
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const pending = fetchLatestRelease();
+      await vi.advanceTimersByTimeAsync(RELEASE_TIMEOUT_MS);
+
+      await expect(pending).resolves.toMatchObject({ version: null, assets: {} });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("returns an empty release shape when all candidates are filtered out", async () => {
