@@ -1,7 +1,10 @@
 Views CI keeps two isolated Vitest shards. `balanced-sequencer.ts` assigns files
 by estimated total cost (environment, setup, imports, tests and hooks), placing
 the longest files on the lightest shard first. Each shard still uses Vitest's
-default ordering within its assigned files.
+default ordering within its assigned files. CI caps each shard at two workers
+to leave headroom for React effects and animation-frame callbacks on
+hosted runners. Layout/large-menu regression groups have their own waiting
+budgets; ordinary test deadlines are unchanged.
 
 All runners use the same committed `shard-timings.json`, never a runner's local
 result cache. Discovery order and checkout paths do not affect assignment.
