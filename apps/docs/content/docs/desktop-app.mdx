@@ -34,11 +34,17 @@ The Compose example binds host ports to `127.0.0.1`. For remote access, use a TL
 
 Desktop reuses the shared web pages and maintains tabs per workspace. After sign-in it starts its bundled customized CLI in a profile scoped to the configured API. It does not select a system CLI or download an upstream replacement. Agent tools, their authentication, and their model quota remain external requirements. Settings show daemon status and logs.
 
+Switching between Board, List, Table, Swimlane, and Gantt in a tab also keeps each view's latest scroll position, including the board's horizontal position and scrolling within its columns.
+
+Logging out clears every tab saved on the machine, so the next person to sign in never sees pages left behind by the previous account.
+
 <DesktopTabsDemo />
 
 ## Operator-owned update sources
 
 Updates are disabled until `updateUrl` names your own generic Electron update feed. Optional `links.docsUrl`, `links.changelogUrl`, `links.downloadUrl`, `links.communityUrl`, and `links.feedbackUrl` select your help destinations; omitted links are hidden. `links.cliInstallUrl` and `links.cliInstallWindowsUrl` can publish your own CLI installers. `links.runtimeReleaseUrl` selects standalone runtime release metadata. Desktop-managed runtimes never query a CLI release source. Never repair a missing bundled CLI with an upstream package.
+
+If a manual check or download fails, Settings shows a short message and a **Retry** button. You can keep using the current version while retrying.
 
 ## Voice input
 

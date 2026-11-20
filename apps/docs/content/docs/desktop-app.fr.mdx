@@ -34,11 +34,17 @@ L’exemple Compose lie les ports à `127.0.0.1`. Pour un accès distant, utilis
 
 Desktop réutilise les pages partagées et conserve les onglets par espace de travail. Après connexion, il démarre le CLI personnalisé inclus dans un profile propre à l’API configurée. Il ne choisit pas un CLI système et ne télécharge pas de binaire du projet d’origine. Outils d’agent, authentification et quota de modèle restent à préparer. Les réglages affichent état et journaux.
 
+Quand vous passez d’une disposition à l’autre dans un onglet (Tableau, Liste, Grille, Couloirs ou Gantt), chacune conserve sa position de défilement. Dans le tableau, vous retrouvez aussi la même colonne à l’écran et la même position dans chaque colonne.
+
+La déconnexion efface tous les onglets enregistrés sur la machine : la personne suivante qui se connecte ne voit jamais les pages laissées par le compte précédent.
+
 <DesktopTabsDemo />
 
 ## Vos propres sources de mise à jour
 
 Les mises à jour exigent `updateUrl` pointant vers votre flux Electron générique. Les liens d’aide utilisent `links.docsUrl`, `links.changelogUrl`, `links.downloadUrl`, `links.communityUrl`, `links.feedbackUrl` ; les liens absents sont masqués. Vos installateurs CLI et métadonnées utilisent `links.cliInstallUrl`, `links.cliInstallWindowsUrl`, `links.runtimeReleaseUrl`. Les runtimes gérés par Desktop ne consultent jamais les versions CLI. Si le CLI inclus manque, reconstruisez ou réinstallez le paquet Desktop personnalisé.
+
+Si une vérification manuelle ou un téléchargement échoue, les réglages affichent un court message et un bouton **Réessayer**. Vous pouvez continuer à utiliser la version actuelle pendant ce temps.
 
 ## Saisie vocale
 

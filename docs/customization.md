@@ -14,7 +14,7 @@ Upstream business code may continue calling the existing APIs. The following bou
 | Self-host snapshot and member activity | `server/internal/selfhosttelemetry/worker.go`, `TaskService.RecordHumanDelegation` |
 | Crash persistence and flush | desktop `main/freeze-breadcrumb.ts`, renderer `freeze-flush.ts` |
 | Long-task observation and development recording | `packages/core/diagnostics/freeze-watchdog.ts`, `dev-recorder.ts`, views `dev-toolbar/use-dev-metrics.ts` |
-| Prometheus and WebSocket operational statistics | `server/internal/metrics/noop.go`, realtime and daemonws `metrics.go` |
+| Prometheus and WebSocket operational statistics | `server/internal/metrics/noop.go`, `server/internal/metrics/inbox_read.go`, realtime and daemonws `metrics.go` |
 
 `/metrics` is unavailable; `/health/realtime` returns 404. Configuration cannot enable these features, including when an older server returns an analytics key or an older client posts a usage report. Ordinary health checks and user-facing error recovery remain functional.
 

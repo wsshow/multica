@@ -34,11 +34,17 @@ Compose 示例只绑定主机的 `127.0.0.1`。跨机器访问时使用带 TLS �
 
 桌面端复用共享页面，按工作区保存标签页。登录后，它会在当前 API 专属的 profile 中启动内置定制 CLI，不会选择系统 CLI 或下载上游替代版本。智能体工具、登录状态和模型额度仍需自行准备，可在设置中查看守护进程状态和日志。
 
+在标签页内切换看板、列表、表格、泳道和甘特图时，也会保留各视图最新的滚动位置，包括看板的横向位置和列内滚动位置。
+
+退出登录会清除本机保存的所有标签页，避免下一位登录者看到上一个账号留下的页面。
+
 <DesktopTabsDemo />
 
 ## 使用自己的更新来源
 
 只有 `updateUrl` 指向自己的通用 Electron 更新源时才启用更新。可选的 `links.docsUrl`、`links.changelogUrl`、`links.downloadUrl`、`links.communityUrl`、`links.feedbackUrl` 设置帮助入口，未配置就不展示。`links.cliInstallUrl` 和 `links.cliInstallWindowsUrl` 可提供自己的 CLI 安装脚本，`links.runtimeReleaseUrl` 设置独立运行时的发布元数据。桌面端托管的运行时不会查询 CLI 发布源。内置 CLI 缺失时应重装或重新构建定制桌面包。
+
+手动检查或下载失败时，设置页会显示简短提示和**重试**按钮。重试期间可以继续使用当前版本。
 
 ## 语音输入
 

@@ -7,7 +7,7 @@ import (
 
 // CLICompatibilityVersion tracks implemented upstream CLI contracts, independently
 // of this edition's release version. Review it when importing upstream features.
-const CLICompatibilityVersion = "0.10.0"
+const CLICompatibilityVersion = "0.11.1"
 
 func RuntimeCLICompatibilityVersion(metadata []byte) string {
 	var values map[string]any

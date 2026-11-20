@@ -34,6 +34,7 @@ type RegistryOptions struct {
 	Version, Commit   string
 }
 type Registry struct {
+	InboxRead    *InboxReadMetrics
 	Gatherer     any
 	HTTP         *HTTPMetrics
 	Business     *BusinessMetrics

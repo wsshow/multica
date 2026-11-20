@@ -34,11 +34,17 @@ Web 網址用於瀏覽器登入與分享連結，不會從 API 網域推測。�
 
 桌面端依工作區儲存標籤頁。登入後，會在目前 API 專屬的 profile 中啟動內建定製 CLI，不會下載上游 CLI，也不會選擇系統 CLI。缺少內建 CLI 時應重新安裝或重新建置定製桌面包。
 
+在同一個標籤頁切換看板、列表、表格、泳道和甘特圖時，各檢視會保留上次的捲動位置，包括看板的水平位置和各欄內的捲動位置。
+
+退出登入會清除本機儲存的所有標籤頁，避免下一位登入者看到上一個帳號留下的頁面。
+
 <DesktopTabsDemo />
 
 ## 更新與說明來源
 
 僅在設定自己的 `updateUrl` 時啟用更新。`links.docsUrl`、`links.changelogUrl`、`links.downloadUrl`、`links.communityUrl`、`links.feedbackUrl` 為可選說明入口；未設定就不顯示。`links.cliInstallUrl`、`links.cliInstallWindowsUrl` 可指定自己的安裝腳本，`links.runtimeReleaseUrl` 可指定獨立執行時的發行資訊。桌面端管理的執行時不查詢 CLI 發行來源。
+
+手動檢查或下載失敗時，設定頁會顯示簡短提示和**重試**按鈕。重試期間可以繼續使用目前版本。
 
 ## 語音輸入
 

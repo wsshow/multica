@@ -52,6 +52,7 @@ The [minimal example](../.env.integrated.example) contains:
 | `REDIS_URL` | Optional for one instance; Redis-backed auth rate limits are disabled when omitted |
 | SMTP settings and sender | Configure production email-code login; Google OAuth or configured Resend delivery are alternatives |
 | `MULTICA_VCS_SECRET_KEY` | Initialized when the VCS feature is enabled; preserve it with the database backup |
+| `MULTICA_WEIXIN_SECRET_KEY` | Optional WeChat QR connections; generate a persistent key with `openssl rand -base64 32` |
 
 Configuration is raw `KEY=value` data: use no surrounding quotes or shell expansion. Literal `$` and spaces in passwords are preserved. URL credentials must use URL encoding where needed. `.env.integrated` is never included as Make syntax or executed by a shell. Initialization preserves existing values, including existing keys. Use `INTEGRATED_ENV_FILE` to select another operator-owned file.
 

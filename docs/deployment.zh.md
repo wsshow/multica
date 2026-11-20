@@ -146,6 +146,32 @@ make selfhost-stop
 
 桌面端的执行器通过应用管理。停止 Compose 会保留数据；`down -v` 会删除数据卷，不用于普通停止或升级。
 
+## 自托管数据库密码修复
+
+较早版本的 `make selfhost` 或 `make selfhost-build` 可能让 PostgreSQL 使用默认密码初始化，而 `.env` 中已保存另一个随机 `POSTGRES_PASSWORD`。再次启动或升级后若后端出现 `password authentication failed for user "multica"`，可将现有数据库角色密码改为 `.env` 中的值，保留原数据：
+
+```bash
+docker compose -f docker-compose.selfhost.yml up -d --wait postgres
+docker compose -f docker-compose.selfhost.yml exec -T postgres sh -c 'psql -v ON_ERROR_STOP=1 -v role="$POSTGRES_USER" -U "$POSTGRES_USER" -d postgres' <<'SQL'
+\getenv pw POSTGRES_PASSWORD
+ALTER USER :"role" WITH PASSWORD :'pw';
+SQL
+```
+
+然后重新启动原有部署。使用配置的镜像时执行：
+
+```bash
+docker compose -f docker-compose.selfhost.yml up -d
+```
+
+使用本地构建镜像时保留构建覆盖文件：
+
+```bash
+docker compose -f docker-compose.selfhost.yml -f docker-compose.selfhost.build.yml up -d
+```
+
+命令使用 `.env` 中的 `POSTGRES_USER`。如果首次初始化后修改过用户名，先恢复原用户名；数据库角色不会随配置文件改名。不要使用 `docker compose down -v` 修复认证问题，它会删除数据库卷。本节仅适用于拆分部署中由 Compose 管理的 PostgreSQL；一体化镜像使用外部数据库，应由数据库管理员按实际账号处理。
+
 ## 遥测边界
 
 产品分析、匿名上报、崩溃上报和运维指标已禁用，环境变量不能恢复。`/metrics` 和 `/health/realtime` 不可用。任务用量、成本、历史、在线状态和正常应用日志仍保留。

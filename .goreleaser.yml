@@ -3,10 +3,50 @@ version: 2
 project_name: multica
 
 release:
+  # Keep stable update clients on the previous complete release until the
+  # shared promotion workflow has verified every platform's artifacts.
+  make_latest: false
   # GitHub rejects duplicate asset names with 422. On a same-tag rerun,
   # replace only the matching CLI artifact and retry the upload; unrelated
   # release assets (for example manually published macOS builds) stay intact.
   replace_existing_artifacts: true
+  header: |
+    ## 本次更新
+
+    {{ .Tag }} 完整同步官方 v0.11.0、v0.11.1，共导入 146 个上游提交。发行版本独立编号，CLI 功能兼容版本为 0.11.1。
+
+    ### 主要变化
+
+    - **微信与聊天**：支持扫码连接微信、收发文件和 `/help` 查看机器人命令；聊天可自动回访，并在智能体回复过程中继续补充要求。
+    - **收件箱**：新增 CLI 已读、归档、恢复、延后及批量操作；加载失败可重试，长任务讨论打开更快。收件箱保留最新 2,000 条通知，较早通知自动归档。
+    - **项目与自动化**：导入项目文件夹能力，Webhook 触发器可按请求内容筛选；支持 GitLab System Hook 同步合并请求。
+    - **智能体与运行时**：显示 Claude Code、Codex 套餐额度与重置时间，改进技能调用、Cursor MCP 登录及运行时重试。
+    - **桌面与发布**：切换标签页和视图时保留滚动位置，更新失败可重试；稳定版在桌面制品齐全后才推广为 Latest，Windows ARM64 更新禁止降级。
+    - **文档模块**：同步文档协作与搜索代码，保留上游功能开关和企业包边界；文档功能默认关闭。
+
+    ### 修复与定制行为
+
+    修复任务领取与聊天发送的锁冲突、收件箱和附件的工作区访问范围等问题。适配桌面打包与搜索测试，保留遥测关闭、显式服务配置、自有更新源和本仓库编译的内置 CLI。
+
+    ### 升级须知
+
+    - 建议服务端、CLI 和桌面端配套升级；升级前备份 PostgreSQL、对象存储、配置和密钥，回退镜像不会自动回退数据库结构。
+    - 微信扫码连接需要持久配置 `MULTICA_WEIXIN_SECRET_KEY`，可使用 `openssl rand -base64 32` 生成一次并保留原值。
+    - 文档功能由 `docs_v1` 控制，显式设置 `FF_DOCS_V1=true` 才启用。
+
+    ### 下载与部署
+
+    - CLI：macOS、Linux、Windows，均提供 AMD64 / ARM64。
+    - 桌面客户端：Linux（AppImage、DEB、RPM）和 Windows（EXE），提供 x64 / ARM64；本次不包含 macOS 桌面安装包。
+    - 一体化镜像：`fkteams/multica:{{ .Version }}`，支持 Linux AMD64 / ARM64；稳定版同时更新 `latest`。
+
+    安装包及校验文件见本页附件。更多内容见[中文部署说明](https://github.com/wsshow/multica/blob/{{ .Tag }}/docs/integrated-image.zh.md)和[源码版本映射](https://github.com/wsshow/multica/blob/{{ .Tag }}/docs/version-mapping.md)。
+
+    <details>
+    <summary>完整提交记录与贡献者（点击展开）</summary>
+
+  footer: |
+    </details>
 
 builds:
   - id: multica

@@ -52,6 +52,7 @@ make integrated INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z
 | `REDIS_URL` | 单实例可选，省略时 Redis 认证限流不启用 |
 | SMTP 参数和发件地址 | 配置生产邮箱验证码登录，也可选择 Google OAuth 或已配置的 Resend 投递 |
 | `MULTICA_VCS_SECRET_KEY` | 启用 VCS 功能时初始化，与数据库备份一起保留 |
+| `MULTICA_WEIXIN_SECRET_KEY` | 可选微信扫码连接；使用 `openssl rand -base64 32` 生成并持久保留 |
 
 配置是原始 `KEY=value` 数据，不加外层引号、不使用 shell 展开。密码中的 `$`、空格会保留；连接 URL 内的凭据按需使用 URL 编码。`.env.integrated` 不会作为 Make 语法 include，也不会被 shell 执行。初始化保留已有值及密钥，可用 `INTEGRATED_ENV_FILE` 选择另一个用户持有的文件。
 
