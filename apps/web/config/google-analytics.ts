@@ -64,6 +64,7 @@ const WORKSPACE_SECTIONS = new Set([
   "autopilots",
   "billing",
   "chat",
+  "docs",
   "inbox",
   "issues",
   "members",

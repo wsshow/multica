@@ -3,6 +3,23 @@
 Versions in this file belong to this customized edition. See
 [the source version mapping](docs/version-mapping.md) for upstream provenance.
 
+## Unreleased
+
+- Synchronize official `v0.11.1` (`e1fe10d6694848e35dd1aa00e08cd11d93e545ac`),
+  including `v0.11.0` and all 146 commits since `v0.10.0`: WeChat QR connections,
+  webhook payload conditions, chat follow-ups and steering, project folders,
+  account rate-limit displays, inbox CLI operations and performance fixes.
+- Import the Docs feature and enterprise package boundaries with their upstream
+  gates intact; Docs remains controlled by `docs_v1` / `FF_DOCS_V1`.
+- Retain disabled telemetry, no-op inbox metrics, explicit Desktop service and
+  update configuration, and the CLI built from this checkout. Advertise CLI
+  contract `0.11.1` independently of the customized package version.
+- Adapt stable-release promotion to this repository's Linux/Windows Desktop
+  artifacts while retaining all six CLI targets and asset completeness checks.
+- Review source and merge conflicts only, at the user's request. Local tests,
+  telemetry checks, typecheck, lint, builds, services and browser checks were not
+  run. Package versions remain `0.1.5` until a separate customized release.
+
 ## 0.1.5 — 2026-11-17
 
 - Synchronize official `v0.10.0` (`2fcb424b72b024f65161809081009063846ea44d`),

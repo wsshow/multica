@@ -166,6 +166,30 @@ For source deployments, move the checkout to a reviewed customized commit and ru
 
 Verify `/readyz`, login, task execution, and attachments after the upgrade. Restoring an older image alone does not undo a database migration; assess schema compatibility or restore a matching backup before rollback.
 
+> **Backend restarting with `password authentication failed for user "multica"` after an upgrade or a second `make selfhost`?** Installs first started by an older `make selfhost` or `make selfhost-build` initialized PostgreSQL with the default password instead of the generated `POSTGRES_PASSWORD` in `.env`, so the backend is rejected once the containers are recreated. Set the database password to the value in `.env`; this keeps your data:
+>
+> ```bash
+> docker compose -f docker-compose.selfhost.yml up -d --wait postgres
+> docker compose -f docker-compose.selfhost.yml exec -T postgres sh -c 'psql -v ON_ERROR_STOP=1 -v role="$POSTGRES_USER" -U "$POSTGRES_USER" -d postgres' <<'SQL'
+> \getenv pw POSTGRES_PASSWORD
+> ALTER USER :"role" WITH PASSWORD :'pw';
+> SQL
+> ```
+>
+> Then restart the stack using the Compose files for your installation. For configured registry images (`make selfhost`):
+>
+> ```bash
+> docker compose -f docker-compose.selfhost.yml up -d
+> ```
+>
+> For locally built images (`make selfhost-build`), keep the build override so recovery uses your existing local images:
+>
+> ```bash
+> docker compose -f docker-compose.selfhost.yml -f docker-compose.selfhost.build.yml up -d
+> ```
+>
+> The command connects as `POSTGRES_USER` from `.env`. If you changed that value after the first start, put the original user name back first: PostgreSQL keeps the role it was initialized with. Do not run `docker compose down -v` to fix this: it deletes the database volume.
+
 ## Stop services
 
 ```bash

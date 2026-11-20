@@ -104,3 +104,44 @@ unresolved reachable vulnerability.
 
 Every Go binary retains its compiler version in the standard Go build metadata;
 use `go version -m <binary>` when auditing a downloaded release artifact.
+
+## Stable release promotion
+
+GoReleaser publishes a public release with `make_latest: false`. Stable clients
+continue to receive the previous complete release while Desktop artifacts upload.
+The release page and GitHub notifications can show the new release before promotion.
+Container tags are published independently.
+
+`.github/workflows/promote-release.yml` is the only entry point for changing
+Latest. The Linux/Windows Desktop matrix calls it after both builds succeed.
+The workflow takes its repository from `github.repository`; the validator requires
+an explicit `GH_REPO` and never defaults to the official publisher. To retry after
+correcting an upload, dispatch it in the customized repository:
+
+```bash
+gh workflow run promote-release.yml --repo wsshow/multica --ref main -f tag=vX.Y.Z
+```
+
+The workflow runs the reviewed validator from `main`, serializes promotion across
+tags, and only promotes stable semantic versions newer than the current Latest.
+Older releases finishing late and repeated promotions leave Latest unchanged.
+
+The gate checks the four update metadata files for the configured CI Desktop
+targets: `latest.yml`, `latest-arm64.yml`, `latest-linux.yml`, and
+`latest-linux-arm64.yml`. Their versions must match the tag, and every referenced
+artifact must have the expected architecture, upload status, and byte size.
+Windows metadata requires EXE installers; Linux requires AppImage packages.
+Blockmaps do not block promotion. All six CLI targets in both legacy and versioned
+archive names, including macOS CLI archives, and `checksums.txt` are required.
+macOS Desktop installers and metadata are not required because this customized
+repository does not configure their signing or publication. The retained macOS
+`afterSign` hook still verifies explicitly published signed builds.
+
+Missing or inconsistent assets return `waiting` with the blockers and leave Latest
+unchanged. API/authentication failures fail the job. Inspect the run result after
+a retry; a successful dispatch only confirms it was queued. Do not bypass the gate
+with a direct `gh release edit --latest`.
+
+Land the promotion workflow on `main` before publishing the first tag that uses
+`make_latest: false`. Fix a faulty release with a higher patch version through the
+same gate; do not move Latest backwards or remove the completeness check.

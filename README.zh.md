@@ -91,7 +91,7 @@ diff，全都挂在同一个任务下——没人需要重新捋一遍上下文�
 - **[工作区](apps/docs/content/docs/workspaces.zh.mdx) →** 按团队隔离智能体、任务和设置。
 - **[角色](apps/docs/content/docs/members-roles.zh.mdx)与[使用权限](apps/docs/content/docs/agents.zh.mdx#权限与-access) →** `owner`、`admin`、`member`，再精确到谁能跑哪些智能体。
 - **[安全模型](apps/docs/content/docs/security-model.zh.mdx) →** 智能体碰得到什么，碰不到什么。
-- **[Slack、飞书/Lark、钉钉、企业微信、Telegram](apps/docs/content/docs/channels.zh.mdx) →** 在团队本来就在聊天的地方，触发和跟进智能体的工作。飞书/Lark 目前只开放中国大陆飞书的新连接；钉钉、企业微信和 Telegram 由[社区维护](apps/docs/content/docs/community-maintained.zh.mdx)。
+- **[Slack、飞书/Lark、钉钉、企业微信、Telegram、微信](apps/docs/content/docs/channels.zh.mdx) →** 在团队本来就在聊天的地方，触发和跟进智能体的工作。微信仅接收扫码连接账号的私聊消息。飞书/Lark 目前只开放中国大陆飞书的新连接；钉钉、企业微信和 Telegram 由[社区维护](apps/docs/content/docs/community-maintained.zh.mdx)。
 - **Web、[桌面端](apps/docs/content/docs/desktop-app.zh.mdx)、[移动端](apps/docs/content/docs/mobile-app.zh.mdx) →** macOS、Windows、Linux、iPhone、iPad，打开都是同一个工作区——iOS App 现在要自己从源码编译安装，还没上 App Store。
 - **[CLI 与 API](apps/docs/content/docs/cli.zh.mdx) →** 界面上能点的，CLI 和 API 里都能调。智能体操作 Multica，用的就是你那套 CLI。
 

@@ -93,7 +93,7 @@ issue — so nobody reconstructs context, and nothing ships without a human sayi
 - **[Workspaces](apps/docs/content/docs/workspaces.mdx) →** Separate agents, issues, and settings per team.
 - **[Roles](apps/docs/content/docs/members-roles.mdx) and [access scopes](apps/docs/content/docs/agents.mdx#permissions-and-access) →** `owner`, `admin`, and `member` — and exactly which agents each member can run.
 - **[Security model](apps/docs/content/docs/security-model.mdx) →** What an agent can reach, and what it can't.
-- **[Slack, Feishu/Lark, DingTalk, WeCom, and Telegram](apps/docs/content/docs/channels.mdx) →** Trigger and follow agent work where your team already talks. New Feishu/Lark connections are open to mainland-China Feishu only for now; DingTalk, WeCom, and Telegram are [community-maintained](apps/docs/content/docs/community-maintained.mdx).
+- **[Slack, Feishu/Lark, DingTalk, WeCom, Telegram, and WeChat](apps/docs/content/docs/channels.mdx) →** Trigger and follow agent work where your team already talks. WeChat accepts private messages only from the account that scans its connection QR code. New Feishu/Lark connections are open to mainland-China Feishu only for now; DingTalk, WeCom, and Telegram are [community-maintained](apps/docs/content/docs/community-maintained.mdx).
 - **Web, [desktop](apps/docs/content/docs/desktop-app.mdx), and [mobile](apps/docs/content/docs/mobile-app.mdx) →** The same workspace on macOS, Windows, Linux, iPhone, and iPad — the iOS app builds from source today, not yet on the App Store.
 - **[CLI and API](apps/docs/content/docs/cli.mdx) →** Every surface is scriptable. Agents drive Multica through the same CLI you do.
 

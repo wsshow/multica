@@ -93,7 +93,7 @@ Multica は、こうしたエージェントとチームメイトを 1 つのワ
 - **[ワークスペース](apps/docs/content/docs/workspaces.ja.mdx) →** エージェント、タスク、設定をチームごとに分けられます。
 - **[ロール](apps/docs/content/docs/members-roles.ja.mdx)と[アクセススコープ](apps/docs/content/docs/agents.ja.mdx#権限と-access) →** `owner`、`admin`、`member`、そして各メンバーがどのエージェントを実行できるかを正確に設定できます。
 - **[セキュリティモデル](apps/docs/content/docs/security-model.ja.mdx) →** エージェントが何にアクセスでき、何にアクセスできないか。
-- **[Slack、Feishu/Lark、DingTalk、WeCom、Telegram](apps/docs/content/docs/channels.ja.mdx) →** チームが普段やり取りしている場所から、エージェントに作業を頼み、その進み具合を追えます。Feishu/Lark の新しい接続は、現在は中国本土の Feishu でのみ利用できます。DingTalk、WeCom、Telegram は[コミュニティによるメンテナンス](apps/docs/content/docs/community-maintained.ja.mdx)です。
+- **[Slack、Feishu/Lark、DingTalk、WeCom、Telegram、WeChat](apps/docs/content/docs/channels.ja.mdx) →** チームが普段やり取りしている場所から、エージェントに作業を頼み、その進み具合を追えます。WeChat は接続用 QR コードをスキャンしたアカウントからの DM のみ受け付けます。Feishu/Lark の新しい接続は、現在は中国本土の Feishu でのみ利用できます。DingTalk、WeCom、Telegram は[コミュニティによるメンテナンス](apps/docs/content/docs/community-maintained.ja.mdx)です。
 - **Web、[デスクトップ](apps/docs/content/docs/desktop-app.ja.mdx)、[モバイル](apps/docs/content/docs/mobile-app.ja.mdx) →** macOS、Windows、Linux、iPhone、iPad で同じワークスペースを使えます。iOS アプリは現在ソースからビルドする形で、まだ App Store では提供していません。
 - **[CLI と API](apps/docs/content/docs/cli.ja.mdx) →** すべての機能をスクリプトから操作できます。エージェントも、あなたと同じ CLI で Multica を操作します。
 

@@ -27,6 +27,7 @@ import {
 import { useMessagingChannels } from "./use-messaging-channels";
 import { LarkChannelAuthorization } from "./lark-channel-authorization";
 import { WecomChannelAuthorization } from "./wecom-channel-authorization";
+import { WeixinChannelAuthorization } from "./weixin-channel-authorization";
 
 export function ChannelConnectDialog({
   agents,
@@ -104,6 +105,12 @@ function ChannelConnectSteps({
   const connect = (id: ChannelIntegration) => {
     setChannel(id);
     setAuthorizing(true);
+  };
+  const guideHref = channel
+    ? documentationUrl(`/${channel}-bot-integration`, i18n.language)
+    : undefined;
+  const openGuide = () => {
+    if (guideHref) openExternal(guideHref);
   };
   const scanWecom =
     channel === "wecom" &&
@@ -224,16 +231,8 @@ function ChannelConnectSteps({
         </>
       ) : (
         <>
-          {documentationUrl("", i18n.language) && (
-            <Button
-              variant="link"
-              className="w-fit p-0"
-              onClick={() =>
-                openExternal(
-                  documentationUrl(`/${channel === "lark" ? "lark" : channel}-bot-integration`, i18n.language) ?? "",
-                )
-              }
-            >
+          {channel !== "weixin" && guideHref && (
+            <Button variant="link" className="w-fit p-0" onClick={openGuide}>
               {t(($) => $.channels.setup_guide)}
             </Button>
           )}
@@ -270,6 +269,14 @@ function ChannelConnectSteps({
               region="feishu"
               onClose={onClose}
             />
+          ) : channel === "weixin" ? (
+            // The QR is the whole step, so its guide moves below it.
+            <WeixinChannelAuthorization
+              wsId={wsId}
+              agentId={agent.id}
+              onOpenGuide={guideHref ? openGuide : undefined}
+              onClose={onClose}
+            />
           ) : scanWecom ? (
             <WecomChannelAuthorization
               wsId={wsId}
@@ -298,7 +305,7 @@ function ChannelCredentials({
   onClose,
   onBusyChange,
 }: {
-  channel: Exclude<ChannelIntegration, "lark">;
+  channel: Exclude<ChannelIntegration, "lark" | "weixin">;
   wsId: string;
   agentId: string;
   onClose: () => void;

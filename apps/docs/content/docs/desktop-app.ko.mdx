@@ -34,11 +34,17 @@ Compose의 호스트 포트는 `127.0.0.1`에 바인딩됩니다. 원격 접속�
 
 공유 페이지를 재사용하며 작업 공간별 탭을 유지합니다. 로그인하면 설정된 API 전용 profile에서 포함된 맞춤 CLI를 시작합니다. 시스템 CLI를 선택하거나 원본 바이너리를 내려받지 않습니다. 에이전트 도구 인증과 모델 사용량은 따로 준비합니다. 설정에서 상태와 로그를 볼 수 있습니다.
 
+탭 안에서 보드, 리스트, 테이블, 스윔레인, 간트 사이를 전환하면 각 뷰의 마지막 스크롤 위치로 돌아갑니다. 보드에서는 가로 스크롤 위치와 각 열 안의 스크롤 위치도 유지됩니다.
+
+로그아웃하면 로컬에 저장된 모든 탭이 삭제되어 다음 로그인 사용자가 이전 계정의 페이지를 보지 못합니다.
+
 <DesktopTabsDemo />
 
 ## 직접 관리하는 업데이트 출처
 
 `updateUrl`에 자체 일반 Electron 피드를 설정해야 업데이트가 활성화됩니다. 도움말은 `links.docsUrl`, `links.changelogUrl`, `links.downloadUrl`, `links.communityUrl`, `links.feedbackUrl`로 지정하고 누락된 링크는 숨깁니다. 자체 CLI 배포는 `links.cliInstallUrl`, `links.cliInstallWindowsUrl`, `links.runtimeReleaseUrl`을 설정합니다. Desktop 관리 runtime은 CLI 릴리스를 조회하지 않습니다. 포함된 CLI가 없으면 맞춤 Desktop 패키지를 다시 설치하거나 빌드하세요.
+
+수동 확인이나 다운로드에 실패하면 설정에 짧은 안내와 **다시 시도** 버튼이 표시됩니다. 다시 시도하는 동안 현재 버전을 계속 사용할 수 있습니다.
 
 ## 음성 입력
 
