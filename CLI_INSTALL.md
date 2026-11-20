@@ -1,6 +1,31 @@
 # Customized CLI installation
 
-Use the CLI built from this customized checkout, or an artifact published by its maintainer. The original project's Homebrew package, installers, and release binaries do not contain this edition's changes. Desktop already bundles its own customized CLI; a separate CLI is needed only for terminal use or another execution computer.
+Use the standalone CLI to work from a terminal or connect another execution computer. Desktop already bundles its own customized CLI.
+
+## Install and connect with the wizard
+
+Run the installer on the computer where the CLI will run. Have the address of your running Multica deployment and a Multica account ready. The wizard uses Chinese prompts and installs the latest stable CLI from this customized repository.
+
+### macOS and Linux
+
+```bash
+curl -fsSLo multica-cli-install.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install.sh \
+  && MULTICA_RELEASE_REPOSITORY=wsshow/multica bash multica-cli-install.sh --setup
+```
+
+### Windows PowerShell
+
+```powershell
+$env:MULTICA_RELEASE_REPOSITORY = 'wsshow/multica'
+$env:MULTICA_MODE = 'setup'
+powershell.exe -NoProfile -Command "irm 'https://raw.githubusercontent.com/wsshow/multica/main/scripts/install.ps1' | iex"
+```
+
+1. Enter the address you use to open Multica in a browser, including `http://` or `https://`. Press Enter for `http://localhost:8080` when the CLI and the default personal deployment run on the same computer. For another computer, use an address reachable from the CLI.
+2. For a personal deployment, press Enter again to use the same address for the API. For a split deployment, enter the separate API address.
+3. Sign in when your browser opens. The CLI starts the local runtime after sign-in. Over SSH, follow any port-forwarding instructions printed by the CLI.
+
+After a new Windows installation, reopen PowerShell to pick up the updated PATH. To run agent tasks, install and sign in to a supported agent tool on the execution computer.
 
 ## Instructions for an AI agent
 
@@ -23,12 +48,12 @@ Keep using the explicit binary path, or copy this built artifact into a director
 
 ## Connect to your deployment
 
-The commands below assume your customized `multica` is on PATH. Replace both addresses with your deployment's actual API and web URLs:
+If you installed the binary separately, put it on PATH and pass your deployment's API and web addresses. For a personal deployment, use the same address for both flags.
 
 ```bash
 multica setup self-host \
   --server-url http://localhost:8080 \
-  --app-url http://localhost:3000
+  --app-url http://localhost:8080
 multica auth status
 multica daemon status
 ```
@@ -46,7 +71,7 @@ multica login --token
 multica daemon start
 ```
 
-Do not put token values directly in copyable command history. A supported third-party agent tool must also be installed and signed in on this computer; only install tools you intend to use.
+Enter the token at the prompt to keep it out of your shell history.
 
 ## Verification and troubleshooting
 
@@ -58,8 +83,6 @@ Do not put token values directly in copyable command history. A supported third-
 
 ## Updates and optional distribution
 
-Until your maintainer configures a release repository, rebuild from a reviewed customized commit. Update a Desktop-managed CLI by replacing the customized Desktop package.
+The installers can update the standalone CLI without repeating sign-in. Run the shell installer without `--setup`, or run the PowerShell installer with `MULTICA_MODE` set to `default`. Update a Desktop-managed CLI by replacing the customized Desktop package.
 
-For independently distributed CLI binaries, set `MULTICA_RELEASE_REPOSITORY=your-team/your-custom-repository` only after that repository contains the expected artifacts and checksums. The value is a placeholder, not an existing configured repository. Optional mirrors use `MULTICA_RELEASE_API_BASE_URL` and `MULTICA_RELEASE_DOWNLOAD_BASE_URL`; they still need the configured repository's metadata and matching artifacts. An optional Homebrew source must be your own package selected with `MULTICA_HOMEBREW_PACKAGE`.
-
-The local `scripts/install.sh` / `scripts/install.ps1` require an explicit release repository. They are optional distribution tools, not a substitute for building this unpublished edition. Review their target repository, images, and release assets before using or publishing them. See [Self-Hosting](SELF_HOSTING.md) and [the customization policy](docs/customization.md).
+The installers require an explicit `MULTICA_RELEASE_REPOSITORY`. If you publish your own customized CLI, supply the repository that contains its release archives and checksums. The CLI updater supports mirrors via `MULTICA_RELEASE_API_BASE_URL` and `MULTICA_RELEASE_DOWNLOAD_BASE_URL`. The shell installer can use your own Homebrew package when you set `MULTICA_HOMEBREW_PACKAGE`. See [Self-Hosting](SELF_HOSTING.md) and [the customization policy](docs/customization.md).

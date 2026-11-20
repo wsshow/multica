@@ -12,7 +12,9 @@ Multica CLI は、ローカルのランタイムを接続する役割と、タ�
 
 この文書はカスタム版向けです。現在のソース、または運用担当者が提供した成果物を使用してください。上流のアプリ配布物にはこの変更は含まれません。
 
-同じカスタムソースから CLI を構築し、そのバイナリを PATH に置いて明示的に接続します。Desktop は CLI を同梱するため、管理対象ランタイム用の別インストールは不要です。実行端末にはログイン済みの対応エージェントツールが必要です。
+配布済みの CLI のインストールと Multica への接続には、[CLI セットアップウィザード](https://github.com/wsshow/multica/blob/main/CLI_INSTALL.md#install-and-connect-with-the-wizard)を使います。
+
+ソースからビルドする場合は、このカスタム版のソースを使い、生成したバイナリを PATH に置いてから接続します。Desktop は CLI を同梱するため、管理対象ランタイム用の別インストールは不要です。実行端末にはログイン済みの対応エージェントツールが必要です。
 
 ```bash
 go -C server build -o bin/multica ./cmd/multica
@@ -23,6 +25,8 @@ Windows: `go build -o bin/multica.exe ./cmd/multica`
 ## 最初の接続
 
 認証前に自分の API と Web URL を指定します。引数なしの `multica setup` は使わないでください。ブラウザがない端末は両 URL を `multica config set` で保存し、`multica login --token` で PAT を入力します。名前付き profile は各コマンドに `--profile <name>` を付けます。
+
+以下の例では API と Web を別々のアドレスで指定します。統合デプロイの場合は、両方のフラグに同じアドレスを指定します。
 
 ```bash
 multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000

@@ -16,4 +16,6 @@ curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica
 
 ターミナルに表示されたアドレス（既定値は `http://localhost:8080`）を開き、初回セットアップコードでオーナーアカウントを作成してください。
 
+[スタンドアロン CLI のセットアップ](CLI_INSTALL.md#install-and-connect-with-the-wizard)では、ターミナルからインストール、ログイン、ランタイムの起動まで行えます。
+
 [デプロイガイド（英語）](docs/integrated-image.md) · [上流バージョンの履歴](docs/version-mapping.md) · [ライセンス](LICENSE) · [著作権表示](NOTICE)

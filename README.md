@@ -16,4 +16,6 @@ curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica
 
 Open the address shown in the terminal (default `http://localhost:8080`) and use the one-time setup code to create the owner account.
 
+Use the [standalone CLI wizard](CLI_INSTALL.md#install-and-connect-with-the-wizard) to install, sign in, and start a runtime from a terminal.
+
 [Deployment guide](docs/integrated-image.md) · [Upstream source history](docs/version-mapping.md) · [License](LICENSE) · [Notices](NOTICE)

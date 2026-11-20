@@ -12,7 +12,9 @@ The Multica CLI both connects local runtimes and manages workspaces, issues, age
 
 This documentation describes the customized edition. Use this checkout or artifacts supplied by your deployment maintainer; upstream application packages do not contain these changes.
 
-Build the CLI from this same customized source, put that binary on PATH, then connect explicitly. Desktop already bundles its CLI; its managed runtime needs no separate installation. A supported agent tool must be installed and signed in on the execution computer.
+To install the published CLI and connect your computer to Multica, use the [CLI setup wizard](https://github.com/wsshow/multica/blob/main/CLI_INSTALL.md#install-and-connect-with-the-wizard).
+
+To compile the CLI yourself, use this customized checkout and put the binary on PATH before connecting. Desktop already bundles its CLI; its managed runtime needs no separate installation. A supported agent tool must be installed and signed in on the execution computer.
 
 ```bash
 go -C server build -o bin/multica ./cmd/multica
@@ -23,6 +25,8 @@ Windows: `go build -o bin/multica.exe ./cmd/multica`
 ## First connection
 
 Configure the actual API and web app before authentication. Do not use a bare `multica setup` for this customized deployment. On headless computers, save both URLs with `multica config set`, then enter a PAT with `multica login --token`. Include `--profile <name>` on every command when using a named profile.
+
+The example uses separate API and web app addresses. For an integrated deployment, pass the same address for both flags.
 
 ```bash
 multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000

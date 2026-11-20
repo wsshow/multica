@@ -309,4 +309,52 @@ foreach ($case in $cases) {
 }
 
 Remove-Item $runnerScript -Force -ErrorAction SilentlyContinue
+
+$setupCases = @(
+    @{ Inputs = @("", ""); App = "http://localhost:8080"; Server = "http://localhost:8080"; Ssh = $false }
+    @{ Inputs = @(" https://multica.example.com/ ", ""); App = "https://multica.example.com"; Server = "https://multica.example.com"; Ssh = $false }
+    @{ Inputs = @("not a URL", "https://app.example.com", "http://api.example.com:8080"); App = "https://app.example.com"; Server = "http://api.example.com:8080"; Ssh = $true }
+)
+
+$sshVars = @("SSH_CONNECTION", "SSH_CLIENT", "SSH_TTY")
+$previousSsh = @{}
+foreach ($key in $sshVars) {
+    $previousSsh[$key] = [Environment]::GetEnvironmentVariable($key)
+    [Environment]::SetEnvironmentVariable($key, $null)
+}
+try {
+    foreach ($case in $setupCases) {
+        $script:setupInputs = [System.Collections.Generic.Queue[string]]::new([string[]]$case.Inputs)
+        $script:setupArguments = @()
+        $env:SSH_CONNECTION = if ($case.Ssh) { "192.0.2.1 49152 192.0.2.2 22" } else { $null }
+
+        & {
+            Invoke-Expression $definitions
+            $ReleaseRepository = "example/custom"
+            function Read-Host { return $script:setupInputs.Dequeue() }
+            function Install-CliBinary {
+                param([switch]$PassThru)
+                if (-not $PassThru) { throw "Setup must use the binary returned by the installer" }
+                return "Invoke-SetupCliStub"
+            }
+            function Invoke-SetupCliStub {
+                if ($env:MULTICA_APP_URL -ne $case.App) { throw "Setup must open the selected app URL" }
+                $script:setupArguments = $args
+                $global:LASTEXITCODE = 0
+            }
+            Start-CliSetup
+        }
+
+        $expected = @("setup", "self-host", "--server-url", $case.Server, "--app-url", $case.App)
+        if ($case.Ssh) { $expected += @("--callback-host", "127.0.0.1") }
+        if (($script:setupArguments -join " ") -ne ($expected -join " ") -or $script:setupInputs.Count -ne 0) {
+            Fail-Test "interactive setup passed '$script:setupArguments', expected '$expected'"
+        }
+    }
+} finally {
+    foreach ($key in $sshVars) {
+        [Environment]::SetEnvironmentVariable($key, $previousSsh[$key])
+    }
+}
+
 Write-Host "install.ps1 tests passed" -ForegroundColor Green

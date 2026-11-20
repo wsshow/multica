@@ -12,7 +12,9 @@ Le CLI Multica sert à la fois à connecter des runtimes locaux et à gérer, de
 
 Cette documentation concerne l’édition personnalisée. Utilisez ce checkout ou les artefacts fournis par votre responsable de déploiement ; les paquets applicatifs du projet d’origine ne contiennent pas ces modifications.
 
-Construisez le CLI depuis les mêmes sources personnalisées, placez ce binaire dans PATH puis connectez-le explicitement. Desktop inclut son CLI : aucune installation séparée n’est requise pour son runtime géré. Un outil d’agent pris en charge doit être installé et authentifié sur l’ordinateur d’exécution.
+Pour installer le CLI publié et le connecter à Multica, utilisez [l’assistant de configuration du CLI](https://github.com/wsshow/multica/blob/main/CLI_INSTALL.md#install-and-connect-with-the-wizard).
+
+Pour compiler le CLI, utilisez ces sources personnalisées, placez le binaire dans PATH puis connectez-le explicitement. Desktop inclut son CLI : aucune installation séparée n’est requise pour son runtime géré. Un outil d’agent pris en charge doit être installé et authentifié sur l’ordinateur d’exécution.
 
 ```bash
 go -C server build -o bin/multica ./cmd/multica
@@ -23,6 +25,8 @@ Windows: `go build -o bin/multica.exe ./cmd/multica`
 ## Première connexion
 
 Configurez vos véritables URL API et Web avant l’authentification. N’utilisez pas `multica setup` sans arguments pour ce déploiement. Sans navigateur, enregistrez les deux URL avec `multica config set`, puis saisissez le PAT avec `multica login --token`. Avec un profile nommé, ajoutez `--profile <name>` à chaque commande.
+
+L’exemple utilise des adresses distinctes pour l’API et l’application web. Pour un déploiement intégré, indiquez la même adresse dans les deux options.
 
 ```bash
 multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000

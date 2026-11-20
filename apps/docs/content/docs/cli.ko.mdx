@@ -12,7 +12,9 @@ Multica CLI는 로컬 런타임을 연결할 뿐 아니라 터미널에서 워�
 
 이 문서는 맞춤 버전용입니다. 현재 소스 또는 배포 관리자가 제공한 산출물을 사용하세요. 원본 프로젝트의 앱 배포물에는 이 변경 사항이 없습니다.
 
-같은 맞춤 소스로 CLI를 빌드하고 그 바이너리를 PATH에 넣어 명시적으로 연결합니다. Desktop에는 CLI가 포함되어 관리되는 runtime을 위한 별도 설치는 필요 없습니다. 실행 컴퓨터에는 로그인된 지원 에이전트 도구가 있어야 합니다.
+배포된 CLI를 설치하고 Multica에 연결하려면 [CLI 설정 마법사](https://github.com/wsshow/multica/blob/main/CLI_INSTALL.md#install-and-connect-with-the-wizard)를 사용하세요.
+
+직접 빌드하려면 이 맞춤 소스로 빌드한 바이너리를 PATH에 넣은 다음 연결합니다. Desktop에는 CLI가 포함되어 관리되는 runtime을 위한 별도 설치는 필요 없습니다. 실행 컴퓨터에는 로그인된 지원 에이전트 도구가 있어야 합니다.
 
 ```bash
 go -C server build -o bin/multica ./cmd/multica
@@ -23,6 +25,8 @@ Windows: `go build -o bin/multica.exe ./cmd/multica`
 ## 첫 연결
 
 인증 전에 실제 API와 Web 주소를 설정합니다. 인수 없는 `multica setup`은 사용하지 마세요. 브라우저가 없는 컴퓨터에서는 `multica config set`으로 두 주소를 저장하고 `multica login --token`으로 PAT를 입력합니다. 이름 있는 profile을 쓰면 각 명령에 `--profile <name>`을 붙입니다.
+
+아래 예시는 API와 웹을 별도 주소로 배포한 경우입니다. 통합 배포에서는 두 옵션에 같은 주소를 지정합니다.
 
 ```bash
 multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000

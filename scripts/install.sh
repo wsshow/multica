@@ -7,7 +7,7 @@
 # Install CLI + provision self-host server:
 #   curl -fsSL https://raw.githubusercontent.com/${RELEASE_REPOSITORY}/main/scripts/install.sh | bash -s -- --with-server
 #
-# After installation, run `multica setup self-host` with explicit server/app URLs.
+# Pass --setup to install the CLI and connect it to an existing self-hosted service.
 #
 set -euo pipefail
 
@@ -19,6 +19,7 @@ REPO_URL="https://github.com/${RELEASE_REPOSITORY}.git"
 REPO_WEB_URL="https://github.com/${RELEASE_REPOSITORY}"  # without .git, for GitHub web APIs
 INSTALL_DIR="${MULTICA_INSTALL_DIR:-$HOME/.multica/server}"
 BREW_PACKAGE="${MULTICA_HOMEBREW_PACKAGE:-}"
+INSTALLED_CLI_PATH=""
 
 # Host ports Compose reported after `up -d`; set by setup_server and reused by
 # the summary so the health check and the printed URLs cannot diverge.
@@ -189,7 +190,8 @@ install_cli_binary() {
   fi
 
   rm -rf "$tmp_dir"
-  ok "Multica CLI installed to $bin_dir/multica"
+  INSTALLED_CLI_PATH="$bin_dir/multica"
+  ok "Multica CLI installed to $INSTALLED_CLI_PATH"
 }
 
 add_to_path() {
@@ -469,6 +471,52 @@ run_default() {
 }
 
 # ---------------------------------------------------------------------------
+# Main: Install the CLI and connect to an existing Multica deployment
+# ---------------------------------------------------------------------------
+prompt_setup_url() {
+  local label="$1" fallback="$2" url
+  while true; do
+    printf '  %s [%s] ' "$label" "$fallback" >&2
+    IFS= read -r url || fail "已停止设置。请在终端中重新运行安装向导。"
+    url="${url#"${url%%[![:space:]]*}"}"
+    url="${url%"${url##*[![:space:]]}"}"
+    url="${url:-$fallback}"
+    if [[ "$url" =~ ^https?://[^/?#@[:space:]]+(/[^?#[:space:]]*)?$ && "$url" != *\\* ]]; then
+      printf '%s' "$url"
+      return
+    fi
+    printf '  请输入以 http:// 或 https:// 开头的地址，例如 https://multica.example.com。\n' >&2
+  done
+}
+
+run_setup() {
+  local app_url server_url
+  local -a setup_args
+
+  detect_os
+  printf '\nMultica CLI 安装向导\n\n'
+  printf '1/3 连接 Multica\n'
+  printf '  输入你用浏览器打开 Multica 的地址。若服务在另一台电脑，请填写当前电脑能访问的地址。\n'
+  app_url="$(prompt_setup_url 'Multica 网页地址' 'http://localhost:8080')"
+  printf '  一体化部署直接按回车即可。如果 API 和网页分开部署，请填写 API 地址。\n'
+  server_url="$(prompt_setup_url 'Multica API 地址' "$app_url")"
+
+  printf '\n2/3 安装 Multica CLI\n'
+  install_cli_binary
+
+  printf '\n3/3 登录并启动运行时\n'
+  setup_args=(setup self-host --server-url "$server_url" --app-url "$app_url")
+  if running_in_ssh_session; then
+    printf '  请按下方提示转发 SSH 端口，再在本机浏览器完成登录。\n'
+    setup_args+=(--callback-host 127.0.0.1)
+  else
+    printf '  请在浏览器中登录。验证完成后，CLI 会启动运行时。\n'
+  fi
+  # Browser login reads MULTICA_APP_URL before the saved profile.
+  MULTICA_APP_URL="$app_url" exec "$INSTALLED_CLI_PATH" "${setup_args[@]}"
+}
+
+# ---------------------------------------------------------------------------
 # Main: With-server mode (provision self-host infrastructure + install CLI)
 # ---------------------------------------------------------------------------
 run_with_server() {
@@ -537,17 +585,20 @@ main() {
 
   while [ $# -gt 0 ]; do
     case "$1" in
+      --setup)       mode="setup" ;;
       --with-server) mode="with-server" ;;
       --local)       mode="with-server" ;;  # backwards compat alias
       --stop)        mode="stop" ;;
       --help|-h)
-        echo "Usage: install.sh [--with-server | --stop]"
+        echo "Usage: install.sh [--setup | --with-server | --stop]"
         echo ""
         echo "  (default)       Install / upgrade the Multica CLI"
+        echo "  --setup         Install, connect to an existing deployment, and start the runtime"
         echo "  --with-server   Install CLI + provision a self-host server (Docker)"
         echo "  --stop          Stop a self-hosted installation"
         echo ""
         echo "Environment variables:"
+        echo "  MULTICA_RELEASE_REPOSITORY  GitHub repository (owner/repository) for CLI downloads"
         echo "  MULTICA_INSTALL_DIR   Self-host server install directory"
         echo "                        (default: \$HOME/.multica/server)"
         echo "  MULTICA_BIN_DIR       Target directory for the CLI binary when"
@@ -570,6 +621,7 @@ main() {
 
   case "$mode" in
     default)     run_default ;;
+    setup)       run_setup ;;
     with-server) run_with_server ;;
     stop)        run_stop ;;
   esac

@@ -12,7 +12,9 @@ Multica CLI 既负责连接本机运行时，也可以在终端中管理工作�
 
 本文适用于定制版本。使用当前定制源码或部署维护者提供的产物；上游应用安装包不包含这些修改。
 
-从同一份定制源码构建 CLI，将该二进制加入 PATH，再显式连接。桌面端已经内置 CLI，其托管运行时不需要另行安装。执行电脑仍需安装并登录一款受支持的智能体工具。
+安装已发布的 CLI 并连接 Multica，请使用 [CLI 安装向导](https://github.com/wsshow/multica/blob/main/CLI_INSTALL.md#install-and-connect-with-the-wizard)。
+
+如需从源码构建，请使用当前定制源码，将构建好的 CLI 加入 PATH，再显式连接。桌面端已经内置 CLI，其托管运行时不需要另行安装。执行电脑仍需安装并登录一款受支持的智能体工具。
 
 ```bash
 go -C server build -o bin/multica ./cmd/multica
@@ -23,6 +25,8 @@ Windows: `go build -o bin/multica.exe ./cmd/multica`
 ## 第一次连接
 
 认证前明确配置实际 API 和 Web 地址。不要直接用不带参数的 `multica setup` 初始化定制部署。无浏览器的电脑先用 `multica config set` 保存两个地址，再通过 `multica login --token` 交互输入 PAT。使用命名 profile 时，后续每条命令也应带 `--profile <name>`。
+
+示例使用拆分部署的 API 和 Web 地址。一体化部署时，两个参数填同一个地址。
 
 ```bash
 multica setup self-host --server-url http://localhost:8080 --app-url http://localhost:3000

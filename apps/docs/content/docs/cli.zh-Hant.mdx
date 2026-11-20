@@ -12,7 +12,9 @@ Multica CLI 既負責連線本機執行時，也可以在終端中管理工作�
 
 本文適用於定製版本。請使用目前定製原始碼或部署維護者提供的產物；上游安裝包不包含這些修改。
 
-從目前定製 checkout 建置 CLI，將產物加入 PATH：
+若要安裝已發行的 CLI 並連線至 Multica，請使用 [CLI 安裝精靈](https://github.com/wsshow/multica/blob/main/CLI_INSTALL.md#install-and-connect-with-the-wizard)。
+
+若要從原始碼建置 CLI，請使用目前定製 checkout，將產物加入 PATH。
 
 ```bash
 go -C server build -o bin/multica ./cmd/multica
@@ -22,7 +24,7 @@ multica auth status
 multica daemon status
 ```
 
-請將兩個網址替換為自己的服務。桌面端已內建 CLI，不需另外安裝。若維護者已發行產物，可在執行本 checkout 的安裝腳本前明確設定 `MULTICA_RELEASE_REPOSITORY=owner/repository`；沒有預設的上游下載來源。
+請填入自己的服務網址。範例使用分開部署的 API 和 Web 網址。一體化部署時，兩個引數填入同一個網址。桌面端已內建 CLI，不需另外安裝。若維護者已發行產物，可在執行本 checkout 的安裝腳本前明確設定 `MULTICA_RELEASE_REPOSITORY=owner/repository`；沒有預設的上游下載來源。
 
 更新亦需要維護者配置自己的 `MULTICA_RELEASE_REPOSITORY`。桌面端內建 CLI 隨定製桌面安裝包更換，不獨立執行更新器。
 

@@ -592,6 +592,59 @@ STUB
   fi
 }
 
+test_setup_wizard_uses_release_binary_and_entered_addresses() {
+  local tmp
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' RETURN
+
+  _setup_sandbox "$tmp"
+  cat >"$tmp/payload/multica" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >"$MULTICA_TEST_SETUP_ARGS"
+printf '%s\n' "$MULTICA_APP_URL" >>"$MULTICA_TEST_SETUP_ARGS"
+IFS= read -r confirmation
+printf '%s\n' "$confirmation" >>"$MULTICA_TEST_SETUP_ARGS"
+exit "${MULTICA_TEST_SETUP_EXIT:-0}"
+STUB
+  tar -czf "$tmp/multica.tar.gz" -C "$tmp/payload" multica
+
+  cat >"$tmp/stub-bin/multica" <<'STUB'
+#!/usr/bin/env bash
+echo "The setup wizard must use the release binary it installed" >&2
+exit 99
+STUB
+  chmod +x "$tmp/stub-bin/multica"
+
+  (
+    export PATH="$tmp/stub-bin:$tmp/install-bin:/usr/bin:/bin"
+    export MULTICA_RELEASE_REPOSITORY="example/custom"
+    export MULTICA_BIN_DIR="$tmp/install-bin"
+    export MULTICA_TEST_ARCHIVE="$tmp/multica.tar.gz"
+    export MULTICA_TEST_SETUP_ARGS="$tmp/setup.args"
+    export MULTICA_APP_URL="https://previous.example.com"
+    unset SSH_CONNECTION SSH_CLIENT SSH_TTY MULTICA_TEST_SETUP_EXIT
+
+    printf '%s\n' '' '' yes | bash "$ROOT_DIR/scripts/install.sh" --setup
+    printf '%s\n' setup self-host --server-url http://localhost:8080 \
+      --app-url http://localhost:8080 http://localhost:8080 yes >"$tmp/expected.args"
+    diff -u "$tmp/expected.args" "$tmp/setup.args" || exit 1
+
+    export SSH_CONNECTION="192.0.2.10 54321 198.51.100.20 22"
+    export MULTICA_TEST_SETUP_EXIT=42
+    local code=0
+    printf '%s\n' 'invalid address' ' https://app.example.com ' 'https://api.example.com' yes |
+      bash "$ROOT_DIR/scripts/install.sh" --setup || code=$?
+    if [[ $code -ne 42 ]]; then
+      echo "expected the setup wizard to propagate the CLI's exit status, got $code" >&2
+      exit 1
+    fi
+    printf '%s\n' setup self-host --server-url https://api.example.com \
+      --app-url https://app.example.com --callback-host 127.0.0.1 \
+      https://app.example.com yes >"$tmp/expected.args"
+    diff -u "$tmp/expected.args" "$tmp/setup.args"
+  )
+}
+
 test_brew_install_failure_falls_back_to_release_binary
 test_brew_tap_failure_falls_back_to_release_binary
 test_remote_ssh_install_prints_token_login_hint
@@ -600,4 +653,5 @@ test_with_server_uses_compose_published_ports
 test_with_server_fails_when_compose_port_is_unavailable
 test_with_server_fails_when_checkout_does_not_land
 test_cli_lookup_failure_does_not_claim_up_to_date
+test_setup_wizard_uses_release_binary_and_entered_addresses
 echo "install.sh tests passed"

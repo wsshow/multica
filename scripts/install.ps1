@@ -1,7 +1,10 @@
-# Multica installer for Windows - one command to get started.
+﻿# Multica installer for Windows - one command to get started.
 #
 # Install CLI from an explicitly configured MULTICA_RELEASE_REPOSITORY.
 #   .\scripts\install.ps1
+#
+# Install CLI and connect it to an existing self-hosted deployment:
+#   $env:MULTICA_MODE="setup"; .\scripts\install.ps1
 #
 # Self-host: starts a local Multica server + installs CLI + configures
 #   $env:MULTICA_MODE="local"; .\scripts\install.ps1
@@ -235,6 +238,8 @@ function Get-InstalledCliVersion {
 # CLI Installation
 # ---------------------------------------------------------------------------
 function Install-CliBinary {
+    param([switch]$PassThru)
+
     Write-Info "Installing Multica CLI from GitHub Releases..."
 
     if (-not [Environment]::Is64BitOperatingSystem) {
@@ -312,11 +317,22 @@ function Install-CliBinary {
         Write-Fail "multica.exe not found in downloaded archive."
     }
 
-    Copy-Item $exeSrc (Join-Path $binDir "multica.exe") -Force
-    Remove-Item $tmpDir -Recurse -Force
+    $exeTarget = Join-Path $binDir "multica.exe"
+    try {
+        $sameBinary = (
+            $PassThru -and (Test-Path -LiteralPath $exeTarget -PathType Leaf) -and
+            (Get-FileHash -LiteralPath $exeSrc).Hash -eq (Get-FileHash -LiteralPath $exeTarget).Hash
+        )
+        if (-not $sameBinary) {
+            Copy-Item -LiteralPath $exeSrc -Destination $exeTarget -Force
+        }
+    } finally {
+        Remove-Item $tmpDir -Recurse -Force
+    }
 
     Add-ToUserPath $binDir
-    Write-Ok "Multica CLI installed to $binDir\multica.exe"
+    Write-Ok "Multica CLI installed to $exeTarget"
+    if ($PassThru) { return $exeTarget }
 }
 
 function Add-ToUserPath {
@@ -506,6 +522,62 @@ function Start-DefaultInstall {
 }
 
 # ---------------------------------------------------------------------------
+# Main: Interactive setup for an existing self-hosted deployment
+# ---------------------------------------------------------------------------
+function Read-MulticaSetupUrl {
+    param([string]$Prompt, [string]$DefaultUrl)
+
+    while ($true) {
+        [string]$value = Read-Host $Prompt
+        $value = $value.Trim()
+        if (-not $value) { return $DefaultUrl }
+
+        $uri = $null
+        if ([uri]::TryCreate($value, [UriKind]::Absolute, [ref]$uri) -and
+            $uri.Scheme -in @("http", "https") -and $uri.Host -and
+            $value -notmatch '[\s\\]' -and
+            -not ($uri.UserInfo -or $uri.Query -or $uri.Fragment)) {
+            return $value.TrimEnd('/')
+        }
+
+        Write-Warn "请输入完整的 HTTP 或 HTTPS 地址，例如 https://multica.example.com。"
+    }
+}
+
+function Start-CliSetup {
+    if (-not $ReleaseRepository) {
+        Write-Fail "请先将 MULTICA_RELEASE_REPOSITORY 设置为发布 CLI 的 GitHub 仓库。"
+    }
+
+    Write-Host ""
+    Write-Info "Multica CLI 安装与连接向导"
+    Write-Host "输入你用浏览器打开 Multica 的地址。若服务在另一台电脑，请填写当前电脑能访问的地址。"
+    $appUrl = Read-MulticaSetupUrl "Multica 网页地址 [http://localhost:8080]" "http://localhost:8080"
+    $serverUrl = Read-MulticaSetupUrl "API 地址（分开部署时填写，一体化部署直接按回车）" $appUrl
+
+    $cli = Install-CliBinary -PassThru
+
+    $setupArgs = @("setup", "self-host", "--server-url", $serverUrl, "--app-url", $appUrl)
+    if ($env:SSH_CONNECTION -or $env:SSH_CLIENT -or $env:SSH_TTY) {
+        Write-Info "请按下方提示转发 SSH 端口，再在本机浏览器完成登录。"
+        $setupArgs += @("--callback-host", "127.0.0.1")
+    } else {
+        Write-Info "请在浏览器中完成登录。登录成功后会启动运行时。"
+    }
+
+    # Browser login reads MULTICA_APP_URL before the saved profile.
+    $previousAppUrl = $env:MULTICA_APP_URL
+    try {
+        $env:MULTICA_APP_URL = $appUrl
+        & $cli @setupArgs
+        $setupExitCode = $LASTEXITCODE
+    } finally {
+        $env:MULTICA_APP_URL = $previousAppUrl
+    }
+    if ($setupExitCode -ne 0) { exit $setupExitCode }
+}
+
+# ---------------------------------------------------------------------------
 # Main: Local mode (self-host)
 # ---------------------------------------------------------------------------
 function Start-LocalInstall {
@@ -575,6 +647,7 @@ function Start-Stop {
 $mode = if ($env:MULTICA_MODE) { $env:MULTICA_MODE.ToLower() } else { "default" }
 
 switch ($mode) {
+    "setup"       { Start-CliSetup }
     "with-server" { Start-LocalInstall }
     "local"       { Start-LocalInstall }  # backwards compat alias
     "stop"        { Start-Stop }
