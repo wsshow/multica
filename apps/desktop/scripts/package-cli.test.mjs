@@ -56,22 +56,36 @@ function runScript(name, args) {
   return result;
 }
 
-it("allows development without a CLI but refuses to package that target", () => {
+it("requires Go for development and packaging even when a prebuilt CLI exists", () => {
+  const prebuilt = join(root, "server", "bin", "windows-amd64");
+  mkdirSync(prebuilt, { recursive: true });
+  writeFileSync(join(prebuilt, "multica.exe"), "stale fixture");
+
   const dev = runScript("bundle-cli.mjs", ["--target-platform", "win32", "--target-arch", "x64"]);
-  expect(dev.status).toBe(0);
+  expect(dev.status).toBe(1);
+  expect(dev.stderr).toContain("Go is required to compile the customized CLI");
 
   const result = runScript("package.mjs", ["--win", "--x64"]);
   expect(result.status).toBe(1);
-  expect(result.stderr).toContain("Packaging Windows x64 requires a bundled CLI");
-  expect(result.stderr).not.toContain("at main (");
+  expect(result.stderr).toContain("Go is required to compile the customized CLI");
   expect(readFileSync(marker, "utf8")).toBe("");
   expect(readFileSync(voiceMarker, "utf8")).toBe("");
 });
 
-it("packages the available x64 CLI and stops before the missing arm64 target", () => {
-  const prebuilt = join(root, "server", "bin", "windows-amd64");
-  mkdirSync(prebuilt, { recursive: true });
-  writeFileSync(join(prebuilt, "multica.exe"), "x64 fixture");
+it("packages a staged x64 CLI and stops before an unstaged arm64 target", () => {
+  // Exercise packaging's per-target staging guard without invoking a compiler.
+  writeFileSync(join(scripts, "bundle-cli.mjs"), `
+    import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+    import { dirname, resolve } from "node:path";
+    import { fileURLToPath } from "node:url";
+    const destination = resolve(dirname(fileURLToPath(import.meta.url)), "../resources/bin/multica.exe");
+    const arch = process.argv[process.argv.indexOf("--target-arch") + 1];
+    rmSync(destination, { force: true });
+    if (arch === "x64") {
+      mkdirSync(dirname(destination), { recursive: true });
+      writeFileSync(destination, "staged x64 fixture");
+    }
+  `);
 
   const result = runScript("package.mjs", ["--win", "--x64", "--arm64"]);
   expect(result.status).toBe(1);

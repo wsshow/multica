@@ -48,7 +48,7 @@ const issue = (key: string) => ({
 });
 const requests: { path: string; workspace: string }[] = [];
 const inboxListeners = new Set<(payload: { slug: string; issueKey: string }) => void>();
-const held: { response: ServerResponse; payload: unknown }[] = [];
+const held: { path: string; response: ServerResponse; payload: unknown }[] = [];
 let holdA = false;
 let baseUrl = "";
 let queryClient: QueryClient;
@@ -97,7 +97,7 @@ const server = createServer((request, response) => {
   const payload = payloadFor(path, workspace);
   response.setHeader("Content-Type", "application/json");
   if (holdA && workspace === "synthetic-a" && path.endsWith("/search")) {
-    held.push({ response, payload });
+    held.push({ path, response, payload });
     return;
   }
   response.statusCode = payload === undefined ? 404 : 200;
@@ -212,9 +212,11 @@ it("cancels an in-flight search when the production router switches workspace", 
   await openSearch();
   holdA = true;
   fireEvent.change(input(), { target: { value: "alpha" } });
-  // Issues and projects: one held search request each. Docs search stays off
-  // because the fixture config leaves docs_v1 disabled.
-  await waitFor(() => expect(held.length).toBe(2), NETWORK_WAIT);
+  // The fixture enables Docs, so all three searches must be in flight before
+  // switching workspaces and checking that their stale results stay hidden.
+  await waitFor(() => expect(held.map(({ path }) => path).sort()).toEqual([
+    "/api/docs/search", "/api/issues/search", "/api/projects/search",
+  ]), NETWORK_WAIT);
   await notify("synthetic-b");
   await act(async () => {
     for (const { response, payload } of held.splice(0)) response.end(JSON.stringify(payload));
