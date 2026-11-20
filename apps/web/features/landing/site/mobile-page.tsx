@@ -1,5 +1,6 @@
 "use client";
 
+import { MULTICA_GITHUB_URL } from "@multica/core/constants/github";
 import { ArrowUpRight } from "@multica/ui/icons";
 import { useDashboardCtaHref } from "../utils/use-dashboard-cta";
 import { docsHrefForLocale, useLocale } from "../i18n";
@@ -157,7 +158,7 @@ function Everything() {
   );
 }
 
-const BUILD_COMMANDS = `git clone https://github.com/multica-ai/multica.git
+const BUILD_COMMANDS = `git clone ${MULTICA_GITHUB_URL}.git
 cd multica
 pnpm install
 pnpm ios:mobile:device:prod:release`;

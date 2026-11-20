@@ -1,12 +1,13 @@
 "use client";
 
+import { MULTICA_GITHUB_LATEST_RELEASE_URL } from "@multica/core/constants/github";
 import { useLocale } from "../../i18n";
 import { Container, Eyebrow, SiteTextLink, actionClassName } from "../../site/primitives";
 import { alternateKey, formatSize, osOf, resolvePrimary } from "../../utils/download-target";
 import type { LatestRelease } from "../../utils/github-release";
 import type { DetectResult } from "../../utils/os-detect";
 import type { DownloadKey } from "../../utils/parse-release-assets";
-import { ALL_RELEASES_URL, AllPlatforms } from "./all-platforms";
+import { AllPlatforms } from "./all-platforms";
 import { DownloadLink } from "./download-link";
 import { OSIcon } from "./os-icons";
 
@@ -73,7 +74,7 @@ export function DownloadHero({
               {release.publishedAt ? <Dot>{d.released.replace("{date}", formatDate(release.publishedAt, locale))}</Dot> : null}
               <Dot>
                 <SiteTextLink
-                  href={release.htmlUrl ?? ALL_RELEASES_URL}
+                  href={release.htmlUrl ?? MULTICA_GITHUB_LATEST_RELEASE_URL}
                   external
                   className="text-site-ink underline decoration-site-line-strong underline-offset-4"
                 >

@@ -12,6 +12,7 @@ import {
 } from "@multica/ui/components/ui/dialog";
 import { cn } from "@multica/ui/lib/utils";
 import type { AgentRuntime } from "@multica/core/types";
+import { getDesktopDownloadUrl } from "@multica/core/platform/deployment-links";
 import {
   runtimeDisplayLabel,
   useDaemonSetupCommands,
@@ -35,7 +36,7 @@ import { useT } from "../../i18n";
  * an explicit right-side button that says what clicking does:
  *
  *   1. **Download desktop** — primary card, black bg, "Download" pill.
- *      Opens the installer in a new tab; the user finishes onboarding
+ *      Opens the release page in a new tab; the user finishes onboarding
  *      inside the desktop app.
  *   2. **Install the CLI** — alt card, "Show steps" pill → opens a
  *      dialog containing the real install instructions + live runtime
@@ -50,12 +51,6 @@ import { useT } from "../../i18n";
  */
 
 type DialogState = "cli" | null;
-
-// Single canonical download destination — the /download page owns
-// OS + arch detection, the All-Platforms matrix, release-note links,
-// and the CLI / Cloud alternates. Kept in sync with landing-hero.tsx
-// and landing footer nav, both of which target the same path.
-const DOWNLOAD_PAGE_URL = "/download";
 
 export function StepPlatformFork({
   wsId,
@@ -80,15 +75,6 @@ export function StepPlatformFork({
   const [model, setModel] = useState("");
 
   const picker = useRuntimePicker(wsId, wsSlug);
-
-  const pickDesktop = () => {
-    // No post-click state. `noopener` makes window.open return null by spec
-    // whether it opened or was blocked, so this cannot know which happened —
-    // and the copy it used to flip to ("Opened in a new tab.") was a claim we
-    // had no way to stand behind. The card states the intent up front
-    // instead, which is true either way.
-    window.open(DOWNLOAD_PAGE_URL, "_blank", "noopener,noreferrer");
-  };
 
   const handleOpenCli = () => {
     setDialog("cli");
@@ -129,7 +115,7 @@ export function StepPlatformFork({
         />
 
         <div className="flex flex-col gap-2">
-          <ForkPrimary onClick={pickDesktop} />
+          <ForkPrimary />
 
           <ForkAlt
             title={t(($) => $.step_platform.cli_title)}
@@ -190,12 +176,13 @@ export function StepPlatformFork({
 
 // Fork cards
 
-function ForkPrimary({ onClick }: { onClick: () => void }) {
+function ForkPrimary() {
   const { t } = useT("onboarding");
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <a
+      href={getDesktopDownloadUrl()}
+      target="_blank"
+      rel="noreferrer"
       className={cn(
         "group flex items-center justify-between gap-4 rounded-xl bg-foreground px-6 py-5 text-left text-background transition-transform",
         "hover:-translate-y-0.5",
@@ -217,7 +204,7 @@ function ForkPrimary({ onClick }: { onClick: () => void }) {
         {t(($) => $.step_platform.download_button)}
         <ArrowRight className="h-3.5 w-3.5" />
       </span>
-    </button>
+    </a>
   );
 }
 

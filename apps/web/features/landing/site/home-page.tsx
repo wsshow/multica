@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ComponentType, type CSSProperties } from "react";
 import Link from "@/features/landing/components/landing-link";
+import { MULTICA_GITHUB_LATEST_RELEASE_URL } from "@multica/core/constants/github";
 import { ArrowRight, ArrowUpRight, ChevronRight } from "@multica/ui/icons";
 import { cn } from "@multica/ui/lib/utils";
 import { BorderBeam } from "@multica/ui/components/common/border-beam";
@@ -84,7 +85,7 @@ function Hero({ download }: { download: HomeDownload }) {
               {copy.downloadFor.replace("{os}", OS_NAMES[os])}
             </DownloadLink>
           ) : (
-            <ActionLink href="/download" size="lg">
+            <ActionLink href={MULTICA_GITHUB_LATEST_RELEASE_URL} size="lg">
               {copy.download}
             </ActionLink>
           )}

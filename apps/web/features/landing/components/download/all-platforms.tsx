@@ -1,5 +1,6 @@
 "use client";
 
+import { MULTICA_GITHUB_RELEASES_URL } from "@multica/core/constants/github";
 import { cn } from "@multica/ui/lib/utils";
 import { useLocale } from "../../i18n";
 import { SiteTextLink, focusRing } from "../../site/primitives";
@@ -7,8 +8,6 @@ import { osOf, platformOf, type PlatformKey } from "../../utils/download-target"
 import type { DownloadAssets, DownloadKey } from "../../utils/parse-release-assets";
 import { DownloadLink } from "./download-link";
 import { OSIcon } from "./os-icons";
-
-export const ALL_RELEASES_URL = "https://github.com/multica-ai/multica/releases";
 
 type FormatLabel = "formatDmg" | "formatZip" | "formatExe" | "formatAppImage" | "formatDeb" | "formatRpm";
 
@@ -58,7 +57,7 @@ export function AllPlatforms({
         <h2 id="all-platforms-title" className="text-site-small text-site-ink">
           {d.title}
         </h2>
-        <SiteTextLink href={ALL_RELEASES_URL} external className="text-site-small text-site-muted hover:text-site-ink">
+        <SiteTextLink href={MULTICA_GITHUB_RELEASES_URL} external className="text-site-small text-site-muted hover:text-site-ink">
           {d.allReleases}
         </SiteTextLink>
       </div>

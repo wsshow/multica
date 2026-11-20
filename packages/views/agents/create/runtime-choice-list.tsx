@@ -14,6 +14,7 @@ import {
   SquareTerminal,
   TriangleAlert,
 } from "@multica/ui/icons";
+import { getDesktopDownloadUrl } from "@multica/core/platform/deployment-links";
 import type { QoderConnection } from "@multica/core/runtimes/qoder";
 import { Button, buttonVariants } from "@multica/ui/components/ui/button";
 import { cn } from "@multica/ui/lib/utils";
@@ -614,7 +615,7 @@ export function RuntimeChoiceList({
                 {t(($) => $.creation_studio.runtime_step.web_local_title)}
               </span>
               <a
-                href="/download"
+                href={getDesktopDownloadUrl()}
                 target="_blank"
                 rel="noreferrer"
                 className={buttonVariants({ size: "sm", variant: "outline" })}

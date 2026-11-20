@@ -9,6 +9,7 @@ import { MulticaStarRow } from "@multica/ui/components/common/multica-graphics";
 import { cn } from "@multica/ui/lib/utils";
 import { DragStrip } from "@multica/views/platform";
 import { STATUS_CONFIG } from "@multica/core/issues/config";
+import { getDesktopDownloadUrl } from "@multica/core/platform/deployment-links";
 import type { BuiltInIssueStatus } from "@multica/core/types";
 import { StatusIcon } from "../../issues/components/status-icon";
 import { ProviderLogo } from "../../runtimes/components/provider-logo";
@@ -114,7 +115,7 @@ export function StepWelcome({
                       onboarding tab in case the desktop install
                       stalls and the user falls back here. */}
                   <a
-                    href="/download"
+                    href={getDesktopDownloadUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={buttonVariants({ size: "lg" })}

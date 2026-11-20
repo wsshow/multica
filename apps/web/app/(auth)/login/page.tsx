@@ -14,6 +14,7 @@ import {
   resolvePostAuthDestination,
   useHasOnboarded,
 } from "@multica/core/paths";
+import { getDesktopDownloadUrl } from "@multica/core/platform/deployment-links";
 import { api } from "@multica/core/api";
 import type { Workspace } from "@multica/core/types";
 import {
@@ -27,7 +28,6 @@ import { Button } from "@multica/ui/components/ui/button";
 import { Loader2 } from "@multica/ui/icons";
 import { CliCallbackError } from "@/features/auth/cli-callback-error";
 import { setLoggedInCookie } from "@/features/auth/auth-cookie";
-import Link from "next/link";
 import { LoginPage, validateCliCallback } from "@multica/views/auth";
 import { useT } from "@multica/views/i18n";
 
@@ -240,12 +240,14 @@ function LoginPageContent() {
       extra={
         <span className="text-caption text-muted-foreground">
           {t(($) => $.web.prefer_desktop)}{" "}
-          <Link
-            href="/download"
+          <a
+            href={getDesktopDownloadUrl()}
+            target="_blank"
+            rel="noreferrer"
             className="font-medium text-foreground underline decoration-foreground/30 underline-offset-4 hover:decoration-foreground/70"
           >
             {t(($) => $.web.download)}
-          </Link>
+          </a>
         </span>
       }
     />

@@ -120,11 +120,11 @@ Optional configuration fields:
 
 Omit optional URLs to disable their links or requests. API authentication, daemon registration, tasks, and WebSockets use the explicitly configured deployment. Desktop writes both service and web URLs into its own CLI profile and pins its child environment to them; it never borrows another profile or a shell's server URL. The standalone CLI remains a separate entry point; Desktop always launches its bundled CLI with its own profile.
 
-Shared help components also have no upstream link defaults. Other shells can install their own links with `configureDeploymentLinks` before rendering. Product integrations with Git providers and third-party agent services remain available.
+Web desktop download links open this repository's latest stable release. Shells can override that destination with `configureDeploymentLinks({ downloadUrl })` before rendering. Product integrations with Git providers and third-party agent services remain available.
 
 ## Web download CLI instructions
 
-The web download page and homepage only request desktop release metadata when `MULTICA_RELEASE_REPOSITORY=owner/repository` is explicitly configured. Without it, no release lookup is made and no upstream artifact is offered.
+The web download page and homepage only request desktop release metadata when `MULTICA_RELEASE_REPOSITORY=owner/repository` is explicitly configured. The homepage links to this repository's latest stable release when it cannot offer a platform-specific installer. **All releases** on the download page opens this repository's release list.
 
 The web download page only shows CLI instructions when public API and app URLs are configured. The API address comes from `MULTICA_DAEMON_SERVER_URL`, then `MULTICA_PUBLIC_URL`, then `NEXT_PUBLIC_API_URL`; the app address comes from `MULTICA_APP_URL`, then `FRONTEND_ORIGIN`. The internal Docker proxy address `REMOTE_API_URL` is never offered to CLI users. The setup command explicitly selects `self-host` and includes both addresses.
 

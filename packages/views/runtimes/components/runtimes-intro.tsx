@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Check, Cloud, Download, Laptop, Server, SquareTerminal } from "@multica/ui/icons";
 import { buttonVariants } from "@multica/ui/components/ui/button";
 import { cn } from "@multica/ui/lib/utils";
+import { getDesktopDownloadUrl } from "@multica/core/platform/deployment-links";
 import { providerDisplayName } from "@multica/core/runtimes";
 import {
   FeatureIntro,
@@ -77,7 +78,7 @@ export function RuntimesIntro({
       action={action}
       secondaryAction={
         <a
-          href="/download"
+          href={getDesktopDownloadUrl()}
           target="_blank"
           rel="noreferrer"
           className={buttonVariants({ variant: "outline" })}

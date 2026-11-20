@@ -27,12 +27,12 @@ import { DiscordIcon } from "./discord";
 import { useT } from "../i18n";
 import { documentationUrl } from "../common/docs-locale";
 import { RAIL_ICON_BUTTON_CLASS } from "./rail-styles";
-import { getDeploymentLinks } from "@multica/core/platform/deployment-links";
+import { getDeploymentLinks, getDesktopDownloadUrl } from "@multica/core/platform/deployment-links";
 import { useWhatsNewMenuPanel, WhatsNewMenuPanel } from "../whats-new/whats-new-menu-panel";
 
 export function HelpLauncher() {
   const { t, i18n } = useT("layout");
-  const { changelogUrl, downloadUrl, communityUrl } = getDeploymentLinks();
+  const { changelogUrl, communityUrl } = getDeploymentLinks();
   const docsUrl = documentationUrl("", i18n.language);
   const serverVersion = useConfigStore((state) => state.serverVersion);
   // Web-only: offering "download the desktop app" inside the desktop app is
@@ -66,12 +66,12 @@ export function HelpLauncher() {
           sideOffset={8}
           className="min-w-40 max-w-56"
         >
-          {!desktop && downloadUrl && (
+          {!desktop && (
             <>
               <DropdownMenuItem
                 render={
                   <a
-                    href={downloadUrl}
+                    href={getDesktopDownloadUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
                   />

@@ -197,29 +197,12 @@ describe("StepPlatformFork", () => {
     expect(onNext).toHaveBeenCalledWith(null);
   });
 
-  it("opens the download page and claims nothing about the outcome", async () => {
-    // mockReturnValue(null) is the honest simulation: with `noopener`,
-    // window.open returns null by spec whether the tab opened or a popup
-    // blocker ate it. The card used to flip to "Opened in a new tab." on
-    // this exact path, which it had no way to know.
-    const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
-    const user = userEvent.setup();
+  it("links to the latest desktop release in a new tab", () => {
     renderFork();
 
-    await user.click(screen.getByText(/^use this computer$/i));
-
-    // Routes to the new /download page (not GitHub releases) so the
-    // user lands on the OS auto-detect surface.
-    expect(openSpy).toHaveBeenCalledWith(
-      "/download",
-      "_blank",
-      "noopener,noreferrer",
-    );
-    // The card states its intent up front and does not change afterwards, so
-    // there is no post-click claim to be wrong and no stuck "Opening…" state.
-    expect(screen.getByText(/^use this computer$/i)).toBeInTheDocument();
-    expect(screen.queryByText(/opening the download page/i)).toBeNull();
-    expect(screen.queryByText(/opened in a new tab/i)).toBeNull();
+    const link = screen.getByRole("link", { name: /^use this computer/i });
+    expect(link).toHaveAttribute("href", "https://github.com/wsshow/multica/releases/latest");
+    expect(link).toHaveAttribute("target", "_blank");
   });
 
   it("CLI dialog: opens with instructions + 'waiting' and a disabled Connect button", async () => {

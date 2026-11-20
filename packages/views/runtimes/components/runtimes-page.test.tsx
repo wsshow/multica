@@ -226,13 +226,17 @@ describe("RuntimesPage", () => {
     });
     expect(within(intro).getByRole("link", { name: /Download desktop/ })).toHaveAttribute(
       "href",
-      "/download",
+      "https://github.com/wsshow/multica/releases/latest",
     );
     expect(screen.queryByText("Machines")).not.toBeInTheDocument();
     expect(within(intro).getAllByRole("button", { name: /^Go to slide/ })).toHaveLength(2);
 
     await user.click(within(intro).getByRole("button", { name: "Add runtime" }));
     const menu = await screen.findByRole("menu");
+    expect(within(menu).getByRole("menuitem", { name: /this computer/i })).toHaveAttribute(
+      "href",
+      "https://github.com/wsshow/multica/releases/latest",
+    );
     expect(within(menu).getByText("Other machine or server")).toBeInTheDocument();
     expect(within(menu).getByText("Qoder Cloud Agents")).toBeInTheDocument();
   });

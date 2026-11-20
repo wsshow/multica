@@ -45,7 +45,7 @@ import { useT } from "../i18n";
 import { AppLink } from "../navigation";
 import { isDesktopShell } from "../platform/local-directory";
 import { DiscordIcon } from "./discord";
-import { getDeploymentLinks } from "@multica/core/platform/deployment-links";
+import { getDeploymentLinks, getDesktopDownloadUrl } from "@multica/core/platform/deployment-links";
 import { ThemeSwatch, useAppliedMode, useColorThemes, useThemeLabel } from "../settings/components/theme-swatch";
 import { RAIL_ICON_BUTTON_CLASS } from "./rail-styles";
 
@@ -81,9 +81,10 @@ function ExternalItem({ href, icon, label }: { href: string; icon: React.ReactNo
 /** The signed-in user's menu at the foot of the rail. */
 export function AccountMenu() {
   const { t, i18n } = useT("layout");
-  const { changelogUrl, downloadUrl, communityUrl } = getDeploymentLinks();
+  const { changelogUrl, communityUrl } = getDeploymentLinks();
+  const desktop = isDesktopShell();
   const docsUrl = documentationUrl("", i18n.language);
-  const showHelp = docsUrl || changelogUrl || communityUrl || (!isDesktopShell() && downloadUrl);
+  const showHelp = docsUrl || changelogUrl || communityUrl || !desktop;
   const user = useAuthStore((s) => s.user);
   const p = useWorkspacePaths();
   const logout = useLogout();
@@ -217,9 +218,9 @@ export function AccountMenu() {
               {communityUrl && (
                 <ExternalItem href={communityUrl} icon={<DiscordIcon />} label={t(($) => $.help.discord)} />
               )}
-              {!isDesktopShell() && downloadUrl && (
+              {!desktop && (
                 <ExternalItem
-                  href={downloadUrl}
+                  href={getDesktopDownloadUrl()}
                   icon={<Download />}
                   label={t(($) => $.help.download_desktop)}
                 />

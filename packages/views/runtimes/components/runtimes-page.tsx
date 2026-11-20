@@ -31,6 +31,7 @@ import {
   useRequiredWorkspaceSlug,
   useWorkspacePaths,
 } from "@multica/core/paths";
+import { getDesktopDownloadUrl } from "@multica/core/platform/deployment-links";
 import { agentTaskSnapshotOptions } from "@multica/core/agents";
 import { chatSessionsOptions } from "@multica/core/chat/queries";
 import { runtimeProfileListOptions } from "@multica/core/runtimes";
@@ -418,7 +419,7 @@ export function RuntimesPage({
       description: t(($) => $.page.rows.this_computer_hint),
       action: (
         <a
-          href="/download"
+          href={getDesktopDownloadUrl()}
           target="_blank"
           rel="noreferrer"
           className={buttonVariants({ variant: "outline", size: "xs" })}
@@ -629,7 +630,7 @@ function AddRuntimeMenu({
               icon={<Laptop className="size-4 text-muted-foreground" />}
               title={t(($) => $.page.add_menu.this_computer)}
               description={t(($) => $.page.add_menu.this_computer_download)}
-              render={<a href="/download" target="_blank" rel="noreferrer" />}
+              render={<a href={getDesktopDownloadUrl()} target="_blank" rel="noreferrer" />}
             />
           )}
           <AddMenuItem

@@ -1,3 +1,5 @@
+import { MULTICA_GITHUB_LATEST_RELEASE_URL } from "../constants/github";
+
 export interface DeploymentLinks {
   docsUrl?: string;
   changelogUrl?: string;
@@ -18,4 +20,8 @@ export function configureDeploymentLinks(value: DeploymentLinks): void {
 
 export function getDeploymentLinks(): Readonly<DeploymentLinks> {
   return links;
+}
+
+export function getDesktopDownloadUrl(): string {
+  return links.downloadUrl ?? MULTICA_GITHUB_LATEST_RELEASE_URL;
 }

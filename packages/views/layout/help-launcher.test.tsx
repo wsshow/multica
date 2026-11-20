@@ -106,10 +106,13 @@ afterEach(() => {
 });
 
 describe("HelpLauncher", () => {
-  it("hides outbound help links when none were configured", () => {
+  it("shows the latest desktop release as the only outbound link when none are configured", () => {
     configureDeploymentLinks({});
     render(<HelpLauncher />);
-    expect(screen.queryAllByRole("link")).toHaveLength(0);
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      "https://github.com/wsshow/multica/releases/latest",
+    );
   });
 
   it("does not show a version row when the server omits it", () => {
@@ -123,10 +126,7 @@ describe("HelpLauncher", () => {
     expect(screen.getByText("Server version 1.2.3")).toBeInTheDocument();
   });
 
-  // MUL-6462: after web onboarding the desktop download CTA was unreachable —
-  // no entry anywhere in the app, so users had to remember the URL or detour
-  // through the marketing site. The Help menu is the persistent home for it.
-  it("links to the download page on web", () => {
+  it("uses the configured desktop download URL on web", () => {
     render(<HelpLauncher />);
     const link = screen.getByRole("link", { name: /Desktop app/ });
     expect(link).toHaveAttribute("href", "https://downloads.example.test");

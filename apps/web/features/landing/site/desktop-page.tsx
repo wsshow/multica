@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentType } from "react";
+import { MULTICA_GITHUB_LATEST_RELEASE_URL } from "@multica/core/constants/github";
 import { ArrowRight, ArrowUpRight } from "@multica/ui/icons";
 import { cn } from "@multica/ui/lib/utils";
 import { docsHrefForLocale, useLocale } from "../i18n";
@@ -40,7 +41,7 @@ function Hero() {
       lead="Multica Desktop for macOS, Windows, and Linux starts the daemon for you after sign-in, so the coding tools on your computer can take issues. Each workspace opens in a window of its own."
       actions={
         <>
-          <ActionLink href="/download" size="lg">
+          <ActionLink href={MULTICA_GITHUB_LATEST_RELEASE_URL} size="lg">
             Download
           </ActionLink>
           <ActionLink href={docsHref} size="lg" tone="secondary">

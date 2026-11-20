@@ -1,6 +1,7 @@
+import { MULTICA_GITHUB_URL } from "@multica/core/constants/github";
 import { cn } from "@multica/ui/lib/utils";
 
-export const githubUrl = "https://github.com/multica-ai/multica";
+export const githubUrl = MULTICA_GITHUB_URL;
 export const twitterUrl = "https://x.com/MulticaAI";
 export const discordUrl = "https://discord.gg/W8gYBn226t";
 
