@@ -28,6 +28,8 @@ function fixture(tag = "v0.10.0") {
     }
   }
   add("checksums.txt");
+  add("multica-personal-release.txt");
+  metadata.set("multica-personal-release.txt", `example/multica ${tag} ${"a".repeat(40)} example/multica@sha256:${"b".repeat(64)}\n`);
   const calls = [];
   const release = { id: 42, tag_name: tag, draft: false, prerelease: false };
   const options = { tag, getRelease: async () => release, getAssets: async () => assets,
@@ -84,6 +86,9 @@ test("bad metadata and incomplete assets cannot promote", async () => {
   assert.equal((await promoteRelease(f.options)).status, "waiting");
   f.assets[0].state = "starter";
   assert.equal((await promoteRelease(f.options)).status, "waiting");
+  const personal = fixture();
+  personal.metadata.set("multica-personal-release.txt", `example/multica v0.9.0 ${"a".repeat(40)} example/multica@sha256:${"b".repeat(64)}\n`);
+  assert.equal((await promoteRelease(personal.options)).status, "waiting");
 });
 
 test("semantic version ordering prevents a late older release and repeated promotion", async () => {
@@ -127,6 +132,7 @@ test("promotion is serialized across tags and both upload paths use the gate", (
   const release = parse(readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8"));
   assert.ok(release.jobs.promote.needs.includes("desktop"));
   assert.ok(release.jobs.promote.needs.includes("verify"));
+  assert.ok(release.jobs.promote.needs.includes("personal-release-info"));
   assert.equal(release.jobs.promote.uses, "./.github/workflows/promote-release.yml");
   const goreleaser = parse(readFileSync(new URL("../.goreleaser.yml", import.meta.url), "utf8"));
   assert.equal(goreleaser.release.make_latest, false);

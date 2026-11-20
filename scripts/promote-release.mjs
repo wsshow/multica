@@ -83,6 +83,15 @@ export async function validateRelease(tag, release, assets, readMetadata) {
     }
   }
   if (!uploaded.has("checksums.txt")) problems.push("Missing checksums.txt");
+  const personal = uploaded.get("multica-personal-release.txt");
+  if (!personal) {
+    problems.push("Missing multica-personal-release.txt");
+  } else {
+    const info = (await readMetadata(personal)).trim().match(
+      /^([A-Za-z0-9][A-Za-z0-9-]*\/[A-Za-z0-9_.-]+) (v\d+\.\d+\.\d+) ([0-9a-f]{40}) ([a-z0-9][a-z0-9_-]*\/[a-z0-9][a-z0-9._-]*@sha256:[0-9a-f]{64})$/,
+    );
+    if (info?.[2] !== tag) problems.push("multica-personal-release.txt must pin the tagged source and image digest");
+  }
   return problems;
 }
 

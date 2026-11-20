@@ -101,9 +101,13 @@ issue — so nobody reconstructs context, and nothing ships without a human sayi
 
 ## Get started
 
-Use the current customized checkout, or a source archive supplied by its maintainer. No distribution repository or public release feed is configured for this edition. The original project's installers and container images do not contain these customizations.
+For personal use, install Docker Compose 2.30+. After the first stable release with personal deployment is published, this repository script installs the latest stable version. The installer uses Chinese prompts.
 
-For personal use, run `make integrated-personal-build`, open `http://localhost:8080`, and set your username and password using the setup code printed in the terminal. Enter the same service address when Desktop first opens. See the [personal deployment guide](docs/integrated-image.md).
+```bash
+curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
+```
+
+Open `http://localhost:8080` and create the owner account using the setup code printed in the terminal. Enter the same address on Desktop's first launch. To build from source, run `make integrated-personal-build`. See the [personal deployment guide](docs/integrated-image.md).
 
 1. Deploy API, web, and PostgreSQL from this checkout:
 

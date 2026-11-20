@@ -464,8 +464,29 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: node scripts/package.mjs --${{ matrix.target }} --x64 --arm64 --publish always
 
+  personal-release-info:
+    needs: [verify, release, integrated-image]
+    if: needs.verify.outputs.is_stable == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish the personal installer's release information
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.verify.outputs.tag_name }}
+          PERSONAL_IMAGE: ${{ needs.integrated-image.outputs.published_image }}
+        run: |
+          [[ "$PERSONAL_IMAGE" =~ ^[a-z0-9][a-z0-9_-]*/[a-z0-9][a-z0-9._-]*@sha256:[0-9a-f]{64}$ ]]
+          docker manifest inspect "$PERSONAL_IMAGE" >/dev/null
+          commit=$(git rev-parse HEAD)
+          info="$RUNNER_TEMP/multica-personal-release.txt"
+          printf '%s %s %s %s\n' "$GITHUB_REPOSITORY" "$TAG_NAME" "$commit" "$PERSONAL_IMAGE" > "$info"
+          gh release upload "$TAG_NAME" "$info" --repo "$GITHUB_REPOSITORY" --clobber
+
   promote:
-    needs: [verify, desktop]
+    needs: [verify, desktop, personal-release-info]
     if: needs.verify.outputs.is_stable == 'true'
     uses: ./.github/workflows/promote-release.yml
     with:

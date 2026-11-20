@@ -48,6 +48,14 @@ require_image() {
   export INTEGRATED_IMAGE
 }
 
+personal_message() {
+  if [[ ${INTEGRATED_PERSONAL_LANG:-} == zh-CN ]]; then
+    printf '%s\n' "$1"
+  else
+    printf '%s\n' "$2"
+  fi
+}
+
 personal() {
   local personal_file=${INTEGRATED_PERSONAL_ENV_FILE:-.env.integrated.personal}
   local personal_build_image=${INTEGRATED_BUILD_IMAGE:-multica-integrated:personal}
@@ -60,7 +68,7 @@ personal() {
     fi
   }
   if [[ -n "${INTEGRATED_PERSONAL_ENV_FILE:-}" && ! -f "$personal_file" ]]; then
-    echo "Missing personal configuration file: $personal_file" >&2
+    personal_message "找不到个人版配置文件 $personal_file。" "Missing personal configuration file: $personal_file" >&2
     return 1
   fi
   if [[ -z "$(personal_setting DATABASE_URL)" ]]; then
@@ -79,7 +87,9 @@ personal() {
     personal)
       if [[ -n "${INTEGRATED_IMAGE:-}" ]]; then
         require_image
-        "${compose[@]}" pull
+        if [[ "$INTEGRATED_IMAGE" != *@sha256:* ]] || ! docker image inspect "$INTEGRATED_IMAGE" >/dev/null 2>&1; then
+          "${compose[@]}" pull
+        fi
       elif docker image inspect "$personal_build_image" >/dev/null 2>&1; then
         export INTEGRATED_IMAGE=$personal_build_image
       else
@@ -104,7 +114,8 @@ personal() {
   case "$mode" in
     personal|personal-build)
       if ! "${compose[@]}" up -d --no-build --wait --wait-timeout "${INTEGRATED_WAIT_TIMEOUT:-600}"; then
-        echo 'Multica did not become ready. Run make integrated-personal-logs.' >&2
+        personal_message 'Multica 尚未就绪。运行 bash multica-personal.sh logs 查看应用日志。' \
+          'Multica did not become ready. Run make integrated-personal-logs.' >&2
         return 1
       fi
       local origin setup_code
@@ -114,16 +125,32 @@ personal() {
         const { env } = configure(await initializePersonalEnvironment(process.env));
         console.log(env.MULTICA_PUBLIC_URL);
       ')
-      echo "Multica is ready at $origin"
+      printf '\n'
+      personal_message "Multica 已就绪。访问 $origin" "Multica is ready at $origin"
       if setup_code=$("${compose[@]}" exec -T app cat /app/data/setup-code 2>/dev/null) && [[ -n "$setup_code" ]]; then
-        printf 'One-time setup code\n%s\n' "$setup_code"
+        personal_message '首次使用时，请在网页输入以下一次性初始化码，然后创建管理员账号。' 'One-time setup code'
+        printf '%s\n' "$setup_code"
       fi
       ;;
-    personal-status) "${compose[@]}" ps ;;
+    personal-status) "${compose[@]}" ps --all ;;
     personal-logs) "${compose[@]}" logs --tail=200 -f app ;;
-    personal-stop) "${compose[@]}" down ;;
-    personal-setup-code) "${compose[@]}" exec -T app cat /app/data/setup-code ;;
+    personal-stop)
+      "${compose[@]}" stop
+      if [[ ${INTEGRATED_PERSONAL_LANG:-} == zh-CN ]]; then
+        printf '服务已停止，数据已保留。\n'
+      fi
+      ;;
+    personal-setup-code)
+      if ! "${compose[@]}" exec -T app cat /app/data/setup-code 2>/dev/null; then
+        personal_message '无法读取初始化码。请确认应用已启动，且管理员尚未创建。' \
+          'Unable to read the setup code. Start the application and make sure the owner has not been created.' >&2
+        return 1
+      fi
+      ;;
     personal-reset-password)
+      if [[ ${INTEGRATED_PERSONAL_LANG:-} == zh-CN ]]; then
+        printf '正在重置管理员密码。请保存命令返回的新密码。\n'
+      fi
       "${compose[@]}" exec -T app node /app/integrated/entrypoint.mjs local-auth reset-password
       ;;
     personal-backup|personal-restore)

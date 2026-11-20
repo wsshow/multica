@@ -6,7 +6,32 @@ The image combines the Go backend, Next.js standalone web server, and nginx in o
 
 ## Personal deployment
 
-With Docker Compose 2.30+ and Bash, run one of these commands from the customized checkout.
+Install Docker Compose 2.30+, Bash, and curl. Once the first stable release with personal deployment is available, run this command where you want to keep the installer. The script lives in the repository and installs the latest stable release by default. Its prompts are in Chinese.
+
+```bash
+curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
+```
+
+Open the address printed in the terminal, `http://localhost:8080` by default. Enter the one-time setup code and create your owner account to open your personal workspace. Compose starts PostgreSQL automatically. Docker volumes retain attachments and signing keys.
+
+Run the installer again to check the latest stable release. If the version changes, you can back up before upgrading, upgrade immediately, or cancel. For unattended upgrades, use `bash multica-personal.sh install --yes`. Use `bash multica-personal.sh up` to start the selected version without checking for updates.
+
+| Command | Action |
+| --- | --- |
+| `bash multica-personal.sh --help` | Show commands |
+| `bash multica-personal.sh setup-code` | Read the current code before creating the owner |
+| `bash multica-personal.sh reset-password` | Reset the owner's password |
+| `bash multica-personal.sh status` | Show service status |
+| `bash multica-personal.sh logs` | Follow application logs |
+| `bash multica-personal.sh stop` | Stop services and keep data |
+| `bash multica-personal.sh backup multica.tar` | Archive the managed database, local uploads, and keys |
+| `MULTICA_PERSONAL_VERSION=vX.Y.Z bash multica-personal.sh restore multica.tar` | Restore on a fresh host using the matching version, then run `up` |
+
+The installer stores deployment files in `${XDG_DATA_HOME:-$HOME/.local/share}/multica-personal`. Put an optional `.env.integrated.personal` there to use your own PostgreSQL or S3. Set `INTEGRATED_PERSONAL_ENV_FILE` to use another path. Operator-supplied keys, environment settings, and external services need separate backups.
+
+### Start from source or a selected image
+
+From the customized checkout, run either command below.
 
 ```bash
 # Start a published version from your Docker Hub repository.

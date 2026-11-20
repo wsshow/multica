@@ -84,8 +84,7 @@ export function LocalLoginForm({ logo, setupRequired, sessionExpired, onSubmit }
                 <Input id="local-login-code" name="setup_code" autoComplete="one-time-code" autoCapitalize="none"
                   spellCheck={false} aria-describedby="local-login-code-help" required />
                 <p id="local-login-code-help" className="text-caption text-muted-foreground">
-                  {t(($) => $.local.setup_code_hint)}{" "}
-                  <code className="break-all">make integrated-personal-setup-code</code>
+                  {t(($) => $.local.setup_code_hint)}
                 </p>
               </div>
             )}

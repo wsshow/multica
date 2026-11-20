@@ -16,6 +16,12 @@ Configure repository variables `DOCKERHUB_USERNAME` and `DOCKERHUB_IMAGE`
 token must be allowed to push to that Docker Hub repository. Unlike GHCR,
 Docker Hub does not use `GITHUB_TOKEN` for this login.
 
+The Docker Hub image must also be publicly readable. The stable Release workflow
+checks anonymous access and uploads `multica-personal-release.txt` with the
+GitHub source commit and the published image digest. The
+[repository installer](../scripts/install-personal.sh) uses this asset to deploy
+the latest stable version.
+
 The workflow builds from this checkout using Bake and native AMD64/ARM64
 runners, then tests each assembled image before exporting and uploading the
 same image by digest, without a temporary tag. The registry client is a pinned,
@@ -114,12 +120,14 @@ use `go version -m <binary>` when auditing a downloaded release artifact.
 ## Stable release promotion
 
 GoReleaser publishes a public release with `make_latest: false`. Stable clients
-continue to receive the previous complete release while Desktop artifacts upload.
+continue to receive the previous complete release while Desktop artifacts and the
+personal deployment's release information upload.
 The release page and GitHub notifications can show the new release before promotion.
 Container tags are published independently.
 
 `.github/workflows/promote-release.yml` is the only entry point for changing
-Latest. The Linux/Windows Desktop matrix calls it after both builds succeed.
+Latest. Release calls it after both Desktop builds and the personal deployment
+release information upload succeed.
 The workflow takes its repository from `github.repository`; the validator requires
 an explicit `GH_REPO` and never defaults to the official publisher. To retry after
 correcting an upload, dispatch it in the customized repository:
@@ -138,7 +146,8 @@ targets: `latest.yml`, `latest-arm64.yml`, `latest-linux.yml`, and
 artifact must have the expected architecture, upload status, and byte size.
 Windows metadata requires EXE installers; Linux requires AppImage packages.
 Blockmaps do not block promotion. All six CLI targets in both legacy and versioned
-archive names, including macOS CLI archives, and `checksums.txt` are required.
+archive names, including macOS CLI archives, `checksums.txt`, and the personal
+deployment's `multica-personal-release.txt` are required.
 macOS Desktop installers and metadata are not required because this customized
 repository does not configure their signing or publication. The retained macOS
 `afterSign` hook still verifies explicitly published signed builds.

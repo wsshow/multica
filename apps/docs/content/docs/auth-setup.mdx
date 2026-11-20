@@ -6,7 +6,7 @@ description: Configure email verification codes, Google sign-in, and who can sig
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-The [personal instance](/self-host-quickstart#start-a-personal-instance) uses a username and password. Run `make integrated-personal-reset-password` on the Docker host to generate a replacement password.
+The [personal instance](/self-host-quickstart#start-a-personal-instance) uses a username and password. Run `bash multica-personal.sh reset-password` on the Docker host to generate a replacement password. For a source deployment, use `make integrated-personal-reset-password`.
 
 Other deployments use email verification codes by default and can add Google OAuth. Existing users can always sign in again. Signup restrictions only decide whether new accounts can be created.
 

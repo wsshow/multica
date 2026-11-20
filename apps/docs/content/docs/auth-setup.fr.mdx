@@ -6,7 +6,7 @@ description: Configurez les codes de vérification par e-mail, la connexion avec
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-Une [instance personnelle](/self-host-quickstart) utilise un identifiant et un mot de passe. Pour générer un nouveau mot de passe, exécutez `make integrated-personal-reset-password` sur l’hôte Docker.
+Une [instance personnelle](/self-host-quickstart) utilise un identifiant et un mot de passe. Pour générer un nouveau mot de passe, exécutez `bash multica-personal.sh reset-password` sur l’hôte Docker. Pour un déploiement depuis le code source, utilisez `make integrated-personal-reset-password`.
 
 Les autres déploiements utilisent par défaut les codes de vérification par e-mail et peuvent ajouter Google OAuth. Les utilisateurs existants peuvent toujours se reconnecter. Les restrictions d’inscription s’appliquent à la création de comptes.
 

@@ -6,7 +6,32 @@
 
 ## 个人部署
 
-准备 Docker Compose 2.30+ 和 Bash，在定制仓库根目录运行以下任一命令。
+准备 Docker Compose 2.30+、Bash 和 curl。首个支持个人部署的稳定版发布后，在希望保留安装脚本的目录执行这条命令。脚本在仓库维护，默认安装最新稳定版。
+
+```bash
+curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
+```
+
+脚本会显示访问地址，默认是 `http://localhost:8080`。首次使用时，输入终端显示的一次性初始化码，创建管理员后即可进入个人工作区。PostgreSQL 自动启动，附件和密钥保存在 Docker 卷中。
+
+再次运行安装命令会检查最新稳定版。版本变化时可选备份后升级、直接升级或取消。无人值守升级用 `bash multica-personal.sh install --yes`。`bash multica-personal.sh up` 启动已选版本，日常启停无需重新下载发布信息。
+
+| 命令 | 用途 |
+| --- | --- |
+| `bash multica-personal.sh --help` | 查看中文用法 |
+| `bash multica-personal.sh setup-code` | 创建管理员前重新查看初始化码 |
+| `bash multica-personal.sh reset-password` | 重置管理员密码 |
+| `bash multica-personal.sh status` | 查看运行状态 |
+| `bash multica-personal.sh logs` | 跟踪应用日志 |
+| `bash multica-personal.sh stop` | 停止服务并保留数据 |
+| `bash multica-personal.sh backup multica.tar` | 备份默认数据库、本地附件和密钥 |
+| `MULTICA_PERSONAL_VERSION=vX.Y.Z bash multica-personal.sh restore multica.tar` | 在新主机按备份时的版本还原，然后执行 `up` |
+
+启动配置保存在 `${XDG_DATA_HOME:-$HOME/.local/share}/multica-personal`。如需自有 PostgreSQL 或 S3，可在该目录放置 `.env.integrated.personal`。需要从其他路径读取配置时，设置 `INTEGRATED_PERSONAL_ENV_FILE`。手动配置的环境文件、密钥和外部服务需单独备份。
+
+### 从源码或指定镜像启动
+
+在定制仓库根目录运行以下任一命令。
 
 ```bash
 # 从自己的 Docker Hub 仓库启动已发布版本。
@@ -16,13 +41,13 @@ make integrated-personal INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z
 make integrated-personal-build
 ```
 
-打开终端打印的访问地址，默认是 `http://localhost:8080`。用同一终端显示的一次性设置码创建所有者账号。Multica 会创建「个人工作区」，之后使用用户名和密码登录。签名密钥、上传文件和数据库保存在 Docker 卷中，应用通过专用 Unix socket 连接随附的数据库。
+打开终端打印的访问地址，默认是 `http://localhost:8080`。用同一终端显示的一次性初始化码创建所有者账号。Multica 会创建「个人工作区」，之后使用用户名和密码登录。签名密钥、上传文件和数据库保存在 Docker 卷中，应用通过专用 Unix socket 连接随附的数据库。
 
 从源码构建后，可以用 `make integrated-personal` 再次启动同一本地镜像。
 
 | 命令 | 用途 |
 | --- | --- |
-| `make integrated-personal-setup-code` | 创建所有者前重新查看设置码 |
+| `make integrated-personal-setup-code` | 创建所有者前重新查看初始化码 |
 | `make integrated-personal-reset-password` | 生成并显示替换密码，以及所有者用户名 |
 | `make integrated-personal-status` | 查看容器和健康状态 |
 | `make integrated-personal-logs` | 跟踪应用日志 |

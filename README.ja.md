@@ -101,7 +101,13 @@ Multica は、こうしたエージェントとチームメイトを 1 つのワ
 
 ## はじめに
 
-個人で使う場合は `make integrated-personal-build` を実行し、`http://localhost:8080` を開きます。ターミナルに表示されたセットアップコードでユーザー名とパスワードを設定します。Desktop の初回起動時には同じ URL を入力してください。[デプロイガイド](docs/integrated-image.md)を参照してください。
+個人で使う場合は Docker Compose 2.30 以上を用意します。個人用デプロイに対応した最初の安定版が公開されると、以下のスクリプトで最新の安定版をインストールできます。案内は中国語で表示されます。
+
+```bash
+curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
+```
+
+`http://localhost:8080` を開き、ターミナルに表示されたセットアップコードで管理者アカウントを作成します。Desktop の初回起動時も同じ URL を入力してください。ソースから起動する場合は `make integrated-personal-build` を実行します。[デプロイガイド](docs/integrated-image.md)を参照してください。
 
 このチェックアウトから `make selfhost-build` でサービスを構築し、自分の Web アドレスを開きます。[セルフホストガイド](SELF_HOSTING.md)を参照してください。
 

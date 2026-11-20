@@ -7,13 +7,13 @@ Cette documentation concerne l’édition personnalisée. Utilisez ce checkout o
 
 ## Démarrer une instance personnelle
 
-Dans le checkout personnalisé, exécutez `make integrated-personal INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z` en indiquant une image intégrée publiée par votre responsable de déploiement. Ouvrez `http://localhost:8080` et saisissez le code de configuration à usage unique affiché dans le terminal. Choisissez votre identifiant et votre mot de passe pour ouvrir votre espace de travail personnel.
+Avec Docker Compose 2.30 ou ultérieur, utilisez le [script d’installation du dépôt](https://github.com/wsshow/multica/blob/main/docs/integrated-image.md#personal-deployment) pour démarrer la dernière version stable compatible avec le déploiement personnel. Ouvrez `http://localhost:8080` et saisissez le code à usage unique affiché dans le terminal. Créez le compte administrateur pour ouvrir votre espace de travail personnel.
 
 Docker Compose gère PostgreSQL. Les pièces jointes et clés de signature sont stockées localement. Vous pouvez démarrer sans fichier d’environnement ni service de messagerie. Pour compiler et démarrer depuis le checkout actuel, utilisez `make integrated-personal-build`.
 
 ## Préparer les sources
 
-Utilisez un checkout personnalisé validé ou une archive fournie par son responsable. Aucun dépôt public de distribution n’est configuré pour cette édition. Préparez le plugin Docker Compose, Make et OpenSSL. Les outils d’agent et leurs comptes se préparent séparément sur les ordinateurs d’exécution.
+Utilisez un checkout personnalisé validé ou une archive fournie par son responsable. Préparez le plugin Docker Compose, Make et OpenSSL. Les outils d’agent et leurs comptes se préparent séparément sur les ordinateurs d’exécution.
 
 ## Démarrer les services
 

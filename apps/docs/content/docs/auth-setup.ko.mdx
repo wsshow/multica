@@ -6,7 +6,7 @@ description: 이메일 인증 코드, Google 로그인, 신규 사용자 가입 
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-[개인 인스턴스](/self-host-quickstart)에는 사용자 이름과 비밀번호로 로그인합니다. 비밀번호를 잊었다면 Docker 호스트에서 `make integrated-personal-reset-password`를 실행해 새 비밀번호를 생성합니다.
+[개인 인스턴스](/self-host-quickstart)에는 사용자 이름과 비밀번호로 로그인합니다. 비밀번호를 잊었다면 Docker 호스트에서 `bash multica-personal.sh reset-password`를 실행해 새 비밀번호를 생성합니다. 소스에서 배포했다면 `make integrated-personal-reset-password`를 사용하세요.
 
 다른 배포는 기본적으로 이메일 인증 코드로 로그인하며 Google OAuth를 추가할 수 있습니다. 기존 사용자는 다시 로그인할 수 있습니다. 가입 제한은 새 계정 생성에만 적용됩니다.
 

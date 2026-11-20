@@ -100,6 +100,8 @@ The Go vulnerability-scanning tool retains `golang.org/x/telemetry` as an indire
 
 The [integrated image guide](integrated-image.md) ([中文版](integrated-image.zh.md)) covers one application container with nginx, the existing Go backend, and Next.js. `make integrated-personal` starts a personal instance with local uploads, a Compose-managed PostgreSQL database, and password sign-in. `make integrated` uses its own raw `.env.integrated` for a deployment with external infrastructure. Both modes are isolated from development configuration. Release builds and verifies the image on both architectures before publishing to the explicitly configured Docker Hub repository. Existing split-image publication remains available. Keep configuration translation and process management in the packaging layer so upstream business features can continue to merge.
 
+The [personal deployment installer](../scripts/install-personal.sh) lives in this public repository. It reads the latest stable release's `multica-personal-release.txt` asset, downloads deployment files from the recorded source commit, and starts the configured Docker Hub image by digest. This asset is required for stable release promotion. A fork can explicitly select its own publishing repository with `MULTICA_RELEASE_REPOSITORY`.
+
 ## Desktop service configuration
 
 When Electron first opens without a connection file, enter the address of your integrated service. Desktop saves that address as both the API and web URL. For split deployments, copy `apps/desktop/desktop.example.json` to `~/.multica/desktop.json`, enter both URLs, and restart Desktop. The example uses port 8080 for the API and 3000 for the web app.

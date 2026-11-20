@@ -6,7 +6,7 @@ description: 配置信箱驗證碼、Google 登入和新使用者註冊範圍。
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-[個人執行個體](/self-host-quickstart)使用帳號和密碼登入。忘記密碼時，在 Docker 主機執行 `make integrated-personal-reset-password` 產生新密碼。
+[個人執行個體](/self-host-quickstart)使用帳號和密碼登入。忘記密碼時，在 Docker 主機執行 `bash multica-personal.sh reset-password` 產生新密碼。從原始碼部署時可使用 `make integrated-personal-reset-password`。
 
 其他部署預設使用信箱驗證碼登入，也可以加入 Google OAuth。已有的使用者可以再次登入，註冊限制僅控制新帳號的建立。
 
