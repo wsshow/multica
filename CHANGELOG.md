@@ -3,7 +3,7 @@
 Versions in this file belong to this customized edition. See
 [the source version mapping](docs/version-mapping.md) for upstream provenance.
 
-## Unreleased
+## 0.1.6 — 2026-11-20
 
 - Synchronize official `v0.11.1` (`e1fe10d6694848e35dd1aa00e08cd11d93e545ac`),
   including `v0.11.0` and all 146 commits since `v0.10.0`: WeChat QR connections,
@@ -16,9 +16,12 @@ Versions in this file belong to this customized edition. See
   contract `0.11.1` independently of the customized package version.
 - Adapt stable-release promotion to this repository's Linux/Windows Desktop
   artifacts while retaining all six CLI targets and asset completeness checks.
-- Review source and merge conflicts only, at the user's request. Local tests,
-  telemetry checks, typecheck, lint, builds, services and browser checks were not
-  run. Package versions remain `0.1.5` until a separate customized release.
+- Align Desktop packaging regressions with mandatory source-built CLI behavior,
+  and cover issue/project/Docs searches during workspace switches.
+- Publish Chinese release highlights with complete contributor records folded
+  underneath; promote Latest only after the configured artifacts are complete.
+- Run verification through GitHub Actions. Local tests, telemetry checks,
+  typecheck, lint, builds, services and browser checks were not run.
 
 ## 0.1.5 — 2026-11-17
 

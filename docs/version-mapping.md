@@ -12,7 +12,7 @@
 | `v0.1.3` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.3)，新增一体化应用镜像、独立部署配置和 Docker Hub 双架构自动发布 | `v0.7.2`，未新增上游同步 | `87ec077e5f56ff66342caef1df1638780acfdf2e`，沿用同一比对参考 | 同上；CLI 兼容版本仍为 `0.7.2` |
 | `v0.1.4` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.4)，首次上游同步经 [PR #1](https://github.com/wsshow/multica/pull/1) 合入 `main` | [`v0.8.0`](https://github.com/multica-ai/multica/releases/tag/v0.8.0) | [`9b1ab4f9eed9153a94719596eb8a728d2770f065`](https://github.com/multica-ai/multica/commit/9b1ab4f9eed9153a94719596eb8a728d2770f065) | 完整导入该 tag 的上游变更并保留定制边界；首次建立可追溯的合并关系，原始 checkout 身份仍未恢复；见[同步记录](upstream-sync.json) |
 | `v0.1.5` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.5)，上游同步经 [PR #2](https://github.com/wsshow/multica/pull/2) 合入 `main`，并修复定制测试和 CI 时序 | [`v0.10.0`](https://github.com/multica-ai/multica/releases/tag/v0.10.0)，包含 `v0.8.1`、`v0.8.2`、`v0.9.0` | [`2fcb424b72b024f65161809081009063846ea44d`](https://github.com/multica-ai/multica/commit/2fcb424b72b024f65161809081009063846ea44d) | 合并此前 `v0.8.0` 至此 tag 的 493 个提交，保留定制边界；主线 CI 和 AMD64/ARM64 一体化镜像检查已通过，未运行本地验证；见[同步记录](upstream-sync.json) |
-| 未发布（`feikong/upstream-sync`） | 在 `v0.1.5` 之上同步源码，包版本暂不递增 | [`v0.11.1`](https://github.com/multica-ai/multica/releases/tag/v0.11.1)，包含 `v0.11.0` | [`e1fe10d6694848e35dd1aa00e08cd11d93e545ac`](https://github.com/multica-ai/multica/commit/e1fe10d6694848e35dd1aa00e08cd11d93e545ac) | 完整合并 `v0.10.0` 至此 tag 的 146 个提交，保留定制边界；按用户要求仅完成源码审查，未运行本地验证；见[同步记录](upstream-sync.json) |
+| `v0.1.6` | [定制发布 tag](https://github.com/wsshow/multica/tree/v0.1.6)，上游同步与桌面测试适配经 [PR #6](https://github.com/wsshow/multica/pull/6) 合入 `main` | [`v0.11.1`](https://github.com/multica-ai/multica/releases/tag/v0.11.1)，包含 `v0.11.0` | [`e1fe10d6694848e35dd1aa00e08cd11d93e545ac`](https://github.com/multica-ai/multica/commit/e1fe10d6694848e35dd1aa00e08cd11d93e545ac) | 完整合并 `v0.10.0` 至此 tag 的 146 个提交，保留定制边界；发布检查在 GitHub Actions 执行，未运行本地验证；见[同步记录](upstream-sync.json) |
 
 `v0.1.0` 的桌面发行不完整；`v0.1.1` 修复桌面打包，但独立编号仍会触发原有 CLI 功能版本门槛；`v0.1.2` 修复该兼容问题，`v0.1.3` 在此基础上增加一体化镜像发行。保留已发布 tag，避免同一版本号对应不同源码。
 
@@ -35,7 +35,7 @@
 
 文件比对能确认相同内容和剩余差异，不能证明已丢失的 Git 祖先关系。2026-11-04 的首次同步审查了这 137 项差异，确认其属于遥测边界、相关测试、依赖、配置、文档和定制发行修改，并将候选快照作为明确指定的三方对照点。首次集成提交以旧定制主线和官方 `v0.8.0` 为双亲，从这次集成开始建立真实可追溯的合并关系；不将候选点标为已恢复的历史祖先。后续按[同步策略](customization.md#synchronizing-upstream-features)复用 `feikong/upstream-sync`，`upstream/source` 仅跟踪已经导入的纯净官方快照。
 
-初始源码中的 Web 和 Desktop `package.json` 都声明 `0.7.2`，这是版本元数据证据，不能单独证明源码等于官方 tag。当前定制版的根目录、Web、Desktop 包版本统一为 `0.1.5`，对应本次官方 `v0.10.0` 源码同步；此前 `v0.1.4` 首次将官方 `v0.8.0` 源码发布为定制发行版本，变更记录见 [Changelog](../CHANGELOG.md)。本次 `v0.11.1` 源码同步尚未创建新的定制发行 tag，包版本保持 `0.1.5`，不表示已发布安装包包含新功能。Go 的 `go.mod` 版本字段描述 Go 工具链要求，不是产品版本。
+初始源码中的 Web 和 Desktop `package.json` 都声明 `0.7.2`，这是版本元数据证据，不能单独证明源码等于官方 tag。当前根目录、Web、Desktop 包版本统一为 `0.1.6`，对应本次官方 `v0.11.1` 源码同步；此前 `v0.1.5` 对应官方 `v0.10.0`，`v0.1.4` 对应官方 `v0.8.0`，变更记录见 [Changelog](../CHANGELOG.md)。Go 的 `go.mod` 版本字段描述 Go 工具链要求，不是产品版本。
 
 ## 发行版本与功能兼容版本
 

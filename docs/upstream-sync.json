@@ -8,9 +8,9 @@
   "previous_upstream_commit": "2fcb424b72b024f65161809081009063846ea44d",
   "customized_parent": "fe0c027e66a4ab568d5102931fe549accd7ad00d",
   "customized_release_before_sync": "v0.1.5",
-  "customized_release_after_sync": null,
+  "customized_release_after_sync": "v0.1.6",
   "reviewed_on": "2026-11-20",
-  "scope": "Merge the complete upstream v0.10.0..v0.11.1 source range (146 commits), including v0.11.0, with documented customization. No customized release is published by this source synchronization; root/web/desktop package versions stay 0.1.5.",
+  "scope": "Merge the complete upstream v0.10.0..v0.11.1 source range (146 commits), including v0.11.0, with documented customization; first distributed in customized release v0.1.6.",
   "bootstrap": {
     "comparison_commit": "87ec077e5f56ff66342caef1df1638780acfdf2e",
     "initial_customized_commit": "fcd80467b2cf795a02310a37c921f8f2646ed24e",
@@ -198,13 +198,14 @@
   },
   "cli_compatibility_version": "0.11.1",
   "verification": {
-    "status": "source_review_only_at_user_request",
+    "status": "source_reviewed_remote_ci_required_for_release",
     "review": "Reviewed all 24 conflicted paths and the upstream delta at telemetry/diagnostics, distribution, Desktop connection/update configuration, bundled CLI, generated SQL, feature flags and installed-client contract boundaries. Imported SQL queries, migrations and generated sqlc output together without local generation.",
     "lockfile": "Retained the upstream lockfile changes and the existing customization dependency removals through the three-way merge; no package installation or local regeneration was run.",
     "not_run": [
       "Local tests, telemetry checker, typecheck, lint, builds, sqlc generation, application/browser/simulator checks, containers or databases, per the user request.",
       "Real installed-agent smoke tests."
-    ]
+    ],
+    "ci": "Validation runs in GitHub Actions for PR #6 and Release. Source run 44658170472 passed backend tests, agent tests, sqlc, vulnerability scanning, mobile and both Views shards; integrated-image run 44658170121 passed native AMD64/ARM64 builds and smoke tests. Desktop packaging fixture and Docs search request assertions were corrected in a separate commit; the release tag requires green checks for the final source."
   },
   "api_behavior": "Follow upstream v0.11.1 business APIs and feature gates, including the default-off Docs flag; preserve schema fallbacks and the independent CLI contract field for installed daemons without introducing legacy adapters.",
   "post_merge_adjustments": [
@@ -215,7 +216,8 @@
     "Document customized promotion and inbox observability, import self-host password recovery, and retain configured distribution references in all affected documentation locales.",
     "Expose the optional persistent WeChat encryption key in the integrated advanced example and both integrated guide locales.",
     "Give the four newly imported Desktop updater recovery/concurrency tests an explicit test-owned feed; retain the no-feed regression that checks the customized disabled default.",
-    "Keep the WeChat authorization guide optional and configured, covering both missing and supplied docs URLs in the connection-flow regression; use a non-networking payload for its illustrative highlight QR code."
+    "Keep the WeChat authorization guide optional and configured, covering both missing and supplied docs URLs in the connection-flow regression; use a non-networking payload for its illustrative highlight QR code.",
+    "Align Desktop packaging fixtures with mandatory source compilation and verify that workspace changes cancel all issue/project/Docs searches; publish as independent customized version 0.1.6 with Chinese release highlights."
   ],
   "outbound_review": [
     "Analytics, crash persistence, client usage, development diagnostic recording and operational metrics remain inert; no application telemetry SDK, collector or listener is restored.",

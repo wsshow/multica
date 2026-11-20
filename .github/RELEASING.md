@@ -74,6 +74,12 @@ including documentation, tests, and chores, so their authors are credited too.
 Commit-subject `@` characters are separated from the following text with an HTML
 comment; only the generated author mentions populate GitHub's Contributors list.
 
+Update `release.header` in `.goreleaser.yml` with a Chinese user-facing summary
+when preparing each release. It describes the features, fixes, upgrade requirements
+and available artifacts as soon as the Release is created. Keep the full generated
+changelog inside the header/footer's collapsed details block so contributor credit
+is preserved. Use the tag/version template fields in versioned links and image names.
+
 CI and release jobs require Go `~1.27.4`: at least 1.27.4, while accepting
 newer 1.27 patches. This security floor is independent of the development
 minimum in `server/go.mod`. A plain `1.27.x` can resolve to an older patch
