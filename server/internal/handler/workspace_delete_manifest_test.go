@@ -107,6 +107,7 @@ var workspaceDeletionManifest = map[string]workspaceDeleteAction{
 	"lark_installation":                  workspaceDelete,
 	"lark_outbound_card_message":         workspaceDelete,
 	"lark_user_binding":                  workspaceDelete,
+	"local_auth_account":                 workspaceDeleteKeep, // Instance owner credentials survive workspace deletion.
 	"maintenance_job":                    workspaceDeleteKeep, // Global maintenance audit history, not workspace-owned.
 	"member":                             workspaceDelete,
 	"member_delegation_day":              workspaceDeleteKeep, // user-scoped telemetry ledger, no workspace_id
