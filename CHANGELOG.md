@@ -3,6 +3,19 @@
 Versions in this file belong to this customized edition. See
 [the source version mapping](docs/version-mapping.md) for upstream provenance.
 
+## 0.1.7 — 2026-11-20
+
+- Add personal self-hosting with managed PostgreSQL, local attachments, and
+  persistent signing keys. External PostgreSQL and S3 remain configurable.
+- Use a one-time setup code to create the owner and a default personal
+  workspace. Sign in with a username and password on Web or Desktop without
+  configuring mail. Desktop accepts one service address on first launch.
+- Add a Chinese-language installer that selects the latest stable release,
+  pins the matching source and image, and offers a backup before upgrading.
+- Require the personal deployment metadata before promoting a stable GitHub
+  release. Run the integrated image smoke checks on AMD64 for ordinary changes
+  and build both native architectures for releases.
+
 ## 0.1.6 — 2026-11-20
 
 - Synchronize official `v0.11.1` (`e1fe10d6694848e35dd1aa00e08cd11d93e545ac`),
