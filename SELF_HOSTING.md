@@ -2,7 +2,7 @@
 
 Deploy the API, web app, and database from this customized checkout. For Chinese instructions, see [部署指南](docs/deployment.zh.md). The [customization policy](docs/customization.md) covers disabled telemetry, distribution sources, and upstream synchronization.
 
-For one application container with external PostgreSQL, object storage, and optional Redis, use the [integrated application image guide](docs/integrated-image.md). Its first image must be published by a validated release tag; existing `v0.1.2` images are separate backend/web artifacts. This guide describes the split deployment.
+The [integrated application image guide](docs/integrated-image.md) covers the personal deployment with password sign-in and local uploads, as well as deployments with external PostgreSQL and object storage. Use this guide for a split API and web deployment.
 
 ## Architecture
 

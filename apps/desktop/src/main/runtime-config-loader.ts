@@ -1,9 +1,10 @@
 import { app } from "electron";
-import { readFile } from "fs/promises";
-import { join } from "path";
+import { link, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import {
   parseRuntimeConfig,
   runtimeConfigFromDevEnv,
+  type InitialConnectionResult,
   type RuntimeConfig,
   type RuntimeConfigEnv,
   type RuntimeConfigResult,
@@ -30,7 +31,10 @@ export async function loadRuntimeConfig(options: {
     if (isMissingFileError(err)) {
       return {
         ok: false,
-        error: { message: `Missing ${configPath}. Configure apiUrl and appUrl before connecting.` },
+        error: {
+          message: `Missing ${configPath}. Configure apiUrl and appUrl before connecting.`,
+          missing: !options.isDev,
+        },
       };
     }
     return {
@@ -39,6 +43,54 @@ export async function loadRuntimeConfig(options: {
         message: `Invalid ${configPath}: ${errorMessage(err)}`,
       },
     };
+  }
+}
+
+export async function saveInitialConnection(value: unknown): Promise<InitialConnectionResult> {
+  if (typeof value !== "string") return { ok: false, reason: "invalid_url" };
+  let address: URL;
+  try {
+    address = new URL(value.trim());
+  } catch {
+    return { ok: false, reason: "invalid_url" };
+  }
+
+  if (!["http:", "https:"].includes(address.protocol) || address.username || address.password ||
+      address.pathname !== "/" || address.search || address.hash) {
+    return { ok: false, reason: "invalid_url" };
+  }
+
+  try {
+    const response = await fetch(`${address.origin}/health`, {
+      redirect: "error",
+      signal: AbortSignal.timeout(4000),
+    });
+    const health: unknown = response.ok ? await response.json() : null;
+    if (!health || typeof health !== "object" || !("status" in health) || health.status !== "ok") {
+      return { ok: false, reason: "unreachable" };
+    }
+  } catch {
+    return { ok: false, reason: "unreachable" };
+  }
+
+  const configPath = desktopConfigPath();
+  const directory = dirname(configPath);
+  let temporaryDirectory: string | undefined;
+  try {
+    await mkdir(directory, { recursive: true, mode: 0o700 });
+    temporaryDirectory = await mkdtemp(join(directory, ".desktop-config-"));
+    const draft = join(temporaryDirectory, "desktop.json");
+    const config = { schemaVersion: 1, apiUrl: address.origin, appUrl: address.origin };
+    await writeFile(draft, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 });
+    // Publish atomically without overwriting a file another window or the user created.
+    await link(draft, configPath);
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "save_failed" };
+  } finally {
+    if (temporaryDirectory) {
+      await rm(temporaryDirectory, { recursive: true, force: true }).catch(() => {});
+    }
   }
 }
 

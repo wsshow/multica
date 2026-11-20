@@ -22,6 +22,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/multica-ai/multica/server/internal/analytics"
 	"github.com/multica-ai/multica/server/internal/auth"
+	"github.com/multica-ai/multica/server/internal/localauth"
 	"github.com/multica-ai/multica/server/internal/logger"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
@@ -101,10 +102,14 @@ func (h *Handler) userToResponse(u db.User) UserResponse {
 	if len(q) == 0 {
 		q = []byte("{}")
 	}
+	email := u.Email
+	if localauth.IsAccountEmail(email) {
+		email = ""
+	}
 	return UserResponse{
 		ID:                      uuidToString(u.ID),
 		Name:                    u.Name,
-		Email:                   u.Email,
+		Email:                   email,
 		AvatarURL:               h.resolveAvatarURLPtr(textToPtr(u.AvatarUrl)),
 		Language:                textToPtr(u.Language),
 		Timezone:                textToPtr(u.Timezone),
@@ -201,6 +206,9 @@ func (h *Handler) issueJWT(user db.User) (string, error) {
 // event fires on that edge, covering both the verification-code and Google
 // OAuth entry points.
 func (h *Handler) findOrCreateUser(ctx context.Context, email string) (user db.User, isNew bool, err error) {
+	if localauth.IsAccountEmail(email) {
+		return db.User{}, false, ErrEmailNotAllowed
+	}
 	if auth.IsTemporarilyDisabledUserEmail(email) {
 		return db.User{}, false, auth.ErrTemporarilyDisabledUser
 	}
@@ -327,6 +335,10 @@ func (h *Handler) SendCode(w http.ResponseWriter, r *http.Request) {
 	email := strings.ToLower(strings.TrimSpace(req.Email))
 	if email == "" {
 		writeError(w, http.StatusBadRequest, "email is required")
+		return
+	}
+	if localauth.IsAccountEmail(email) {
+		writeError(w, http.StatusForbidden, ErrEmailNotAllowed.Error())
 		return
 	}
 	if auth.IsTemporarilyDisabledUserEmail(email) {
@@ -476,6 +488,11 @@ func (h *Handler) VerifyCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Info("user logged in", append(logger.RequestAttrs(r), "user_id", uuidToString(user.ID), "email", user.Email)...)
+	h.writeLoginResponse(w, user, tokenString, auth.AuthTokenTTL())
+}
+
+func (h *Handler) writeLoginResponse(w http.ResponseWriter, user db.User, tokenString string, cdnTTL time.Duration) {
 	// Set HttpOnly auth cookie (browser clients) + CSRF cookie.
 	if err := auth.SetAuthCookies(w, tokenString); err != nil {
 		slog.Warn("failed to set auth cookies", "error", err)
@@ -483,12 +500,11 @@ func (h *Handler) VerifyCode(w http.ResponseWriter, r *http.Request) {
 
 	// Set CloudFront signed cookies for CDN access.
 	if h.CFSigner != nil {
-		for _, cookie := range h.CFSigner.SignedCookies(time.Now().Add(auth.AuthTokenTTL())) {
+		for _, cookie := range h.CFSigner.SignedCookies(time.Now().Add(cdnTTL)) {
 			http.SetCookie(w, cookie)
 		}
 	}
 
-	slog.Info("user logged in", append(logger.RequestAttrs(r), "user_id", uuidToString(user.ID), "email", user.Email)...)
 	writeJSON(w, http.StatusOK, LoginResponse{
 		Token: tokenString,
 		User:  h.userToResponse(user),
@@ -740,21 +756,8 @@ func (h *Handler) GoogleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := auth.SetAuthCookies(w, tokenString); err != nil {
-		slog.Warn("failed to set auth cookies", "error", err)
-	}
-
-	if h.CFSigner != nil {
-		for _, cookie := range h.CFSigner.SignedCookies(time.Now().Add(72 * time.Hour)) {
-			http.SetCookie(w, cookie)
-		}
-	}
-
 	slog.Info("user logged in via google", append(logger.RequestAttrs(r), "user_id", uuidToString(user.ID), "email", user.Email)...)
-	writeJSON(w, http.StatusOK, LoginResponse{
-		Token: tokenString,
-		User:  h.userToResponse(user),
-	})
+	h.writeLoginResponse(w, user, tokenString, 72*time.Hour)
 }
 
 // IssueCliToken returns a fresh JWT for the authenticated user.

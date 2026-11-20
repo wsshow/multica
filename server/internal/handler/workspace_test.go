@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/multica-ai/multica/server/internal/service"
 	"github.com/multica-ai/multica/server/internal/testutil"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
 )
@@ -47,9 +48,6 @@ func TestCreateWorkspace_RejectsReservedSlug(t *testing.T) {
 // back to /onboarding to finish Step 3. The previous behavior atomically
 // set onboarded_at inside CreateWorkspace; this test makes the new
 // invariant explicit and regression-protected.
-//
-// CompleteOnboarding (Step 3 exit) and AcceptInvitation are the only
-// remaining handlers that flip onboarded_at.
 func TestCreateWorkspace_DoesNotMarkOnboarded(t *testing.T) {
 	if testHandler == nil {
 		t.Skip("database not available")
@@ -1361,8 +1359,8 @@ func TestDefaultIssuePrefixFromSlug(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		if got := defaultIssuePrefixFromSlug(tc.slug); got != tc.want {
-			t.Errorf("defaultIssuePrefixFromSlug(%q) = %q, want %q", tc.slug, got, tc.want)
+		if got := service.DefaultWorkspaceIssuePrefix(tc.slug); got != tc.want {
+			t.Errorf("DefaultWorkspaceIssuePrefix(%q) = %q, want %q", tc.slug, got, tc.want)
 		}
 	}
 }
@@ -1401,7 +1399,7 @@ func TestLegacyIssuePrefixFromName_Frozen(t *testing.T) {
 //
 // A stored prefix always wins; only an empty one falls back, and that fallback
 // must stay on the old name-based derivation. Pointing it at
-// defaultIssuePrefixFromSlug would rewrite the identifier of every issue in
+// DefaultWorkspaceIssuePrefix would rewrite the identifier of every issue in
 // those legacy workspaces on the next read — the exact outcome the "no
 // backfill, leave existing workspaces alone" decision on MUL-6050 rules out.
 func TestIssuePrefixForWorkspace_LegacyFallbackFrozen(t *testing.T) {

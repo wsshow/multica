@@ -5,6 +5,12 @@ description: 从定制源码构建 Docker 服务，配置桌面端，并管理�
 
 本文适用于定制版本。使用当前定制源码或部署维护者提供的产物；上游应用安装包不包含这些修改。
 
+## 启动个人实例
+
+在定制 checkout 中运行 `make integrated-personal INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z`，镜像填写维护者发布的一体化版本。打开 `http://localhost:8080`，输入终端显示的一次性初始化码，设置账号和密码后进入个人工作区。
+
+Docker Compose 自动管理 PostgreSQL，附件和签名密钥保存在本地。启动时无需准备环境文件或邮件服务。从当前源码构建并启动可用 `make integrated-personal-build`。
+
 ## 准备源码
 
 使用经过审查的定制 checkout，或维护者提供的源码包。本版本尚未配置公开发布仓库。准备 Docker Compose 插件、Make 和 OpenSSL；执行电脑上的智能体工具和账号另行安装与登录。

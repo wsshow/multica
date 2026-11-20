@@ -14,12 +14,16 @@ on:
         required: false
   push:
     branches: [main]
-    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/actions/setup-crane/**", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
+    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated*.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/actions/setup-crane/**", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
   pull_request:
-    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/actions/setup-crane/**", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
+    paths: ["Dockerfile*", ".dockerignore", ".env.integrated*.example", "docker/**", "docker-bake.hcl", "docker-compose.integrated*.yml", "server/**", "apps/web/**", "packages/**", "scripts/integrated*", "Makefile", "package.json", "pnpm*", ".github/actions/setup-crane/**", ".github/workflows/integrated-image.yml", ".github/workflows/release.yml"]
 
 permissions:
   contents: read
+
+concurrency:
+  group: integrated-image-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
@@ -63,34 +67,16 @@ jobs:
         run: |
           node --test docker/integrated/config.test.mjs docker/integrated/supervisor.test.mjs scripts/integrated.test.mjs scripts/dockerhub-cleanup.test.mjs
           node scripts/check-telemetry.mjs
-          bash -n scripts/integrated.sh scripts/integrated-push.sh docker/integrated/smoke.sh
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "~1.27.4"
-          cache-dependency-path: server/go.sum
-      - name: Verify listener and storage startup contracts
-        working-directory: server
-        run: |
-          go test ./internal/storage -count=1
-          go test ./cmd/server/listener.go ./cmd/server/listener_test.go -count=1
-      - uses: pnpm/action-setup@v4
-      - name: Install workspace dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Verify web readiness
-        run: |
-          pnpm --filter @multica/web exec vitest run app/readyz/route.test.ts
-          pnpm --filter @multica/web typecheck
+          for script in scripts/integrated.sh scripts/integrated-push.sh scripts/integrated-data.sh docker/integrated/smoke.sh docker/integrated/personal-smoke.sh; do
+            bash -n "$script"
+          done
 
   build:
     needs: verify
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - arch: amd64
-            runner: ubuntu-latest
-          - arch: arm64
-            runner: ubuntu-24.04-arm
+        include: ${{ fromJSON(inputs.publish && '[{"arch":"amd64","runner":"ubuntu-latest"},{"arch":"arm64","runner":"ubuntu-24.04-arm"}]' || '[{"arch":"amd64","runner":"ubuntu-latest"}]') }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     env:
@@ -120,6 +106,9 @@ jobs:
             integrated.labels.org.opencontainers.image.source=https://github.com/${{ github.repository }}
       - name: Verify the assembled image
         run: bash docker/integrated/smoke.sh
+      - name: Verify the personal deployment
+        if: matrix.arch == 'amd64'
+        run: bash docker/integrated/personal-smoke.sh
       - name: Set up registry client
         if: inputs.publish
         uses: ./.github/actions/setup-crane

@@ -18,6 +18,8 @@ pnpm --filter @multica/desktop package
 
 ## Required server configuration
 
+On first launch, enter the URL of your integrated service. Desktop saves it as both the API and web address. If you deploy the API and web app at separate addresses, configure the file below.
+
 Both `apiUrl` and `appUrl` are required. The web URL is used for browser login and share links; it is not guessed from the API host. Store valid JSON as `~/.multica/desktop.json` (Windows: `%USERPROFILE%\.multica\desktop.json`). On Windows, use UTF-8 and ensure the filename is not `desktop.json.txt`. Restart the app after changes.
 
 ```json

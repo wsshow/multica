@@ -24,6 +24,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/handler"
 	"github.com/multica-ai/multica/server/internal/inbox"
 	"github.com/multica-ai/multica/server/internal/integrations/wecom"
+	"github.com/multica-ai/multica/server/internal/localauth"
 	"github.com/multica-ai/multica/server/internal/logger"
 	"github.com/multica-ai/multica/server/internal/maintenance"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
@@ -327,11 +328,29 @@ func newMainHTTPServer(addr string, handler http.Handler) *http.Server {
 }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "local-auth" {
+		if err := runLocalAuthCommand(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 	logger.Init()
 	// Read the opt-out before constructing any telemetry dependency. In the
 	// disabled case no collector or HTTP client is ever created.
 	telemetryConfig := selfhosttelemetry.ConfigFromDoNotTrack(os.Getenv("DO_NOT_TRACK"))
 	selfhosttelemetry.LogStartupStatus(slog.Default(), telemetryConfig)
+	localAuthEnabled, err := localauth.EnabledMode(os.Getenv("MULTICA_AUTH_MODE"))
+	if err != nil {
+		slog.Error("invalid authentication configuration", "error", err)
+		os.Exit(1)
+	}
+	if localAuthEnabled {
+		if err := auth.ValidateJWTSecret(os.Getenv("JWT_SECRET")); err != nil {
+			slog.Error("local authentication requires a persistent random JWT secret", "error", err)
+			os.Exit(1)
+		}
+	}
 	// Warn about missing configuration
 	if err := jwtSecretBootError(os.Getenv("JWT_SECRET"), os.Getenv("APP_ENV")); err != nil {
 		slog.Error(
@@ -344,10 +363,10 @@ func main() {
 	if os.Getenv("JWT_SECRET") == "" {
 		slog.Warn("JWT_SECRET is not set — using insecure dev default (allowed only because APP_ENV is not production).")
 	}
-	if os.Getenv("RESEND_API_KEY") == "" && strings.TrimSpace(os.Getenv("SMTP_HOST")) == "" {
+	if !localAuthEnabled && os.Getenv("RESEND_API_KEY") == "" && strings.TrimSpace(os.Getenv("SMTP_HOST")) == "" {
 		slog.Warn("no email backend configured (RESEND_API_KEY and SMTP_HOST both empty) — verification codes will be printed to the log instead of emailed.")
 	}
-	if os.Getenv("MULTICA_DEV_VERIFICATION_CODE") != "" {
+	if !localAuthEnabled && os.Getenv("MULTICA_DEV_VERIFICATION_CODE") != "" {
 		if strings.EqualFold(strings.TrimSpace(os.Getenv("APP_ENV")), "production") {
 			slog.Warn("MULTICA_DEV_VERIFICATION_CODE is set but ignored because APP_ENV=production.")
 		} else {
@@ -405,6 +424,15 @@ func main() {
 		stopStartup()
 		slog.Error("unable to ping database", "error", err)
 		os.Exit(1)
+	}
+	var localAuth *localauth.Service
+	if localAuthEnabled {
+		localAuth, err = localauth.NewService(startupCtx, localauth.NewPostgresStore(pool), strings.TrimSpace(os.Getenv("MULTICA_LOCAL_AUTH_SETUP_CODE_FILE")))
+		if err != nil {
+			stopStartup()
+			slog.Error("local authentication initialization failed", "error", err)
+			os.Exit(1)
+		}
 	}
 	stopStartup()
 	slog.Info("connected to database")
@@ -694,6 +722,7 @@ func main() {
 	}
 	r, h := NewRouterWithOptions(pool, hub, bus, analyticsClient, storeRedis, RouterOptions{
 		Storage:             fileStorage,
+		LocalAuth:           localAuth,
 		InboxReadMetrics:    inboxReadMetrics,
 		HTTPMetrics:         httpMetrics,
 		BusinessMetrics:     businessMetrics,

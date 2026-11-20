@@ -1,5 +1,5 @@
 import { ElectronAPI } from "@electron-toolkit/preload";
-import type { RuntimeConfigResult } from "../shared/runtime-config";
+import type { InitialConnectionResult, RuntimeConfigResult } from "../shared/runtime-config";
 import type { NavigationGesture } from "../shared/navigation-gestures";
 import type { ContextMenuCommand, ContextMenuRequest } from "../shared/context-menu";
 import type { RendererRouteContextInput } from "../shared/renderer-route-context";
@@ -51,6 +51,7 @@ interface DesktopAPI {
   onSystemLocaleChanged: (callback: (locale: string) => void) => () => void;
   /** Validated runtime endpoint config, or a blocking config error. */
   runtimeConfig: RuntimeConfigResult;
+  connectToServer: (address: string) => Promise<InitialConnectionResult>;
   /** Main tabbed window or a dedicated issue-only window. */
   windowContext: DesktopWindowContext;
   /** Read any freeze/crash breadcrumb from a previous session, so the renderer

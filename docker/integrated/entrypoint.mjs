@@ -1,5 +1,7 @@
+import { spawnSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { configure, nginxConfig } from './config.mjs';
+import { initializePersonalEnvironment } from './personal.mjs';
 import { Supervisor } from './supervisor.mjs';
 
 let supervisor;
@@ -11,8 +13,18 @@ for (const signal of ['SIGTERM', 'SIGINT']) {
     void supervisor?.stop();
   });
 }
-try {
-  const config = configure(process.env);
+async function run() {
+  const config = configure(await initializePersonalEnvironment(process.env));
+  const args = process.argv.slice(2);
+  if (args.length) {
+    if (args.length !== 2 || args[0] !== 'local-auth' || args[1] !== 'reset-password') {
+      throw new Error('Unknown integrated launcher command');
+    }
+    const result = spawnSync('/app/server', args, { env: config.env, stdio: 'inherit' });
+    if (result.error) throw result.error;
+    process.exitCode = result.status ?? 1;
+    return;
+  }
   const directory = '/tmp/multica';
   for (const child of ['', '/body', '/proxy', '/fastcgi', '/uwsgi', '/scgi']) await mkdir(`${directory}${child}`, { recursive: true });
   await writeFile(`${directory}/nginx.conf`, nginxConfig(config, directory), { mode: 0o600 });
@@ -33,6 +45,9 @@ try {
   console.log('integrated: ready on port 8080');
   await supervisor.failed;
   if (!interrupted) throw supervisor.failure;
+}
+try {
+  await run();
 } catch (error) {
   if (!interrupted) {
     console.error(`integrated: ${error.message}`);

@@ -18,6 +18,8 @@ pnpm --filter @multica/desktop package
 
 ## 配置服務網址
 
+首次開啟桌面端時，輸入一體化服務網址，應用程式會同時將它儲存為 API 和 Web 網址。如果 API 和 Web 分開部署，請依照下方方式手動配置。
+
 將有效 JSON 儲存到 `~/.multica/desktop.json`，Windows 路徑為 `%USERPROFILE%\.multica\desktop.json`，使用 UTF-8。`apiUrl` 與 `appUrl` 都是必填項；修改後重新啟動。
 
 ```json

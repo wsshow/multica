@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CoreProvider } from "@multica/core/platform";
 import { pickLocale, type SupportedLocale } from "@multica/core/i18n";
+import { I18nProvider } from "@multica/core/i18n/react";
 import { useAuthStore } from "@multica/core/auth";
 import { workspaceKeys } from "@multica/core/workspace/queries";
 import { useWorkspaceList } from "@multica/core/workspace";
@@ -12,6 +13,7 @@ import { ThemeProvider } from "@multica/ui/components/common/theme-provider";
 import { MulticaIcon } from "@multica/ui/components/common/multica-icon";
 import { Toaster } from "@multica/ui/components/ui/sonner";
 import { DesktopLoginPage } from "./pages/login";
+import { ConnectServerPage } from "./pages/connect-server";
 import { DesktopAuthRecoveryPage } from "./pages/auth-recovery";
 import { DesktopShell } from "./components/desktop-layout";
 import { UpdateNotification } from "./components/update-notification";
@@ -509,6 +511,10 @@ export default function App() {
               <DesktopDevToolbar apiUrl={runtimeConfigResult.config.apiUrl} />
             )}
         </CoreProvider>
+      ) : runtimeConfigResult.error.missing && windowContext.kind === "main" ? (
+        <I18nProvider locale={locale} resources={resources}>
+          <ConnectServerPage />
+        </I18nProvider>
       ) : (
         <BlockingRuntimeConfigError message={runtimeConfigResult.error.message} />
       )}

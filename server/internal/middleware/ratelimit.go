@@ -63,7 +63,7 @@ func RateLimit(rdb redis.UniversalClient, limit int, window time.Duration, trust
 			return next
 		}
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ip := extractIP(r, trustedProxies)
+			ip := RateLimitClientIP(r, trustedProxies)
 			key := rateLimitKey(r.URL.Path, ip)
 			ctx := r.Context()
 
@@ -86,9 +86,9 @@ func RateLimit(rdb redis.UniversalClient, limit int, window time.Duration, trust
 	}
 }
 
-// extractIP determines the client IP for rate limiting purposes.
+// RateLimitClientIP determines the client IP for rate limiting purposes.
 // It only honors X-Forwarded-For when RemoteAddr is from a trusted proxy.
-func extractIP(r *http.Request, trustedProxies []*net.IPNet) string {
+func RateLimitClientIP(r *http.Request, trustedProxies []*net.IPNet) string {
 	remoteHost, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		remoteHost = r.RemoteAddr

@@ -433,6 +433,7 @@ import {
   TaskContextReceiptResponseSchema,
   TimelineEntriesSchema,
   UserSchema,
+  LocalLoginResponseSchema,
   WebhookDeliveryResponseSchema,
   BillingBalanceSchema,
   BillingTransactionsPageSchema,
@@ -886,7 +887,7 @@ function subscriberTarget(
 type WorkspaceScope = string | { workspaceId: string };
 
 /** `readOnly` marks a POST that changes nothing on the server. */
-type ApiRequestInit = RequestInit & { readOnly?: boolean };
+type ApiRequestInit = RequestInit & { readOnly?: boolean; sensitiveAuth?: boolean };
 
 function workspaceHeader(
   scope?: WorkspaceScope,
@@ -1227,10 +1228,10 @@ export class ApiClient {
       requestId: rid,
       method,
       path,
-      body: typeof init?.body === "string" ? init.body : null,
+      body: !init?.sensitiveAuth && typeof init?.body === "string" ? init.body : null,
     });
 
-    const { readOnly: _readOnly, ...requestInit } = init ?? {};
+    const { readOnly: _readOnly, sensitiveAuth, ...requestInit } = init ?? {};
     const send = async () => {
       try {
         return await fetch(`${this.baseUrl}${path}`, {
@@ -1273,7 +1274,7 @@ export class ApiClient {
     }
 
     if (!res.ok) {
-      if (res.status === 401) this.handleUnauthorized(credentialUsed);
+      if (res.status === 401 && !sensitiveAuth) this.handleUnauthorized(credentialUsed);
       const { message, body } = await this.parseErrorBody(res, `API error: ${res.status} ${res.statusText}`);
       const logLevel = res.status === 404 ? "warn" : "error";
       this.logger[logLevel](`← ${res.status} ${path}`, { rid, duration: `${Date.now() - start}ms`, error: message });
@@ -1320,6 +1321,25 @@ export class ApiClient {
       method: "POST",
       body: JSON.stringify({ email, code }),
     });
+  }
+
+  async loginWithPassword(
+    username: string,
+    password: string,
+    setupCode?: string,
+  ): Promise<LoginResponse> {
+    const path = setupCode === undefined ? "/auth/local/login" : "/auth/local/setup";
+    const raw = await this.fetch<unknown>(path, {
+      method: "POST",
+      sensitiveAuth: true,
+      body: JSON.stringify({ username, password, setup_code: setupCode }),
+    });
+    const result = parseWithFallback<LoginResponse | null>(raw, LocalLoginResponseSchema, null, {
+      endpoint: `POST ${path}`,
+      redactReceived: true,
+    });
+    if (!result) throw new Error("Could not read the login response");
+    return result;
   }
 
   async googleLogin(code: string, redirectUri: string): Promise<LoginResponse> {

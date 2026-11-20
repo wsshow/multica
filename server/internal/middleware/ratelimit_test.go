@@ -150,7 +150,7 @@ func TestExtractIP_NoTrustedProxies_IgnoresXFF(t *testing.T) {
 	req.RemoteAddr = "203.0.113.1:9000"
 	req.Header.Set("X-Forwarded-For", "198.51.100.1, 203.0.113.1")
 
-	ip := extractIP(req, nil)
+	ip := RateLimitClientIP(req, nil)
 	if ip != "203.0.113.1" {
 		t.Fatalf("with no trusted proxies, expected RemoteAddr; got %q", ip)
 	}
@@ -163,7 +163,7 @@ func TestExtractIP_TrustedProxy_HonorsXFF(t *testing.T) {
 	req.RemoteAddr = "10.0.0.1:9000"
 	req.Header.Set("X-Forwarded-For", "198.51.100.42, 10.0.0.5")
 
-	ip := extractIP(req, trusted)
+	ip := RateLimitClientIP(req, trusted)
 	// Rightmost non-trusted: 198.51.100.42 (10.0.0.5 is trusted)
 	if ip != "198.51.100.42" {
 		t.Fatalf("expected rightmost non-trusted IP; got %q", ip)
@@ -177,7 +177,7 @@ func TestExtractIP_UntrustedSource_IgnoresXFF(t *testing.T) {
 	req.RemoteAddr = "203.0.113.99:9000" // Not in trusted CIDR
 	req.Header.Set("X-Forwarded-For", "198.51.100.1")
 
-	ip := extractIP(req, trusted)
+	ip := RateLimitClientIP(req, trusted)
 	if ip != "203.0.113.99" {
 		t.Fatalf("untrusted source should use RemoteAddr; got %q", ip)
 	}
@@ -190,8 +190,8 @@ func TestExtractIP_IPv6Normalization(t *testing.T) {
 	req2 := httptest.NewRequest(http.MethodPost, "/auth/send-code", nil)
 	req2.RemoteAddr = "[0:0:0:0:0:0:0:1]:9000"
 
-	ip1 := extractIP(req1, nil)
-	ip2 := extractIP(req2, nil)
+	ip1 := RateLimitClientIP(req1, nil)
+	ip2 := RateLimitClientIP(req2, nil)
 	if ip1 != ip2 {
 		t.Fatalf("IPv6 representations should normalize to same key: %q vs %q", ip1, ip2)
 	}

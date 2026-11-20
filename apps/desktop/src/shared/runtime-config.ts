@@ -11,11 +11,16 @@ export interface RuntimeConfig {
 
 export interface RuntimeConfigError {
   message: string;
+  missing?: boolean;
 }
 
 export type RuntimeConfigResult =
   | { ok: true; config: RuntimeConfig }
   | { ok: false; error: RuntimeConfigError };
+
+export type InitialConnectionResult =
+  | { ok: true }
+  | { ok: false; reason: "invalid_url" | "unreachable" | "save_failed" };
 
 export interface RuntimeConfigEnv {
   apiUrl?: string;

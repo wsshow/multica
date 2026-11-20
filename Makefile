@@ -105,6 +105,34 @@ integrated-stop: ## Stop the integrated application, preserving external data an
 integrated-build: ## Explicitly build the integrated image from this checkout without starting it
 	@bash scripts/integrated.sh build
 
+.PHONY: integrated-personal integrated-personal-build integrated-personal-status integrated-personal-logs integrated-personal-stop integrated-personal-setup-code integrated-personal-reset-password integrated-personal-backup integrated-personal-restore
+integrated-personal: ## Start the personal deployment with an existing published image
+	@bash scripts/integrated.sh personal
+
+integrated-personal-build: ## Build and start the personal deployment from this checkout
+	@bash scripts/integrated.sh personal-build
+
+integrated-personal-status: ## Show the personal deployment and health status
+	@bash scripts/integrated.sh personal-status
+
+integrated-personal-logs: ## Follow personal app logs
+	@bash scripts/integrated.sh personal-logs
+
+integrated-personal-stop: ## Stop the personal deployment and retain its volumes
+	@bash scripts/integrated.sh personal-stop
+
+integrated-personal-setup-code: ## Read the one-time setup code from the personal app
+	@bash scripts/integrated.sh personal-setup-code
+
+integrated-personal-reset-password: ## Reset the personal owner's password and print the replacement
+	@bash scripts/integrated.sh personal-reset-password
+
+integrated-personal-backup: ## Back up the managed personal database and files to BACKUP_FILE
+	@bash scripts/integrated.sh personal-backup "$${BACKUP_FILE}"
+
+integrated-personal-restore: ## Restore BACKUP_FILE into a fresh managed personal deployment
+	@bash scripts/integrated.sh personal-restore "$${BACKUP_FILE}"
+
 # ---------- Self-hosting (Docker Compose) ----------
 ##@ Self-hosting
 

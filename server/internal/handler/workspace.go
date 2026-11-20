@@ -17,48 +17,21 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/multica-ai/multica/server/internal/analytics"
-	"github.com/multica-ai/multica/server/internal/issuestatus"
 	"github.com/multica-ai/multica/server/internal/logger"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
+	"github.com/multica-ai/multica/server/internal/service"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
 	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
 var nonAlpha = regexp.MustCompile(`[^a-zA-Z]`)
-var nonAlphanumeric = regexp.MustCompile(`[^a-zA-Z0-9]`)
 var workspaceSlugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 var issuePrefixPattern = regexp.MustCompile(`^[A-Z0-9]{1,10}$`)
-
-// defaultIssuePrefixFromSlug derives a new workspace's default issue prefix
-// from its slug: alphanumerics only, first 4 chars, uppercased.
-// Examples: "acme" → "ACME", "front-end" → "FRON", "team-2" → "TEAM".
-//
-// The slug — not the name — is the derivation source on purpose (MUL-6050).
-// Name is the one field in the create flow that accepts non-ASCII, so deriving
-// an ASCII-only prefix from it forced every CJK/emoji-named workspace onto the
-// same "WS" fallback. Slug is validated as `^[a-z0-9]+(-[a-z0-9]+)*$` and
-// required, so it always yields a non-empty, workspace-specific prefix.
-//
-// Kept byte-for-byte in sync with the client-side preview in
-// packages/views/onboarding/steps/step-workspace.tsx — what the user sees on
-// the create screen has to be what the server would derive.
-func defaultIssuePrefixFromSlug(slug string) string {
-	head := nonAlphanumeric.ReplaceAllString(slug, "")
-	if head == "" {
-		// Unreachable for a validated slug; keeps the function total so a
-		// future caller can never persist an empty prefix.
-		return "WS"
-	}
-	if len(head) > 4 {
-		head = head[:4]
-	}
-	return strings.ToUpper(head)
-}
 
 // legacyIssuePrefixFromName is the pre-MUL-6050 derivation: first 3 ASCII
 // letters of the workspace name, uppercased, "WS" when the name has none.
 //
-// FROZEN — do not "fix" this to match defaultIssuePrefixFromSlug. Its only
+// FROZEN — do not "fix" this to match service.DefaultWorkspaceIssuePrefix. Its only
 // caller is getIssuePrefix's fallback for workspaces whose stored prefix is
 // empty (rows predating the column). Issue identifiers are computed at read
 // time from the current prefix, so changing what this returns would silently
@@ -313,10 +286,6 @@ func (h *Handler) CreateWorkspace(w http.ResponseWriter, r *http.Request) {
 		}
 		issuePrefix = prefix
 	}
-	if issuePrefix == "" {
-		issuePrefix = defaultIssuePrefixFromSlug(req.Slug)
-	}
-
 	tx, err := h.TxStarter.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to create workspace")
@@ -324,8 +293,7 @@ func (h *Handler) CreateWorkspace(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	qtx := h.Queries.WithTx(tx)
-	ws, err := qtx.CreateWorkspace(r.Context(), db.CreateWorkspaceParams{
+	ws, err := service.CreateWorkspaceWithOwner(r.Context(), tx, parseUUID(userID), db.CreateWorkspaceParams{
 		Name:        req.Name,
 		Slug:        req.Slug,
 		Description: ptrToText(req.Description),
@@ -333,32 +301,21 @@ func (h *Handler) CreateWorkspace(w http.ResponseWriter, r *http.Request) {
 		IssuePrefix: issuePrefix,
 	})
 	if err != nil {
+		if errors.Is(err, service.ErrAddWorkspaceOwner) || errors.Is(err, service.ErrSeedWorkspaceIssueStatus) {
+			message := service.ErrAddWorkspaceOwner.Error()
+			if errors.Is(err, service.ErrSeedWorkspaceIssueStatus) {
+				message = service.ErrSeedWorkspaceIssueStatus.Error()
+			}
+			slog.Warn(message, append(logger.RequestAttrs(r), "error", err)...)
+			writeError(w, http.StatusInternalServerError, message)
+			return
+		}
 		if isUniqueViolation(err) {
 			writeError(w, http.StatusConflict, "workspace slug already exists")
 			return
 		}
 		slog.Warn("create workspace failed", append(logger.RequestAttrs(r), "error", err)...)
 		writeError(w, http.StatusInternalServerError, "failed to create workspace")
-		return
-	}
-
-	_, err = qtx.CreateMember(r.Context(), db.CreateMemberParams{
-		WorkspaceID: ws.ID,
-		UserID:      parseUUID(userID),
-		Role:        "owner",
-	})
-	if err != nil {
-		slog.Warn("add owner failed", append(logger.RequestAttrs(r), "error", err)...)
-		writeError(w, http.StatusInternalServerError, "failed to add owner")
-		return
-	}
-
-	// Seed the 7 built-in issue statuses inside the same transaction, so a
-	// workspace is never visible without its status catalog — an issue cannot
-	// be created before its status can be resolved. (MUL-6243)
-	if err := issuestatus.Ensure(r.Context(), qtx, ws.ID); err != nil {
-		slog.Warn("seed issue statuses failed", append(logger.RequestAttrs(r), "error", err)...)
-		writeError(w, http.StatusInternalServerError, "failed to seed issue statuses")
 		return
 	}
 

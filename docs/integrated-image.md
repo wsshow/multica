@@ -2,11 +2,41 @@
 
 [中文版](integrated-image.zh.md)
 
-The implementation combines the Go backend, Next.js standalone web server, and nginx in one application container. PostgreSQL, optional Redis, S3-compatible object storage, and production login delivery are configured externally. The existing split deployment remains available in [SELF_HOSTING.md](../SELF_HOSTING.md).
+The image combines the Go backend, Next.js standalone web server, and nginx in one application container. Choose a personal deployment for one owner with local files and a managed PostgreSQL service, or an external-services deployment for PostgreSQL, S3-compatible storage, and email-code or Google sign-in. The existing split deployment remains available in [SELF_HOSTING.md](../SELF_HOSTING.md).
 
-The integrated image is published by the new release workflow after validation. Existing `v0.1.2` artifacts do not include this image. A source commit alone does not publish it; use a version actually available in your configured Docker Hub repository.
+## Personal deployment
 
-## Architecture
+With Docker Compose 2.30+ and Bash, run one of these commands from the customized checkout.
+
+```bash
+# Start a published version from your Docker Hub repository.
+make integrated-personal INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z
+
+# Or build and start from this checkout using Docker Buildx.
+make integrated-personal-build
+```
+
+Open the address printed at startup, `http://localhost:8080` by default. Use the one-time code from the same terminal to create your owner account. Multica creates a Personal workspace and uses your username and password for subsequent logins. Signing keys, uploads, and the database are persisted in Docker volumes. The bundled database is reachable by the app through a private Unix socket.
+
+After a source build, run `make integrated-personal` to start the same local image again.
+
+| Command | Behavior |
+| --- | --- |
+| `make integrated-personal-setup-code` | Read the current code before the owner is created |
+| `make integrated-personal-reset-password` | Generate and print a replacement password and the owner username |
+| `make integrated-personal-status` | Check container health |
+| `make integrated-personal-logs` | Follow app logs |
+| `make integrated-personal-stop` | Stop the app and database, keeping their volumes |
+| `make integrated-personal-backup BACKUP_FILE=multica.tar` | Archive the database, local uploads, and keys, pausing the app during the snapshot |
+| `make integrated-personal-restore BACKUP_FILE=multica.tar INTEGRATED_IMAGE=…` | Restore the archive to a fresh personal instance before starting it |
+
+The default setup needs no environment file. To use your own PostgreSQL or an S3-compatible bucket, copy [the personal example](../.env.integrated.personal.example) to `.env.integrated.personal` and fill in only the corresponding settings. Select storage before first use or move your existing data separately.
+
+The backup and restore commands cover the bundled database, local files, and generated keys. Restore into fresh volumes using the same application image version and PostgreSQL generation as the backup, then start the app. Keep any operator-provided environment file and keys with the archive and back up external PostgreSQL or S3 separately.
+
+Set `INTEGRATED_HOST_PORT` to change the published port. For remote use, set `MULTICA_PUBLIC_URL` to the externally reachable origin in the personal configuration file and point your TLS proxy to the published port. `INTEGRATED_BIND_ADDRESS` controls which host address publishes that port.
+
+## External-services architecture
 
 ```mermaid
 flowchart LR
@@ -27,7 +57,7 @@ The public URL is an explicit HTTP(S) origin without a path prefix. Container po
 
 Start with one application replica. Clustering still requires review of the existing Redis relay, channel leases, and background-job configuration. Plugin surfaces retain their separate cookie-free origin, which can route through the same gateway.
 
-## Configuration and deployment
+## External-services configuration and deployment
 
 Prerequisites: Docker, Compose 2.30+, Bash, and OpenSSL. Node and Go are not needed on the deployment computer. Obtain this customized checkout and select an available image version from the operator's Docker Hub repository.
 
@@ -105,7 +135,7 @@ Durable resources are PostgreSQL, object storage, and the operator's configurati
 
 Buildx Bake reuses the existing backend and web Dockerfiles at one commit and platform. The assembly uses their compiled outputs; Go/pnpm compilation is not duplicated in the assembly Dockerfile. AMD64 and ARM64 use native runners. BuildKit caches build stages; the runtime includes no compiler or user credentials. This keeps customization in packaging with only listener/storage startup changes and the web readiness route in application code.
 
-Each architecture builds and loads one final image, then runs the disposable [smoke fixtures](../docker/integrated/compose.smoke.yml). Checks cover compiled assets, SMTP login, CSRF writes, object uploads/downloads and Range, browser and daemon WebSocket authentication, container recreation, critical child failure, optional Redis, database outages, and graceful stop. Packaging unit tests, storage/listener tests, web readiness tests, typechecking, and telemetry checks also gate the workflow. These CI fixtures are not the user deployment file.
+Main and pull request checks build the image on AMD64. Releases also build on native ARM64. Each build runs the disposable [external-services smoke fixtures](../docker/integrated/compose.smoke.yml), which exercise assets, SMTP login, object storage, WebSockets, readiness, and shutdown. The AMD64 job also checks [personal setup and persistence](../docker/integrated/personal-smoke.sh) against the actual personal Compose configuration. The workflow runs packaging and telemetry checks before assembling the image.
 
 New versions are published only from version tags. Each tested image is exported and uploaded by digest without recompiling or creating a temporary tag. Both native jobs must succeed before their digests become a shared `X.Y.Z` manifest. A successful stable version also updates `latest`; prereleases do not. The public repository retains release versions and `latest`, with the source commit recorded in image labels and workflow records. Existing GHCR split-image publication remains separate. A source commit alone does not trigger a Docker Hub release.
 

@@ -5,6 +5,12 @@ description: 맞춤 소스로 Docker 서비스를 빌드하고 Desktop 및 배�
 
 이 문서는 맞춤 버전용입니다. 현재 소스 또는 배포 관리자가 제공한 산출물을 사용하세요. 원본 프로젝트의 앱 배포물에는 이 변경 사항이 없습니다.
 
+## 개인 인스턴스 시작
+
+맞춤 소스 체크아웃에서 관리자가 게시한 통합 이미지를 지정해 `make integrated-personal INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z`를 실행합니다. `http://localhost:8080`을 열고 터미널에 표시된 일회용 초기 설정 코드를 입력합니다. 사용자 이름과 비밀번호를 설정하면 개인 워크스페이스가 열립니다.
+
+Docker Compose가 PostgreSQL을 관리하며 첨부 파일과 서명 키는 로컬에 저장됩니다. 환경 파일이나 메일 서비스는 필요하지 않습니다. 현재 소스에서 빌드하고 시작하려면 `make integrated-personal-build`를 실행합니다.
+
 ## 소스 준비
 
 검토된 맞춤 checkout 또는 관리자가 제공한 소스 압축 파일을 사용합니다. 이 버전에는 공개 배포 저장소가 설정되어 있지 않습니다. Docker Compose 플러그인, Make, OpenSSL이 필요합니다. 에이전트 도구와 계정은 실행 컴퓨터에 별도로 준비합니다.

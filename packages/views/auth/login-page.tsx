@@ -20,10 +20,12 @@ import {
   InputOTPSlot,
 } from "@multica/ui/components/ui/input-otp";
 import { useAuthStore } from "@multica/core/auth";
+import { configStore, useConfigStore } from "@multica/core/config";
 import { workspaceKeys } from "@multica/core/workspace/queries";
 import { api } from "@multica/core/api";
 import type { User } from "@multica/core/types";
 import { useT } from "../i18n";
+import { LocalLoginForm } from "./local-login-form";
 
 // Types
 
@@ -118,6 +120,8 @@ export function LoginPage({
   // because the user asked to leave. Without saying so, landing here reads as
   // the app having lost their work for no reason.
   const sessionExpired = useAuthStore((state) => state.expired);
+  const localAuthEnabled = useConfigStore((state) => state.localAuthEnabled);
+  const localAuthSetupRequired = useConfigStore((state) => state.localAuthSetupRequired);
 
   // Check for existing session when CLI callback is present.
   // Prioritises cookie auth (= current browser session) to avoid authorising
@@ -293,6 +297,23 @@ export function LoginPage({
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
   };
 
+  const handlePasswordSubmit = async (username: string, password: string, setupCode?: string) => {
+    if (cliCallback) {
+      const { token } = await api.loginWithPassword(username, password, setupCode);
+      if (setupCode !== undefined) configStore.setState({ localAuthSetupRequired: false });
+      onTokenObtained?.();
+      redirectToCliCallback(cliCallback.url, token, cliCallback.state);
+      return;
+    }
+
+    await useAuthStore.getState().loginWithPassword(username, password, setupCode);
+    if (setupCode !== undefined) configStore.setState({ localAuthSetupRequired: false });
+    const workspaces = await api.listWorkspaces();
+    qc.setQueryData(workspaceKeys.list(), workspaces);
+    onTokenObtained?.();
+    await onSuccess();
+  };
+
   // CLI confirm step
 
   if (step === "cli_confirm" && existingUser) {
@@ -305,7 +326,9 @@ export function LoginPage({
               {t(($) => $.cli.title)}
             </CardTitle>
             <CardDescription>
-              {t(($) => $.cli.description, { email: existingUser.email })}
+              {localAuthEnabled
+                ? t(($) => $.local.cli_description, { name: existingUser.name })
+                : t(($) => $.cli.description, { email: existingUser.email })}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -332,6 +355,17 @@ export function LoginPage({
           </CardContent>
         </Card>
       </div>
+    );
+  }
+
+  if (localAuthEnabled) {
+    return (
+      <LocalLoginForm
+        logo={logo}
+        setupRequired={localAuthSetupRequired}
+        sessionExpired={sessionExpired}
+        onSubmit={handlePasswordSubmit}
+      />
     );
   }
 

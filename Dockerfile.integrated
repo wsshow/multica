@@ -7,9 +7,10 @@ FROM ${WEB_IMAGE} AS runtime
 
 USER root
 RUN apk add --no-cache nginx tini ca-certificates tzdata
+RUN install -d -m 0700 -o 1001 -g 1001 /app/data
 COPY --from=backend /app/server /app/migrate /app/maintenance /app/backfill_task_usage_hourly /app/backfill_codex_usage_cache /app/
 COPY --from=backend /app/migrations/ /app/migrations/
-COPY --chown=1001:1001 docker/integrated/config.mjs docker/integrated/supervisor.mjs docker/integrated/entrypoint.mjs docker/integrated/healthcheck.mjs /app/integrated/
+COPY --chown=1001:1001 docker/integrated/config.mjs docker/integrated/supervisor.mjs docker/integrated/entrypoint.mjs docker/integrated/healthcheck.mjs docker/integrated/personal.mjs /app/integrated/
 
 USER 1001:1001
 WORKDIR /app

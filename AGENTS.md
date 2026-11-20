@@ -159,7 +159,7 @@ Workspace-scoped queries filter by `workspace_id`; membership gates access and `
 - Maintain independent release versions. Update [the source version mapping](docs/version-mapping.md) and [changelog](CHANGELOG.md) when releasing or syncing upstream; distinguish comparison candidates from verified source ancestry.
 - Runtime feature gates use advertised `cli_compatibility_version`; displays and updates use `cli_version`. Review `server/pkg/agent/cli_compatibility.go` when syncing upstream contracts, while retaining checks for older daemons without the new field.
 - Telemetry entry points are intentionally no-op APIs. Preserve their call signatures for upstream feature merges; do not restore SDKs, collectors, reporting, installation identifiers, crash persistence, or metrics listeners. Environment variables must not re-enable them.
-- Desktop requires explicit API and web app URLs in `~/.multica/desktop.json` (or development overrides). Missing configuration blocks startup; do not add official service, installer, update, or help-link fallbacks.
+- Desktop requires explicit API and web app URLs in `~/.multica/desktop.json` (or development overrides). For a same-origin deployment, the first-launch form saves the address supplied by the user to both fields before opening the app. Do not add official service, installer, update, or help-link fallbacks.
 - Desktop must compile and execute its bundled CLI from this checkout. Missing Go or a missing CLI must fail the build; do not fall back to downloaded, managed, or PATH binaries.
 - Keep user-visible task usage, cost, execution history, runtime liveness, and product Git integrations functional.
 - Run `pnpm check:telemetry` and the affected facade regression tests after upstream updates.

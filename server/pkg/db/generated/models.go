@@ -1475,6 +1475,13 @@ type LarkUserBinding struct {
 	BoundAt        pgtype.Timestamptz `json:"bound_at"`
 }
 
+type LocalAuthAccount struct {
+	Singleton    bool        `json:"singleton"`
+	UserID       pgtype.UUID `json:"user_id"`
+	Username     string      `json:"username"`
+	PasswordHash string      `json:"password_hash"`
+}
+
 type MaintenanceJob struct {
 	ID             pgtype.UUID        `json:"id"`
 	JobType        string             `json:"job_type"`

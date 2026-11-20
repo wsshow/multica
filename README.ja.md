@@ -101,9 +101,11 @@ Multica は、こうしたエージェントとチームメイトを 1 つのワ
 
 ## はじめに
 
+個人で使う場合は `make integrated-personal-build` を実行し、`http://localhost:8080` を開きます。ターミナルに表示されたセットアップコードでユーザー名とパスワードを設定します。Desktop の初回起動時には同じ URL を入力してください。[デプロイガイド](docs/integrated-image.md)を参照してください。
+
 このチェックアウトから `make selfhost-build` でサービスを構築し、自分の Web アドレスを開きます。[セルフホストガイド](SELF_HOSTING.md)を参照してください。
 
-デスクトップは、この定製ソースから構築したパッケージを使います。`~/.multica/desktop.json` に `apiUrl` と `appUrl` を設定してから起動してください。[デスクトップ設定](docs/customization.md#desktop-service-configuration)で詳細を確認できます。
+分割構成では、このカスタムソースから構築したデスクトップパッケージを使い、`~/.multica/desktop.json` に `apiUrl` と `appUrl` を設定してから起動してください。[デスクトップ設定](docs/customization.md#desktop-service-configuration)で詳細を確認できます。
 
 別の実行マシンを接続する場合は、同じチェックアウトから CLI を構築します。
 

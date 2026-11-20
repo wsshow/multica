@@ -101,6 +101,8 @@ diff，全都挂在同一个任务下——没人需要重新捋一遍上下文�
 
 使用当前定制源码，或维护者提供的定制源码包。本版本尚未配置公开发布仓库；上游安装包、镜像和 Homebrew 包不包含咱们的修改。
 
+个人使用可运行 `make integrated-personal-build`，打开 `http://localhost:8080`，用终端显示的初始化码设置账号和密码。首次打开桌面端时填入同一个地址。详见[个人部署指南](docs/integrated-image.zh.md)。
+
 1. 从当前源码部署 API、Web 和 PostgreSQL：
 
    ```bash

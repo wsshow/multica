@@ -28,11 +28,11 @@ import { installContextMenu } from "./context-menu";
 import { devToolbarPreferencesPath, installDevToolbarToggle } from "./dev-toolbar-toggle";
 import { handleAppShortcut } from "./keyboard-shortcuts";
 import { installNavigationGestures } from "./navigation-gestures";
-import { installNavigationGuard } from "./navigation-guard";
+import { installNavigationGuard, isTrustedRendererURL } from "./navigation-guard";
 import { installWindowForegroundEvents, windowForeground } from "./window-foreground";
 import { createRendererWebPreferences } from "./renderer-web-preferences";
 import { getAppVersion } from "./app-version";
-import { loadRuntimeConfig } from "./runtime-config-loader";
+import { loadRuntimeConfig, saveInitialConnection } from "./runtime-config-loader";
 import type { RuntimeConfigResult } from "../shared/runtime-config";
 import {
   RENDERER_ROUTE_CONTEXT_CHANNEL,
@@ -881,6 +881,24 @@ if (!gotTheLock) {
     // or invalid configuration blocks clients from connecting.
     ipcMain.on("runtime-config:get", (event) => {
       event.returnValue = runtimeConfigResult;
+    });
+
+    ipcMain.handle("runtime-config:connect", async (event, address: unknown) => {
+      const window = BrowserWindow.fromWebContents(event.sender);
+      const frame = event.senderFrame;
+      const rendererURL = pathToFileURL(join(__dirname, "../renderer/index.html")).toString();
+      if (runtimeConfigResult.ok || !runtimeConfigResult.error.missing || !window ||
+          !mainWindows.has(window) || !frame || frame !== event.sender.mainFrame ||
+          !isTrustedRendererURL(frame.url, rendererURL)) {
+        return { ok: false, reason: "save_failed" } as const;
+      }
+
+      const result = await saveInitialConnection(address);
+      if (result.ok) {
+        app.relaunch();
+        app.quit();
+      }
+      return result;
     });
 
     installDevToolbarToggle({

@@ -2,11 +2,41 @@
 
 [English](integrated-image.md)
 
-一个应用容器包含 Go 服务端、Next.js standalone 页面服务和 nginx。PostgreSQL、可选 Redis、S3 兼容对象存储及生产登录投递服务由用户在外部配置。原有拆分部署继续见[部署指南](deployment.zh.md)。
+一个应用容器包含 Go 服务端、Next.js standalone 页面服务和 nginx。个人部署面向单个所有者，默认使用随附的 PostgreSQL 服务和本地文件。外部服务部署支持外部 PostgreSQL、S3 兼容存储和邮箱验证码或 Google 登录。原有拆分部署见[部署指南](deployment.zh.md)。
 
-一体化镜像由新增发布 workflow 在验证通过后推送。现有 `v0.1.2` 产物不包含它，单独提交源码也不会发布镜像；部署时选择自己 Docker Hub 仓库里实际存在的版本。
+## 个人部署
 
-## 架构
+准备 Docker Compose 2.30+ 和 Bash，在定制仓库根目录运行以下任一命令。
+
+```bash
+# 从自己的 Docker Hub 仓库启动已发布版本。
+make integrated-personal INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z
+
+# 或使用 Docker Buildx 从当前源码构建并启动。
+make integrated-personal-build
+```
+
+打开终端打印的访问地址，默认是 `http://localhost:8080`。用同一终端显示的一次性设置码创建所有者账号。Multica 会创建「个人工作区」，之后使用用户名和密码登录。签名密钥、上传文件和数据库保存在 Docker 卷中，应用通过专用 Unix socket 连接随附的数据库。
+
+从源码构建后，可以用 `make integrated-personal` 再次启动同一本地镜像。
+
+| 命令 | 用途 |
+| --- | --- |
+| `make integrated-personal-setup-code` | 创建所有者前重新查看设置码 |
+| `make integrated-personal-reset-password` | 生成并显示替换密码，以及所有者用户名 |
+| `make integrated-personal-status` | 查看容器和健康状态 |
+| `make integrated-personal-logs` | 跟踪应用日志 |
+| `make integrated-personal-stop` | 停止应用和数据库，保留数据卷 |
+| `make integrated-personal-backup BACKUP_FILE=multica.tar` | 暂停应用，将数据库、本地文件和密钥保存到归档 |
+| `make integrated-personal-restore BACKUP_FILE=multica.tar INTEGRATED_IMAGE=…` | 在启动新的个人实例前恢复归档 |
+
+默认启动无需环境文件。如需自有 PostgreSQL 或 S3 兼容存储，将[个人部署示例](../.env.integrated.personal.example)复制为 `.env.integrated.personal`，填写相应配置。在首次使用前选择存储，切换已有实例时需迁移已有数据。
+
+上述命令备份随附数据库、本地文件和自动生成的密钥。恢复时，使用与备份相同的应用镜像版本和 PostgreSQL 主版本恢复到新数据卷，再启动应用。手动配置的环境文件和密钥随归档保存，外部 PostgreSQL 或 S3 另行备份。
+
+通过 `INTEGRATED_HOST_PORT` 修改宿主机端口。远程使用时，在个人配置文件的 `MULTICA_PUBLIC_URL` 填写实际访问地址，并让 TLS 反向代理转发到发布端口。`INTEGRATED_BIND_ADDRESS` 控制该端口绑定的宿主机地址。
+
+## 外部服务部署架构
 
 ```mermaid
 flowchart LR
@@ -27,7 +57,7 @@ flowchart LR
 
 先按单应用实例部署；增加实例仍需审查现有 Redis relay、通道租约和后台任务配置。插件页面保留独立、无 Cookie 的 origin，可经同一网关转发。
 
-## 配置与部署
+## 外部服务配置与部署
 
 部署电脑需要 Docker、Compose 2.30+、Bash 和 OpenSSL，无需安装 Node、Go。取得本定制源码，选择用户配置的 Docker Hub 仓库里可用的镜像版本。
 
@@ -105,7 +135,7 @@ S3 初始化失败会终止启动，不再选择本地存储。配置校验不�
 
 Buildx Bake 在同一源码提交和架构下复用现有后端、Web Dockerfile。组装阶段消费它们的编译产物，不重复维护 Go/pnpm 编译步骤；AMD64、ARM64 使用原生 runner。BuildKit 缓存构建阶段，运行镜像不包含编译器和用户凭据。定制主要留在打包层，应用代码只增加监听/存储启动处理及 Web 就绪接口。
 
-各架构只构建、加载一次最终镜像，再运行可丢弃的[测试环境](../docker/integrated/compose.smoke.yml)。检查包括编译资源、SMTP 登录、CSRF 写操作、对象上传/下载及 Range、浏览器和 daemon WebSocket 认证、重建容器、关键进程退出、可选 Redis、数据库中断和正常停止。打包单元测试、存储/监听测试、Web 就绪测试、类型检查及遥测检查也作为前置条件。CI 测试环境不是用户的部署文件。
+普通 main 与 PR 在 AMD64 构建镜像，发布时增加原生 ARM64 构建。各构建运行[外部服务测试环境](../docker/integrated/compose.smoke.yml)，覆盖静态资源、SMTP 登录、对象存储、WebSocket、就绪状态和关闭行为。AMD64 任务还使用个人部署的 Compose 配置验证[账号初始化和数据持久化](../docker/integrated/personal-smoke.sh)。打包和遥测检查在构建镜像之前运行。
 
 新版本仅由版本 tag 触发发布。测试后的同一镜像导出后按 digest 上传，不重新编译，也不创建临时标签。两个原生架构任务都成功后，其 digest 才合并为 `X.Y.Z` manifest。稳定版本成功后更新 `latest`，预发布版本不更新。公开仓库只保留正式版本及 `latest`，源码提交记录在镜像标签元数据和工作流中。现有 GHCR 拆分镜像另行发布；单独提交源码不会自动发布 Docker Hub 版本。
 

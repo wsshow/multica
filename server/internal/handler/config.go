@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
@@ -26,8 +27,10 @@ type AppConfig struct {
 	// Public auth config consumed by the web app at runtime so self-hosted
 	// deployments do not need to rebuild the frontend image when operators
 	// toggle signup or wire Google OAuth.
-	AllowSignup    bool   `json:"allow_signup"`
-	GoogleClientID string `json:"google_client_id,omitempty"`
+	AllowSignup            bool   `json:"allow_signup"`
+	GoogleClientID         string `json:"google_client_id,omitempty"`
+	LocalAuthEnabled       bool   `json:"local_auth_enabled,omitempty"`
+	LocalAuthSetupRequired bool   `json:"local_auth_setup_required,omitempty"`
 	// WorkspaceCreationDisabled mirrors the server-side
 	// DISABLE_WORKSPACE_CREATION env var so the UI can hide every
 	// "Create workspace" affordance on self-hosted instances. Omitted
@@ -135,6 +138,18 @@ func (h *Handler) GetConfig(w http.ResponseWriter, r *http.Request) {
 		AllowSignup:                        os.Getenv("ALLOW_SIGNUP") != "false",
 		GoogleClientID:                     os.Getenv("GOOGLE_CLIENT_ID"),
 		WorkspaceCreationDisabled:          os.Getenv("DISABLE_WORKSPACE_CREATION") == "true",
+	}
+	if h.LocalAuth != nil {
+		setupRequired, err := h.LocalAuth.SetupRequired(r.Context())
+		if err != nil {
+			slog.Warn("could not check local owner setup status", "error", err)
+			writeError(w, http.StatusServiceUnavailable, "could not check local owner setup status")
+			return
+		}
+		config.AllowSignup = false
+		config.GoogleClientID = ""
+		config.LocalAuthEnabled = true
+		config.LocalAuthSetupRequired = setupRequired
 	}
 	if h.Storage != nil {
 		config.CdnDomain = h.Storage.CdnDomain()

@@ -103,6 +103,8 @@ issue — so nobody reconstructs context, and nothing ships without a human sayi
 
 Use the current customized checkout, or a source archive supplied by its maintainer. No distribution repository or public release feed is configured for this edition. The original project's installers and container images do not contain these customizations.
 
+For personal use, run `make integrated-personal-build`, open `http://localhost:8080`, and set your username and password using the setup code printed in the terminal. Enter the same service address when Desktop first opens. See the [personal deployment guide](docs/integrated-image.md).
+
 1. Deploy API, web, and PostgreSQL from this checkout:
 
    ```bash

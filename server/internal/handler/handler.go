@@ -38,6 +38,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/integrations/wecom"
 	"github.com/multica-ai/multica/server/internal/integrations/weixin"
 	"github.com/multica-ai/multica/server/internal/issuestatus"
+	"github.com/multica-ai/multica/server/internal/localauth"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
 	"github.com/multica-ai/multica/server/internal/middleware"
 	"github.com/multica-ai/multica/server/internal/realtime"
@@ -249,6 +250,7 @@ type Handler struct {
 	SeatCapacityLocker    seatcapacity.WorkspaceLocker
 	SeatCapacityWorker    *seatcapacity.Worker
 	EmailService          *service.EmailService
+	LocalAuth             *localauth.Service
 	UpdateStore           UpdateStore
 	ModelListStore        ModelListStore
 	LocalSkillListStore   LocalSkillListStore

@@ -18,6 +18,8 @@ pnpm --filter @multica/desktop package
 
 ## 接続先の必須設定
 
+初回起動時に統合サービスの URL を入力すると、Desktop はその URL を API と Web の両方の接続先として保存します。API と Web アプリを別々の URL に配置する場合は、以下のファイルを設定します。
+
 `apiUrl` と `appUrl` は両方必須です。Web URL はブラウザログインと共有用で、API ホストから推測しません。UTF-8 JSON を `~/.multica/desktop.json`、Windows では `%USERPROFILE%\.multica\desktop.json` に保存します。`.txt` 拡張子を付けず、変更後に再起動してください。
 
 ```json

@@ -5,6 +5,12 @@ description: 從定製原始碼建置 Docker 服務，配置桌面端及自己�
 
 本文適用於定製版本。請使用目前定製原始碼或部署維護者提供的產物；上游安裝包不包含這些修改。
 
+## 啟動個人執行個體
+
+在定製 checkout 中執行 `make integrated-personal INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z`，指定維護者發佈的一體化映像。開啟 `http://localhost:8080`，輸入終端機顯示的一次性初始化碼，設定帳號和密碼後進入個人工作區。
+
+Docker Compose 會自動管理 PostgreSQL，附件和簽署金鑰儲存在本機。啟動時無需準備環境檔或郵件服務。若要從目前的原始碼建置並啟動，請執行 `make integrated-personal-build`。
+
 ## 準備與啟動
 
 取得經過審查的定製 checkout，準備 Docker Compose、Make 和 OpenSSL。在儲存庫根目錄執行：

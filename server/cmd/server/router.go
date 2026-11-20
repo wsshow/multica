@@ -41,6 +41,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/integrations/telegram"
 	"github.com/multica-ai/multica/server/internal/integrations/wecom"
 	"github.com/multica-ai/multica/server/internal/integrations/weixin"
+	"github.com/multica-ai/multica/server/internal/localauth"
 	obsmetrics "github.com/multica-ai/multica/server/internal/metrics"
 	"github.com/multica-ai/multica/server/internal/middleware"
 	"github.com/multica-ai/multica/server/internal/realtime"
@@ -225,6 +226,7 @@ func NewRouter(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus, analytics
 
 type RouterOptions struct {
 	Storage             storage.Storage
+	LocalAuth           *localauth.Service
 	InboxReadMetrics    *obsmetrics.InboxReadMetrics
 	HTTPMetrics         *obsmetrics.HTTPMetrics
 	BusinessMetrics     *obsmetrics.BusinessMetrics
@@ -413,7 +415,10 @@ func seatCapacityExecutor(cloudURL string) seatcapacity.Executor {
 // NewRouter shim) discard the second value.
 func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus, analyticsClient analytics.Client, rdb redis.UniversalClient, opts RouterOptions) (chi.Router, *handler.Handler) {
 	queries := db.New(pool)
-	emailSvc := service.NewEmailService()
+	var emailSvc *service.EmailService
+	if opts.LocalAuth == nil {
+		emailSvc = service.NewEmailService()
+	}
 	daemonHub := opts.DaemonHub
 	if daemonHub == nil {
 		daemonHub = daemonws.NewHub()
@@ -457,6 +462,7 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		GitExtraCACerts:                gitca.Load(slog.Default()),
 	}
 	h := handler.New(queries, pool, hub, bus, emailSvc, store, cfSigner, analyticsClient, signupConfig, daemonHub)
+	h.LocalAuth = opts.LocalAuth
 	invitationRateLimits := handler.DefaultInvitationRateLimits()
 	invitationRateLimits.Actor.Limit = envNonNegativeInt("RATE_LIMIT_INVITATION_ACTOR_10M", invitationRateLimits.Actor.Limit)
 	invitationRateLimits.Workspace.Limit = envNonNegativeInt("RATE_LIMIT_INVITATION_WORKSPACE_24H", invitationRateLimits.Workspace.Limit)
@@ -1608,7 +1614,7 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 	r.Get("/plugin-surfaces/{token}", h.ServePluginSurface)
 
 	// Auth (public) — per-IP rate limiting.
-	if rdb == nil {
+	if rdb == nil && opts.LocalAuth == nil {
 		slog.Warn("auth rate limiting disabled: REDIS_URL not configured")
 	}
 	trustedProxies := middleware.ParseTrustedProxies(os.Getenv("RATE_LIMIT_TRUSTED_PROXIES"))
@@ -1617,9 +1623,15 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 	contactSalesRL := middleware.RateLimit(rdb, envPositiveInt("RATE_LIMIT_CONTACT_SALES", 5), time.Hour, trustedProxies)
 	siteStarReadRL := middleware.RateLimit(rdb, envPositiveInt("RATE_LIMIT_SITE_STAR_READ", 30), time.Minute, trustedProxies)
 	siteStarSpinRL := middleware.RateLimit(rdb, envPositiveInt("RATE_LIMIT_SITE_STAR_SPIN", 40), time.Minute, trustedProxies)
-	r.With(authRL).Post("/auth/send-code", h.SendCode)
-	r.With(authVerifyRL).Post("/auth/verify-code", h.VerifyCode)
-	r.With(authRL).Post("/auth/google", h.GoogleLogin)
+	if opts.LocalAuth != nil {
+		localAuthRL := handler.LocalAuthRateLimit(envPositiveInt("RATE_LIMIT_AUTH", 5), trustedProxies)
+		r.With(localAuthRL).Post("/auth/local/setup", h.SetupLocalAuth)
+		r.With(localAuthRL).Post("/auth/local/login", h.LoginLocalAuth)
+	} else {
+		r.With(authRL).Post("/auth/send-code", h.SendCode)
+		r.With(authVerifyRL).Post("/auth/verify-code", h.VerifyCode)
+		r.With(authRL).Post("/auth/google", h.GoogleLogin)
+	}
 	r.Post("/auth/logout", h.Logout)
 
 	// Public API

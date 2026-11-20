@@ -18,6 +18,8 @@ pnpm --filter @multica/desktop package
 
 ## Configuration de connexion obligatoire
 
+Au premier lancement, saisissez l’URL de votre service intégré. Desktop l’enregistre comme adresse d’API et adresse Web. Si l’API et l’application Web utilisent des adresses distinctes, configurez le fichier ci-dessous.
+
 `apiUrl` et `appUrl` sont obligatoires. L’URL Web sert à la connexion par navigateur et au partage ; elle n’est pas déduite de l’hôte API. Enregistrez du JSON UTF-8 dans `~/.multica/desktop.json`, ou `%USERPROFILE%\.multica\desktop.json` sous Windows. Évitez l’extension `.txt` et redémarrez après modification.
 
 ```json

@@ -1,0 +1,31 @@
+services:
+  app:
+    environment:
+      MULTICA_MANAGED_POSTGRES: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - personal-postgres-socket:/var/run/postgresql
+  postgres:
+    image: pgvector/pgvector:pg17
+    network_mode: none
+    # The only database client reaches it over the shared Unix socket.
+    command: ["-c", "listen_addresses=", "-c", "unix_socket_directories=/var/run/postgresql"]
+    environment:
+      POSTGRES_DB: multica
+      POSTGRES_USER: multica
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - personal-postgres:/var/lib/postgresql/data
+      - personal-postgres-socket:/var/run/postgresql
+    restart: unless-stopped
+    healthcheck:
+      # The entrypoint starts a temporary postgres process during initdb.
+      test: ["CMD-SHELL", "test \"$$(cat /proc/1/comm)\" = postgres && pg_isready -q -h /var/run/postgresql -U multica -d multica"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+volumes:
+  personal-postgres:
+  personal-postgres-socket:

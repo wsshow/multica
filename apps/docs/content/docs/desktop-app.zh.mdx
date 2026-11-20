@@ -18,6 +18,8 @@ pnpm --filter @multica/desktop package
 
 ## 必须配置服务地址
 
+首次打开桌面端时，输入一体化服务地址，应用会将它同时保存为 API 和 Web 地址。如果 API 和 Web 分开部署，请按下面的方法手动配置。
+
 `apiUrl` 和 `appUrl` 都是必填项。Web 地址用于浏览器登录和分享链接，不会根据 API 域名猜测。将有效 JSON 保存到 `~/.multica/desktop.json`，Windows 路径为 `%USERPROFILE%\.multica\desktop.json`。Windows 使用 UTF-8，避免保存成 `desktop.json.txt`。修改后重启应用。
 
 ```json

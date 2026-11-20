@@ -50,7 +50,7 @@ describe("loadRuntimeConfig", () => {
       }),
     ).resolves.toEqual({
       ok: false,
-      error: { message: expect.stringContaining("Missing ") },
+      error: { message: expect.stringContaining("Missing "), missing: true },
     });
   });
 

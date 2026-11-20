@@ -5,6 +5,12 @@ description: Build the customized Docker services, configure Desktop, and manage
 
 This documentation describes the customized edition. Use this checkout or artifacts supplied by your deployment maintainer; upstream application packages do not contain these changes.
 
+## Start a personal instance
+
+From the customized checkout, run `make integrated-personal INTEGRATED_IMAGE=your-namespace/multica:X.Y.Z` with a published integrated image from your maintainer. Open `http://localhost:8080` and enter the one-time code printed in your terminal. Set your username and password to open your personal workspace.
+
+Docker Compose manages PostgreSQL and stores uploads and signing keys locally. You can start without an environment file or mail service. For an image built from this checkout, use `make integrated-personal-build`.
+
 ## Prepare the source
 
 Start from the reviewed customized checkout or a source archive supplied by its maintainer. No public replacement repository is configured. Install Docker with the Compose plugin, Make, and OpenSSL. Agent tools and their accounts are installed separately on execution computers.

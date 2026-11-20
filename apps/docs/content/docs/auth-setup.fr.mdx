@@ -6,7 +6,9 @@ description: Configurez les codes de vérification par e-mail, la connexion avec
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-Par défaut, Multica connecte les utilisateurs au moyen de codes de vérification envoyés par e-mail ; Google OAuth peut être ajouté en complément. Les utilisateurs existants peuvent toujours se reconnecter — les restrictions d'inscription décident uniquement si de nouveaux comptes peuvent être créés.
+Une [instance personnelle](/self-host-quickstart) utilise un identifiant et un mot de passe. Pour générer un nouveau mot de passe, exécutez `make integrated-personal-reset-password` sur l’hôte Docker.
+
+Les autres déploiements utilisent par défaut les codes de vérification par e-mail et peuvent ajouter Google OAuth. Les utilisateurs existants peuvent toujours se reconnecter. Les restrictions d’inscription s’appliquent à la création de comptes.
 
 ## Codes de vérification par e-mail
 

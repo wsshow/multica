@@ -4,7 +4,7 @@
 
 英文完整说明见 [SELF_HOSTING.md](../SELF_HOSTING.md)，定制边界见 [customization.md](customization.md)。
 
-前后端合并、PostgreSQL/对象存储/可选 Redis 外置的部署见[一体化应用镜像](integrated-image.zh.md)。其首个镜像需要经过版本 tag 验证后发布，已有 `v0.1.2` 仍是独立后端/Web 产物；本文说明拆分部署方式。
+[一体化应用镜像指南](integrated-image.zh.md)涵盖账号密码登录、本地附件的个人部署，以及使用外部 PostgreSQL 和对象存储的部署。本文说明 API 和 Web 拆分部署方式。
 
 ## 服务与执行电脑
 

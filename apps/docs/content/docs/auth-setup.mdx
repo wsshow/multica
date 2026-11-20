@@ -6,7 +6,9 @@ description: Configure email verification codes, Google sign-in, and who can sig
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-Multica signs users in with email verification codes by default; Google OAuth can be added on top. Existing users can always sign in again — signup restrictions only decide whether new accounts can be created.
+The [personal instance](/self-host-quickstart#start-a-personal-instance) uses a username and password. Run `make integrated-personal-reset-password` on the Docker host to generate a replacement password.
+
+Other deployments use email verification codes by default and can add Google OAuth. Existing users can always sign in again. Signup restrictions only decide whether new accounts can be created.
 
 ## Email verification codes
 

@@ -6,7 +6,9 @@ description: 配置邮箱验证码、Google 登录和新用户注册范围。
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-Multica 默认使用邮箱验证码登录，也可以增加 Google OAuth。已经存在的用户始终可以再次登录；注册限制只决定是否允许创建新账号。
+[个人实例](/self-host-quickstart)使用账号和密码登录。忘记密码时，在 Docker 主机运行 `make integrated-personal-reset-password` 生成新密码。
+
+其他部署默认使用邮箱验证码登录，也可以增加 Google OAuth。已存在的用户可以再次登录，注册限制仅控制新账号的创建。
 
 ## 邮箱验证码
 

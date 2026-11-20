@@ -1,0 +1,29 @@
+name: multica-personal
+services:
+  app:
+    image: ${INTEGRATED_IMAGE:?Set INTEGRATED_IMAGE to your published image with a version tag or digest}
+    env_file:
+      - path: ${INTEGRATED_PERSONAL_ENV_FILE:-.env.integrated.personal}
+        format: raw
+        required: false
+    environment:
+      MULTICA_DEPLOYMENT_MODE: personal
+      MULTICA_PERSONAL_HOST_PORT: ${INTEGRATED_HOST_PORT:-8080}
+      MULTICA_PERSONAL_BIND_ADDRESS: ${INTEGRATED_BIND_ADDRESS:-127.0.0.1}
+    ports:
+      - host_ip: ${INTEGRATED_BIND_ADDRESS:-127.0.0.1}
+        published: "${INTEGRATED_HOST_PORT:-8080}"
+        target: 8080
+    volumes:
+      - personal-data:/app/data
+    restart: unless-stopped
+    stop_grace_period: ${INTEGRATED_STOP_GRACE_PERIOD:-75s}
+    tmpfs:
+      - /tmp:mode=1777,size=268435456
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  personal-data:

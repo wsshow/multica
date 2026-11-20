@@ -14,6 +14,7 @@ export interface ParseOptions {
   /** Endpoint identifier used in the warning log so we can grep for which
    *  contract drifted in production telemetry. */
   endpoint: string;
+  redactReceived?: boolean;
 }
 
 /**
@@ -48,7 +49,7 @@ export function parseWithFallback<T>(
     {
       endpoint: opts.endpoint,
       issues: result.error.issues,
-      received: data,
+      ...(opts.redactReceived ? {} : { received: data }),
     },
   );
   return fallback;

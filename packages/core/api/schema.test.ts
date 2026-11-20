@@ -26,6 +26,12 @@ afterEach(() => {
 // app in past incidents. The contract is: a malformed response degrades to
 // an empty/safe shape, never throws into React.
 describe("ApiClient schema fallback", () => {
+  it("rejects a malformed local login response before opening a session", async () => {
+    stubFetchJson({ token: "token", user: {} });
+    const client = new ApiClient("https://api.example.test");
+    await expect(client.loginWithPassword("owner", "example password")).rejects.toThrow("Could not read the login response");
+  });
+
   describe("workspace pin responses", () => {
     it("defaults missing or malformed pinned_at to null and falls back on malformed lists", async () => {
       const ws = { id: "ws-1", name: "One", slug: "one", description: null, context: null, settings: {}, repos: [], issue_prefix: "ONE", avatar_url: null, created_at: "2026-01-01", updated_at: "2026-01-01" };
