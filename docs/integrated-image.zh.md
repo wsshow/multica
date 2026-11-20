@@ -12,14 +12,16 @@
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
 ```
 
-首次交互式安装时，回车使用默认访问端口 `8080`，也可输入其他端口。外部服务提示处可直接回车，使用随附的 PostgreSQL 和本地附件目录。启动后，打开终端显示的访问地址，在网页输入一次性初始化码并创建管理员账号。默认数据库、附件和密钥保存在 Docker 卷中。
+首次交互式安装时，回车使用默认访问端口 `8080`，也可输入其他端口。在数据库和附件提示处，回车使用随附的 PostgreSQL 和本地附件目录，然后选择 Redis 配置。也可进入自定义菜单，分别设置数据库、附件和 Redis。启动后，打开终端显示的访问地址，在网页输入一次性初始化码并创建管理员账号。默认数据库、附件和密钥保存在 Docker 卷中。
+
+Redis 默认不启用。选择「自动部署」会在 Compose 私有网络中启动 Redis，Redis 容器停止时会清除临时数据。连接已有服务时，填写应用容器可访问的 `redis://` 或 `rediss://` 连接串。自动部署需要所选发布版本包含 Redis 的 Compose 配置。
 
 再次运行安装命令会检查最新稳定版。版本变化时可选备份后升级、直接升级或取消。无人值守升级用 `bash multica-personal.sh install --yes`。`bash multica-personal.sh up` 启动已选版本，日常启停无需重新下载发布信息。
 
 | 命令 | 用途 |
 | --- | --- |
 | `bash multica-personal.sh --help` | 查看中文用法 |
-| `bash multica-personal.sh configure` | 交互配置访问端口、PostgreSQL 和附件存储 |
+| `bash multica-personal.sh configure` | 交互配置访问端口、PostgreSQL、附件存储和 Redis |
 | `bash multica-personal.sh setup-code` | 创建管理员前重新查看初始化码 |
 | `bash multica-personal.sh reset-password` | 重置管理员密码 |
 | `bash multica-personal.sh status` | 查看运行状态 |
@@ -54,11 +56,11 @@ make integrated-personal-build
 | `make integrated-personal-reset-password` | 生成并显示替换密码，以及所有者用户名 |
 | `make integrated-personal-status` | 查看容器和健康状态 |
 | `make integrated-personal-logs` | 跟踪应用日志 |
-| `make integrated-personal-stop` | 停止应用和数据库，保留数据卷 |
+| `make integrated-personal-stop` | 停止应用及随附服务，保留数据库和附件数据卷 |
 | `make integrated-personal-backup BACKUP_FILE=multica.tar` | 暂停应用，将数据库、本地文件和密钥保存到归档 |
 | `make integrated-personal-restore BACKUP_FILE=multica.tar INTEGRATED_IMAGE=…` | 在启动新的个人实例前恢复归档 |
 
-默认启动无需环境文件。如需自有 PostgreSQL 或 S3 兼容存储，将[个人部署示例](../.env.integrated.personal.example)复制为 `.env.integrated.personal`，填写相应配置。在首次使用前选择存储，切换已有实例时需迁移已有数据。
+默认启动无需环境文件。如需配置可选服务，将[个人部署示例](../.env.integrated.personal.example)复制为 `.env.integrated.personal`，填写相应配置。随附 Redis 使用 `MULTICA_MANAGED_REDIS=true`，已有 Redis 使用 `REDIS_URL`。在首次使用前选择存储，切换已有实例时需迁移已有数据。
 
 上述命令备份随附数据库、本地文件和自动生成的密钥。恢复时，使用与备份相同的应用镜像版本和 PostgreSQL 主版本恢复到新数据卷，再启动应用。手动配置的环境文件和密钥随归档保存，外部 PostgreSQL 或 S3 另行备份。
 
@@ -163,7 +165,7 @@ S3 初始化失败会终止启动，不再选择本地存储。配置校验不�
 
 Buildx Bake 在同一源码提交和架构下复用现有后端、Web Dockerfile。组装阶段消费它们的编译产物，不重复维护 Go/pnpm 编译步骤；AMD64、ARM64 使用原生 runner。BuildKit 缓存构建阶段，运行镜像不包含编译器和用户凭据。定制主要留在打包层，应用代码只增加监听/存储启动处理及 Web 就绪接口。
 
-普通 main 与 PR 在 AMD64 构建镜像，发布时增加原生 ARM64 构建。各构建运行[外部服务测试环境](../docker/integrated/compose.smoke.yml)，覆盖静态资源、SMTP 登录、对象存储、WebSocket、就绪状态和关闭行为。AMD64 任务还使用个人部署的 Compose 配置验证[账号初始化和数据持久化](../docker/integrated/personal-smoke.sh)。打包和遥测检查在构建镜像之前运行。
+普通 main 与 PR 在 AMD64 构建镜像，发布时增加原生 ARM64 构建。各构建运行[外部服务测试环境](../docker/integrated/compose.smoke.yml)，覆盖静态资源、SMTP 登录、对象存储、WebSocket、就绪状态和关闭行为。AMD64 任务还使用个人部署的 Compose 配置验证[账号初始化、数据持久化及启停随附 Redis](../docker/integrated/personal-smoke.sh)。打包和遥测检查在构建镜像之前运行。
 
 新版本仅由版本 tag 触发发布。测试后的同一镜像导出后按 digest 上传，不重新编译，也不创建临时标签。两个原生架构任务都成功后，其 digest 才合并为 `X.Y.Z` manifest。稳定版本成功后更新 `latest`，预发布版本不更新。公开仓库只保留正式版本及 `latest`，源码提交记录在镜像标签元数据和工作流中。现有 GHCR 拆分镜像另行发布；单独提交源码不会自动发布 Docker Hub 版本。
 

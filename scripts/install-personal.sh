@@ -12,7 +12,7 @@ Multica 个人版
 
   bash multica-personal.sh                 安装最新稳定版，或确认后升级
   bash multica-personal.sh install --yes   无需交互，安装或升级到最新稳定版
-  bash multica-personal.sh configure       配置访问端口、PostgreSQL 和附件存储
+  bash multica-personal.sh configure       配置访问端口、PostgreSQL、附件存储和 Redis
   bash multica-personal.sh up              启动已安装的版本
   bash multica-personal.sh status          查看运行状态
   bash multica-personal.sh logs            查看应用日志
@@ -211,15 +211,61 @@ configure_storage() {
   esac
 }
 
+configure_redis() {
+  local choice url
+  local url_pattern='^rediss?://([^[:space:]/?#@]*@)?[^[:space:]/?#@]+([/?][^[:space:]#]*)?$'
+  local options='1 不启用 / 2 自动部署 / 3 连接已有 Redis'
+  if [[ -n ${deployment:-} && ! -s "$deployment/$redis_compose" ]]; then
+    options='1 不启用 / 3 连接已有 Redis'
+  fi
+  while true; do
+    choice=$(prompt_value "Redis [$options / 回车保持当前设置]")
+    case "$choice" in
+      1)
+        if [[ "$(personal_setting MULTICA_MANAGED_REDIS)" == true || -n "$(personal_setting REDIS_URL)" ]]; then
+          save_personal_settings MULTICA_MANAGED_REDIS= REDIS_URL=
+        fi
+        return 0
+        ;;
+      2)
+        if [[ -n ${deployment:-} && ! -s "$deployment/$redis_compose" ]]; then
+          printf '当前版本不支持自动部署 Redis。请先升级，或连接已有 Redis。\n'
+          continue
+        fi
+        save_personal_settings MULTICA_MANAGED_REDIS=true REDIS_URL=
+        return 0
+        ;;
+      3)
+        while true; do
+          url=$(prompt_value 'Redis 连接串（隐藏输入，回车返回）' hidden)
+          [[ -n "$url" ]] || return 0
+          if [[ "$url" =~ $url_pattern ]]; then break; fi
+          printf '请输入 Redis 连接串，例如 redis://redis.example.com:6379/0。\n'
+        done
+        save_personal_settings MULTICA_MANAGED_REDIS= "REDIS_URL=$url"
+        return 0
+        ;;
+      '') return 0 ;;
+      *) printf '请输入菜单中的选项。\n' ;;
+    esac
+  done
+}
+
 configure_personal() {
-  local choice database storage
+  local choice database storage redis
   while true; do
     database='随附 PostgreSQL'
     storage='本地文件'
+    redis='未启用'
     if [[ -n "$(personal_setting DATABASE_URL)" ]]; then database='外部 PostgreSQL'; fi
     if [[ -n "$(personal_setting S3_BUCKET)" ]]; then storage='S3 兼容存储'; fi
-    printf '\n  1  访问端口（%s）\n  2  数据库（%s）\n  3  附件存储（%s）\n\n' "$host_port" "$database" "$storage"
-    choice=$(prompt_value '请选择 [1/2/3，回车完成]')
+    if [[ "$(personal_setting MULTICA_MANAGED_REDIS)" == true ]]; then
+      redis='自动部署'
+    elif [[ -n "$(personal_setting REDIS_URL)" ]]; then
+      redis='已有服务'
+    fi
+    printf '\n  1  访问端口（%s）\n  2  数据库（%s）\n  3  附件存储（%s）\n  4  Redis（%s）\n\n' "$host_port" "$database" "$storage" "$redis"
+    choice=$(prompt_value '请选择 [1/2/3/4，回车完成]')
     case "$choice" in
       1)
         host_port=$(prompt_host_port "$host_port")
@@ -228,8 +274,9 @@ configure_personal() {
         ;;
       2) configure_database ;;
       3) configure_storage ;;
+      4) configure_redis ;;
       '') return 0 ;;
-      *) printf '请输入 1、2 或 3。\n' ;;
+      *) printf '请输入 1、2、3 或 4。\n' ;;
     esac
   done
 }
@@ -258,6 +305,7 @@ case "$install_dir" in
 esac
 current_release="$install_dir/current-release"
 host_port_file="$install_dir/host-port"
+redis_compose=docker-compose.integrated.personal.redis.yml
 personal_config=${INTEGRATED_PERSONAL_ENV_FILE:-$install_dir/.env.integrated.personal}
 case "$personal_config" in
   /*) ;;
@@ -269,6 +317,9 @@ fi
 
 if [[ "$action" == configure ]]; then
   [[ -t 0 ]] || fail '请在终端中运行 bash multica-personal.sh configure。'
+  if [[ -f "$current_release" ]] && read_release "$current_release"; then
+    deployment="$install_dir/releases/$release_repo/$release_commit"
+  fi
   host_port=$(read_host_port)
   if [[ -n ${INTEGRATED_HOST_PORT:-} ]]; then
     printf '当前环境指定了 INTEGRATED_HOST_PORT，优先使用该端口。\n'
@@ -317,22 +368,6 @@ if [[ "$action" == install || ( "$action" == restore && ! -f "$current_release" 
   read_release "$temporary/release" && [[ "$release_repo" == "$repository" &&
     ( -z "$requested_version" || "$release_tag" == "$requested_version" ) ]] ||
     fail '发布信息格式不正确。请从仓库的发布页重试。'
-
-  if [[ "$action" == install && ! -f "$current_release" && -t 0 && ${2:-} != --yes ]]; then
-    if [[ ! -f "$host_port_file" && -z ${INTEGRATED_HOST_PORT:-} ]]; then
-      host_port=$(prompt_host_port "$host_port")
-    fi
-    if [[ ! -f "$personal_config" ]]; then
-      while true; do
-        choice=$(prompt_value '外部服务 [1 自定义 / 回车使用随附 PostgreSQL 和本地附件]')
-        case "$choice" in
-          1) configure_personal; break ;;
-          '') break ;;
-          *) printf '请输入 1 或回车。\n' ;;
-        esac
-      done
-    fi
-  fi
 
   if [[ -f "$current_release" ]]; then
     IFS=' ' read -r installed_repo installed_tag installed_commit installed_image < "$current_release" ||
@@ -383,6 +418,32 @@ if [[ "$action" == install || ( "$action" == restore && ! -f "$current_release" 
         fail "未能下载 $file。请检查网络后重试。"
     done
     for file in "${missing[@]}"; do mv "$temporary/deployment/$file" "$deployment/$file"; done
+  fi
+  # Older releases use the same installer but did not ship the Redis override.
+  if [[ ! -s "$deployment/$redis_compose" ]] && grep -Fq "$redis_compose" "$deployment/scripts/integrated.sh"; then
+    download "https://raw.githubusercontent.com/$release_repo/$release_commit/$redis_compose" "$temporary/redis-compose" ||
+      fail '未能下载 Redis 部署文件。请检查网络后重试。'
+    mv "$temporary/redis-compose" "$deployment/$redis_compose"
+  fi
+
+  if [[ "$action" == install && ! -f "$current_release" && -t 0 && ${2:-} != --yes ]]; then
+    if [[ ! -f "$host_port_file" && -z ${INTEGRATED_HOST_PORT:-} ]]; then
+      host_port=$(prompt_host_port "$host_port")
+    fi
+    if [[ ! -f "$personal_config" ]]; then
+      while true; do
+        choice=$(prompt_value '数据库和附件 [1 自定义 / 回车使用随附 PostgreSQL 和本地附件]')
+        case "$choice" in
+          1) configure_personal; break ;;
+          '') configure_redis; break ;;
+          *) printf '请输入 1 或回车。\n' ;;
+        esac
+      done
+    fi
+  fi
+
+  if [[ "$(personal_setting MULTICA_MANAGED_REDIS)" == true && ! -s "$deployment/$redis_compose" ]]; then
+    fail '所选版本不支持自动部署 Redis。请选用较新版本，或先运行 bash multica-personal.sh configure 更改 Redis 设置。'
   fi
   if [[ ! -f "$host_port_file" ]]; then save_host_port "$host_port"; fi
   mv "$temporary/release" "$current_release"

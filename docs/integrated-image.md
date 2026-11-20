@@ -12,14 +12,16 @@ Install Docker Compose 2.30+, Bash, and curl. Run this command where you want to
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
 ```
 
-On the first interactive install, press Enter to use port `8080`, or enter a different port. At the external services prompt, press Enter to use the bundled PostgreSQL and local attachments. Open the address printed in the terminal, enter the one-time setup code, and create your owner account. Docker volumes retain the bundled database, local attachments, and signing keys.
+On the first interactive install, press Enter to use port `8080`, or enter a different port. At the database and attachments prompt, press Enter to use the bundled PostgreSQL and local attachments, then choose a Redis option. Choose customization to set the database, attachments, and Redis from the menu. Open the address printed in the terminal, enter the one-time setup code, and create your owner account. Docker volumes retain the bundled database, local attachments, and signing keys.
+
+Redis is disabled by default. Automatic deployment starts Redis on a private Compose network. Its temporary data is cleared when the Redis container stops. To connect an existing service, enter a `redis://` or `rediss://` URL reachable from the app container. Automatic deployment requires a release that includes the Redis Compose configuration.
 
 Run the installer again to check the latest stable release. If the version changes, you can back up before upgrading, upgrade immediately, or cancel. For unattended upgrades, use `bash multica-personal.sh install --yes`. Use `bash multica-personal.sh up` to start the selected version without checking for updates.
 
 | Command | Action |
 | --- | --- |
 | `bash multica-personal.sh --help` | Show commands |
-| `bash multica-personal.sh configure` | Interactively set the host port, PostgreSQL, or attachment storage |
+| `bash multica-personal.sh configure` | Interactively set the host port, PostgreSQL, attachment storage, or Redis |
 | `bash multica-personal.sh setup-code` | Read the current code before creating the owner |
 | `bash multica-personal.sh reset-password` | Reset the owner's password |
 | `bash multica-personal.sh status` | Show service status |
@@ -54,11 +56,11 @@ After a source build, run `make integrated-personal` to start the same local ima
 | `make integrated-personal-reset-password` | Generate and print a replacement password and the owner username |
 | `make integrated-personal-status` | Check container health |
 | `make integrated-personal-logs` | Follow app logs |
-| `make integrated-personal-stop` | Stop the app and database, keeping their volumes |
+| `make integrated-personal-stop` | Stop the app and bundled services, keeping the database and attachment volumes |
 | `make integrated-personal-backup BACKUP_FILE=multica.tar` | Archive the database, local uploads, and keys, pausing the app during the snapshot |
 | `make integrated-personal-restore BACKUP_FILE=multica.tar INTEGRATED_IMAGE=…` | Restore the archive to a fresh personal instance before starting it |
 
-The default setup needs no environment file. To use your own PostgreSQL or an S3-compatible bucket, copy [the personal example](../.env.integrated.personal.example) to `.env.integrated.personal` and fill in only the corresponding settings. Select storage before first use or move your existing data separately.
+The default setup needs no environment file. For optional services, copy [the personal example](../.env.integrated.personal.example) to `.env.integrated.personal` and fill in the applicable settings. Use `MULTICA_MANAGED_REDIS=true` for bundled Redis or `REDIS_URL` for an existing service. Select storage before first use or move your existing data separately.
 
 The backup and restore commands cover the bundled database, local files, and generated keys. Restore into fresh volumes using the same application image version and PostgreSQL generation as the backup, then start the app. Keep any operator-provided environment file and keys with the archive and back up external PostgreSQL or S3 separately.
 
@@ -163,7 +165,7 @@ Durable resources are PostgreSQL, object storage, and the operator's configurati
 
 Buildx Bake reuses the existing backend and web Dockerfiles at one commit and platform. The assembly uses their compiled outputs; Go/pnpm compilation is not duplicated in the assembly Dockerfile. AMD64 and ARM64 use native runners. BuildKit caches build stages; the runtime includes no compiler or user credentials. This keeps customization in packaging with only listener/storage startup changes and the web readiness route in application code.
 
-Main and pull request checks build the image on AMD64. Releases also build on native ARM64. Each build runs the disposable [external-services smoke fixtures](../docker/integrated/compose.smoke.yml), which exercise assets, SMTP login, object storage, WebSockets, readiness, and shutdown. The AMD64 job also checks [personal setup and persistence](../docker/integrated/personal-smoke.sh) against the actual personal Compose configuration. The workflow runs packaging and telemetry checks before assembling the image.
+Main and pull request checks build the image on AMD64. Releases also build on native ARM64. Each build runs the disposable [external-services smoke fixtures](../docker/integrated/compose.smoke.yml), which exercise assets, SMTP login, object storage, WebSockets, readiness, and shutdown. The AMD64 job also checks [personal setup, persistence, and switching bundled Redis on and off](../docker/integrated/personal-smoke.sh) against the actual personal Compose configuration. The workflow runs packaging and telemetry checks before assembling the image.
 
 New versions are published only from version tags. Each tested image is exported and uploaded by digest without recompiling or creating a temporary tag. Both native jobs must succeed before their digests become a shared `X.Y.Z` manifest. A successful stable version also updates `latest`; prereleases do not. The public repository retains release versions and `latest`, with the source commit recorded in image labels and workflow records. Existing GHCR split-image publication remains separate. A source commit alone does not trigger a Docker Hub release.
 

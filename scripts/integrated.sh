@@ -59,7 +59,8 @@ personal_message() {
 personal() {
   local personal_file=${INTEGRATED_PERSONAL_ENV_FILE:-.env.integrated.personal}
   local personal_build_image=${INTEGRATED_BUILD_IMAGE:-multica-integrated:personal}
-  local managed_postgres=false personal_local_storage=false
+  local managed_postgres=false personal_local_storage=false managed_redis=false
+  local redis_compose=docker-compose.integrated.personal.redis.yml
   local archive uploads_dir
   local -a compose=(docker compose --env-file /dev/null -f docker-compose.integrated.personal.yml)
   personal_setting() {
@@ -74,6 +75,10 @@ personal() {
   if [[ -z "$(personal_setting DATABASE_URL)" ]]; then
     managed_postgres=true
     compose+=(-f docker-compose.integrated.personal.postgres.yml)
+  fi
+  if [[ "$(personal_setting MULTICA_MANAGED_REDIS)" == true ]]; then
+    managed_redis=true
+    compose+=(-f "$redis_compose")
   fi
   uploads_dir=$(personal_setting LOCAL_UPLOAD_DIR)
   if [[ -z "$(personal_setting S3_BUCKET)" ]]; then
@@ -119,6 +124,9 @@ personal() {
         return 1
       fi
       local origin setup_code
+      if [[ "$managed_redis" == false ]] && [[ -n "$("${compose[@]}" -f "$redis_compose" ps --status running --quiet redis)" ]]; then
+        "${compose[@]}" -f "$redis_compose" stop redis
+      fi
       origin=$("${compose[@]}" exec -T app node --input-type=module -e '
         import { configure } from "/app/integrated/config.mjs";
         import { initializePersonalEnvironment } from "/app/integrated/personal.mjs";
@@ -135,6 +143,7 @@ personal() {
     personal-status) "${compose[@]}" ps --all ;;
     personal-logs) "${compose[@]}" logs --tail=200 -f app ;;
     personal-stop)
+      if [[ "$managed_redis" == false ]]; then compose+=(-f "$redis_compose"); fi
       "${compose[@]}" stop
       if [[ ${INTEGRATED_PERSONAL_LANG:-} == zh-CN ]]; then
         printf '服务已停止，数据已保留。\n'

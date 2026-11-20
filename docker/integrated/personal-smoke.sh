@@ -2,15 +2,18 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 temporary=$(mktemp -d)
-export INTEGRATED_IMAGE=${INTEGRATED_BUILD_IMAGE:-multica-integrated:ci}
-export INTEGRATED_PERSONAL_ENV_FILE="$temporary/no-config.env"
+export INTEGRATED_BUILD_IMAGE=${INTEGRATED_BUILD_IMAGE:-multica-integrated:ci}
+export INTEGRATED_IMAGE=$INTEGRATED_BUILD_IMAGE
+export INTEGRATED_PERSONAL_ENV_FILE="$temporary/personal.env"
 export INTEGRATED_HOST_PORT=18081
-compose=(docker compose --project-name multica-personal-smoke --env-file /dev/null
+export COMPOSE_PROJECT_NAME=multica-personal-smoke
+compose=(docker compose --env-file /dev/null
   -f docker-compose.integrated.personal.yml -f docker-compose.integrated.personal.postgres.yml)
+managed_compose=("${compose[@]}" -f docker-compose.integrated.personal.redis.yml)
 cleanup() {
   local status=$?
-  if (( status != 0 )); then "${compose[@]}" logs --tail=100 || true; fi
-  "${compose[@]}" down -v --remove-orphans
+  if (( status != 0 )); then "${managed_compose[@]}" logs --tail=100 || true; fi
+  "${managed_compose[@]}" down -v --remove-orphans
   rm -rf "$temporary"
 }
 trap cleanup EXIT
@@ -18,5 +21,14 @@ trap cleanup EXIT
 "${compose[@]}" up -d --no-build --wait --wait-timeout 420
 "${compose[@]}" exec -T app cat /app/data/setup-code |
   node docker/integrated/personal-smoke.mjs exercise "$temporary/state.json"
-"${compose[@]}" up -d --force-recreate --no-deps --wait --wait-timeout 300 app
+
+printf 'MULTICA_MANAGED_REDIS=true\n' > "$INTEGRATED_PERSONAL_ENV_FILE"
+INTEGRATED_IMAGE= bash scripts/integrated.sh personal
+[[ $("${managed_compose[@]}" exec -T redis redis-cli ping) == PONG ]]
+[[ $("${managed_compose[@]}" exec -T app printenv REDIS_URL) == redis://redis:6379/0 ]]
+node docker/integrated/personal-smoke.mjs restore "$temporary/state.json"
+
+: > "$INTEGRATED_PERSONAL_ENV_FILE"
+INTEGRATED_IMAGE= bash scripts/integrated.sh personal
+[[ -z "$("${managed_compose[@]}" ps --status running --quiet redis)" ]]
 node docker/integrated/personal-smoke.mjs restore "$temporary/state.json"

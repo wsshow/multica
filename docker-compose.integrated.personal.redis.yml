@@ -1,0 +1,27 @@
+services:
+  app:
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      REDIS_CLUSTER_MODE: "false"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - default
+      - personal-redis
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    tmpfs:
+      - /data
+    networks:
+      - personal-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+networks:
+  personal-redis:
+    internal: true
