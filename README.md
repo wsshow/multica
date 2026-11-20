@@ -107,7 +107,7 @@ For personal use, install Docker Compose 2.30+. Run the repository script to ins
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
 ```
 
-Open `http://localhost:8080` and create the owner account using the setup code printed in the terminal. Enter the same address on Desktop's first launch. To build from source, run `make integrated-personal-build`. See the [personal deployment guide](docs/integrated-image.md).
+Open the address printed in the terminal, `http://localhost:8080` by default, and use the setup code to create the owner account. Enter the same address on Desktop's first launch. To build from source, run `make integrated-personal-build`. See the [personal deployment guide](docs/integrated-image.md).
 
 1. Deploy API, web, and PostgreSQL from this checkout:
 

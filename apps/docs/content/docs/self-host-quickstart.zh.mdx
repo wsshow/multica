@@ -7,7 +7,7 @@ description: 从定制源码构建 Docker 服务，配置桌面端，并管理�
 
 ## 启动个人实例
 
-准备 Docker Compose 2.30+，用[仓库安装脚本](https://github.com/wsshow/multica/blob/main/docs/integrated-image.zh.md#个人部署)安装最新稳定版。打开 `http://localhost:8080`，输入终端显示的一次性初始化码，创建管理员账号后进入个人工作区。
+准备 Docker Compose 2.30+，用[仓库安装脚本](https://github.com/wsshow/multica/blob/main/docs/integrated-image.zh.md#个人部署)安装最新稳定版。打开终端显示的地址（默认 `http://localhost:8080`），用一次性初始化码创建管理员账号后进入个人工作区。
 
 Docker Compose 自动管理 PostgreSQL，附件和签名密钥保存在本地。启动时无需准备环境文件或邮件服务。从当前源码构建并启动可用 `make integrated-personal-build`。
 

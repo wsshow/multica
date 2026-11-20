@@ -12,13 +12,14 @@ Install Docker Compose 2.30+, Bash, and curl. Run this command where you want to
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
 ```
 
-Open the address printed in the terminal, `http://localhost:8080` by default. Enter the one-time setup code and create your owner account to open your personal workspace. Compose starts PostgreSQL automatically. Docker volumes retain attachments and signing keys.
+On the first interactive install, press Enter to use port `8080`, or enter a different port. At the external services prompt, press Enter to use the bundled PostgreSQL and local attachments. Open the address printed in the terminal, enter the one-time setup code, and create your owner account. Docker volumes retain the bundled database, local attachments, and signing keys.
 
 Run the installer again to check the latest stable release. If the version changes, you can back up before upgrading, upgrade immediately, or cancel. For unattended upgrades, use `bash multica-personal.sh install --yes`. Use `bash multica-personal.sh up` to start the selected version without checking for updates.
 
 | Command | Action |
 | --- | --- |
 | `bash multica-personal.sh --help` | Show commands |
+| `bash multica-personal.sh configure` | Interactively set the host port, PostgreSQL, or attachment storage |
 | `bash multica-personal.sh setup-code` | Read the current code before creating the owner |
 | `bash multica-personal.sh reset-password` | Reset the owner's password |
 | `bash multica-personal.sh status` | Show service status |
@@ -27,7 +28,9 @@ Run the installer again to check the latest stable release. If the version chang
 | `bash multica-personal.sh backup multica.tar` | Archive the managed database, local uploads, and keys |
 | `MULTICA_PERSONAL_VERSION=vX.Y.Z bash multica-personal.sh restore multica.tar` | Restore on a fresh host using the matching version, then run `up` |
 
-The installer stores deployment files in `${XDG_DATA_HOME:-$HOME/.local/share}/multica-personal`. Put an optional `.env.integrated.personal` there to use your own PostgreSQL or S3. Set `INTEGRATED_PERSONAL_ENV_FILE` to use another path. Operator-supplied keys, environment settings, and external services need separate backups.
+The installer stores deployment files in `${XDG_DATA_HOME:-$HOME/.local/share}/multica-personal`. The wizard saves the port and external service settings for the next `up`. Back up and migrate your data before switching databases or attachment storage. You can also edit `.env.integrated.personal` in this directory or set `INTEGRATED_PERSONAL_ENV_FILE` to use another path. Operator-supplied keys, environment settings, and external services need separate backups.
+
+For an unattended install, use `bash multica-personal.sh install --yes`. Set `INTEGRATED_HOST_PORT` to select a port or prepare the external service settings in advance.
 
 ### Start from source or a selected image
 

@@ -75,7 +75,7 @@ while [ "$1" != --output ]; do shift; done
 case "$3" in
   'https://github.com/${repository}/releases/latest/download/multica-personal-release.txt') cat "$TASK_RELEASE_INFO" > "$2" ;;
   'https://raw.githubusercontent.com/${repository}/${firstCommit}/scripts/integrated.sh')
-    printf '%s\n' 'printf "%s\\n" "$INTEGRATED_IMAGE:$INTEGRATED_PERSONAL_LANG:$1"' > "$2" ;;
+    printf '%s\n' 'printf "%s\\n" "$INTEGRATED_IMAGE:$INTEGRATED_PERSONAL_LANG:$1:$INTEGRATED_HOST_PORT"' > "$2" ;;
   'https://raw.githubusercontent.com/${repository}/${firstCommit}/'*) echo fixture > "$2" ;;
   *) exit 1 ;;
 esac
@@ -83,11 +83,14 @@ esac
     const script = fileURLToPath(new URL('./install-personal.sh', import.meta.url));
     const env = { ...process.env, PATH: `${directory}:${process.env.PATH}`, TASK_RELEASE_INFO: release,
       MULTICA_PERSONAL_DIR: join(directory, 'install'), MULTICA_RELEASE_REPOSITORY: repository,
-      MULTICA_PERSONAL_VERSION: '', INTEGRATED_PERSONAL_ENV_FILE: '' };
+      MULTICA_PERSONAL_VERSION: '', INTEGRATED_PERSONAL_ENV_FILE: '', INTEGRATED_HOST_PORT: '' };
     const run = (...args) => spawnSync('bash', [script, ...args], { cwd: directory, env, encoding: 'utf8' });
     const installed = run();
     assert.equal(installed.status, 0, installed.stderr);
-    assert.ok(installed.stdout.includes(`${firstImage}:zh-CN:personal`));
+    const hostPort = join(env.MULTICA_PERSONAL_DIR, 'host-port');
+    assert.ok(installed.stdout.includes(`${firstImage}:zh-CN:personal:8080`));
+    assert.equal(readFileSync(hostPort, 'utf8'), '8080\n');
+    writeFileSync(hostPort, '9081\n');
 
     writeFileSync(release, `${repository} v1.2.4 ${'e'.repeat(40)} example/multica@sha256:${'b'.repeat(64)}\n`);
     const declined = run('install');
@@ -97,6 +100,6 @@ esac
       `${repository} v1.2.3 ${firstCommit} ${firstImage}\n`);
     const resumed = run('up');
     assert.equal(resumed.status, 0, resumed.stderr);
-    assert.ok(resumed.stdout.includes(`${firstImage}:zh-CN:personal`));
+    assert.ok(resumed.stdout.includes(`${firstImage}:zh-CN:personal:9081`));
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });

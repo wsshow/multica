@@ -12,13 +12,14 @@
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
 ```
 
-脚本会显示访问地址，默认是 `http://localhost:8080`。首次使用时，输入终端显示的一次性初始化码，创建管理员后即可进入个人工作区。PostgreSQL 自动启动，附件和密钥保存在 Docker 卷中。
+首次交互式安装时，回车使用默认访问端口 `8080`，也可输入其他端口。外部服务提示处可直接回车，使用随附的 PostgreSQL 和本地附件目录。启动后，打开终端显示的访问地址，在网页输入一次性初始化码并创建管理员账号。默认数据库、附件和密钥保存在 Docker 卷中。
 
 再次运行安装命令会检查最新稳定版。版本变化时可选备份后升级、直接升级或取消。无人值守升级用 `bash multica-personal.sh install --yes`。`bash multica-personal.sh up` 启动已选版本，日常启停无需重新下载发布信息。
 
 | 命令 | 用途 |
 | --- | --- |
 | `bash multica-personal.sh --help` | 查看中文用法 |
+| `bash multica-personal.sh configure` | 交互配置访问端口、PostgreSQL 和附件存储 |
 | `bash multica-personal.sh setup-code` | 创建管理员前重新查看初始化码 |
 | `bash multica-personal.sh reset-password` | 重置管理员密码 |
 | `bash multica-personal.sh status` | 查看运行状态 |
@@ -27,7 +28,9 @@ curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica
 | `bash multica-personal.sh backup multica.tar` | 备份默认数据库、本地附件和密钥 |
 | `MULTICA_PERSONAL_VERSION=vX.Y.Z bash multica-personal.sh restore multica.tar` | 在新主机按备份时的版本还原，然后执行 `up` |
 
-启动配置保存在 `${XDG_DATA_HOME:-$HOME/.local/share}/multica-personal`。如需自有 PostgreSQL 或 S3，可在该目录放置 `.env.integrated.personal`。需要从其他路径读取配置时，设置 `INTEGRATED_PERSONAL_ENV_FILE`。手动配置的环境文件、密钥和外部服务需单独备份。
+启动配置保存在 `${XDG_DATA_HOME:-$HOME/.local/share}/multica-personal`。配置向导会保存端口和外部服务参数，改动在执行 `up` 后生效。切换数据库或附件存储前，请先备份并完成数据迁移。也可编辑该目录的 `.env.integrated.personal`，或用 `INTEGRATED_PERSONAL_ENV_FILE` 指定其他路径。手动配置的环境文件、密钥和外部服务需单独备份。
+
+无人值守安装使用 `bash multica-personal.sh install --yes`。可通过 `INTEGRATED_HOST_PORT` 指定端口，也可提前写入外部服务配置。
 
 ### 从源码或指定镜像启动
 

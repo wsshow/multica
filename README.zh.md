@@ -105,7 +105,7 @@ diff，全都挂在同一个任务下——没人需要重新捋一遍上下文�
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
 ```
 
-打开 `http://localhost:8080`，用终端显示的初始化码创建管理员账号。首次打开桌面端时填入同一个地址。从源码启动可用 `make integrated-personal-build`。详见[个人部署指南](docs/integrated-image.zh.md)。
+打开终端显示的地址，默认是 `http://localhost:8080`。用初始化码创建管理员账号，首次打开桌面端时填入同一个地址。从源码启动可用 `make integrated-personal-build`。详见[个人部署指南](docs/integrated-image.zh.md)。
 
 1. 从当前源码部署 API、Web 和 PostgreSQL：
 

@@ -107,7 +107,7 @@ Multica は、こうしたエージェントとチームメイトを 1 つのワ
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh
 ```
 
-`http://localhost:8080` を開き、ターミナルに表示されたセットアップコードで管理者アカウントを作成します。Desktop の初回起動時も同じ URL を入力してください。ソースから起動する場合は `make integrated-personal-build` を実行します。[デプロイガイド](docs/integrated-image.md)を参照してください。
+ターミナルに表示された URL（既定は `http://localhost:8080`）を開き、セットアップコードで管理者アカウントを作成します。Desktop の初回起動時も同じ URL を入力してください。ソースから起動する場合は `make integrated-personal-build` を実行します。[デプロイガイド](docs/integrated-image.md)を参照してください。
 
 このチェックアウトから `make selfhost-build` でサービスを構築し、自分の Web アドレスを開きます。[セルフホストガイド](SELF_HOSTING.md)を参照してください。
 
