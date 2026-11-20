@@ -101,7 +101,7 @@ issue — so nobody reconstructs context, and nothing ships without a human sayi
 
 ## Get started
 
-For personal use, install Docker Compose 2.30+. After the first stable release with personal deployment is published, this repository script installs the latest stable version. The installer uses Chinese prompts.
+For personal use, install Docker Compose 2.30+. Run the repository script to install the latest stable version. The installer uses Chinese prompts.
 
 ```bash
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh

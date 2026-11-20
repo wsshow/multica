@@ -101,7 +101,7 @@ Multica は、こうしたエージェントとチームメイトを 1 つのワ
 
 ## はじめに
 
-個人で使う場合は Docker Compose 2.30 以上を用意します。個人用デプロイに対応した最初の安定版が公開されると、以下のスクリプトで最新の安定版をインストールできます。案内は中国語で表示されます。
+個人で使う場合は Docker Compose 2.30 以上を用意し、以下のスクリプトで最新の安定版をインストールします。案内は中国語で表示されます。
 
 ```bash
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh

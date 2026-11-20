@@ -6,7 +6,7 @@
 
 ## 个人部署
 
-准备 Docker Compose 2.30+、Bash 和 curl。首个支持个人部署的稳定版发布后，在希望保留安装脚本的目录执行这条命令。脚本在仓库维护，默认安装最新稳定版。
+准备 Docker Compose 2.30+、Bash 和 curl，在希望保留安装脚本的目录执行这条命令。脚本默认安装最新稳定版。
 
 ```bash
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh

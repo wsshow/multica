@@ -99,7 +99,7 @@ diff，全都挂在同一个任务下——没人需要重新捋一遍上下文�
 
 ## 开始使用
 
-个人版需要 Docker Compose 2.30+。首个支持个人部署的稳定版发布后，可用仓库脚本一键安装最新稳定版。
+个人版需要 Docker Compose 2.30+。运行仓库脚本即可安装最新稳定版。
 
 ```bash
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh

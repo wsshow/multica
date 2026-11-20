@@ -6,7 +6,7 @@ The image combines the Go backend, Next.js standalone web server, and nginx in o
 
 ## Personal deployment
 
-Install Docker Compose 2.30+, Bash, and curl. Once the first stable release with personal deployment is available, run this command where you want to keep the installer. The script lives in the repository and installs the latest stable release by default. Its prompts are in Chinese.
+Install Docker Compose 2.30+, Bash, and curl. Run this command where you want to keep the installer. The script installs the latest stable release by default and uses Chinese prompts.
 
 ```bash
 curl -fsSLo multica-personal.sh https://raw.githubusercontent.com/wsshow/multica/main/scripts/install-personal.sh && bash multica-personal.sh

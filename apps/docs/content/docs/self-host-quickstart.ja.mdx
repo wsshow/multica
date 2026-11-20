@@ -7,7 +7,7 @@ description: カスタムソースから Docker サービスを構築し、Deskt
 
 ## 個人用インスタンスを起動する
 
-Docker Compose 2.30 以上を用意し、[リポジトリのインストールスクリプト](https://github.com/wsshow/multica/blob/main/docs/integrated-image.md#personal-deployment)で個人用デプロイに対応した最新の安定版を起動します。`http://localhost:8080` を開き、ターミナルに表示された一度限りのセットアップコードを入力します。管理者アカウントを作成すると、個人用ワークスペースが開きます。
+Docker Compose 2.30 以上を用意し、[リポジトリのインストールスクリプト](https://github.com/wsshow/multica/blob/main/docs/integrated-image.md#personal-deployment)で最新の安定版をインストールします。`http://localhost:8080` を開き、ターミナルに表示された一度限りのセットアップコードを入力します。管理者アカウントを作成すると、個人用ワークスペースが開きます。
 
 PostgreSQL は Docker Compose が管理し、添付ファイルと署名鍵はローカルに保存されます。環境ファイルとメールサービスの設定は不要です。現在のソースからビルドして起動する場合は `make integrated-personal-build` を実行します。
 

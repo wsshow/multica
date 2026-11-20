@@ -7,7 +7,7 @@ description: 從定製原始碼建置 Docker 服務，配置桌面端及自己�
 
 ## 啟動個人執行個體
 
-準備 Docker Compose 2.30 或更新版本，用[儲存庫安裝指令碼](https://github.com/wsshow/multica/blob/main/docs/integrated-image.zh.md#个人部署)啟動支援個人部署的最新穩定版。開啟 `http://localhost:8080`，輸入終端機顯示的一次性初始化碼，建立管理員帳號後進入個人工作區。
+準備 Docker Compose 2.30 或更新版本，用[儲存庫安裝指令碼](https://github.com/wsshow/multica/blob/main/docs/integrated-image.zh.md#个人部署)安裝最新穩定版。開啟 `http://localhost:8080`，輸入終端機顯示的一次性初始化碼，建立管理員帳號後進入個人工作區。
 
 Docker Compose 會自動管理 PostgreSQL，附件和簽署金鑰儲存在本機。啟動時無需準備環境檔或郵件服務。若要從目前的原始碼建置並啟動，請執行 `make integrated-personal-build`。
 
